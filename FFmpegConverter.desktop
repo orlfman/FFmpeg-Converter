@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=FFmpeg Converter
+GenericName=FFmpeg Converter
+Comment=A simple Qt6 graphical frontend for FFmpeg
+Exec=/usr/local/bin/ffmpeg_converter_qt %U
+Icon=ffmpeg-converter-qt
+Path=/usr/local/bin
+Terminal=false
+StartupWMClass=ffmpeg_converter_qt
+Categories=AudioVideo;Video;Qt;
+Keywords=ffmpeg;video;convert;encoder;av1;vp9;x265;
