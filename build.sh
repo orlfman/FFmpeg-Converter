@@ -1,8 +1,6 @@
 #!/bin/bash
-
 # ==================== CONFIG ====================
 PROJECT_DIR="/mnt/storage2/Source Projects/ffmpeg_converter_qt"
-BACKUP_DIR="/mnt/storage2/Source Projects/ffmpeg_converter_qt-back"
 BUILD_DIR="$PROJECT_DIR/build"
 BINARY_NAME="ffmpeg_converter_qt"
 INSTALL_DIR="/usr/local/bin"
@@ -35,25 +33,9 @@ ask_overwrite() {
             return 1
         fi
     else
-        return 0  # doesn't exist → safe to install
+        return 0  # doesn't exist = safe to install
     fi
 }
-
-# ==================== BACKUP ====================
-echo "Creating backup of the project..."
-if [ ! -d "$PROJECT_DIR" ]; then
-    echo "Error: Project directory not found: $PROJECT_DIR"
-    exit 1
-fi
-
-if [ -d "$BACKUP_DIR" ]; then
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    mv "$BACKUP_DIR" "${BACKUP_DIR}-$TIMESTAMP"
-    echo "Old backup moved to ${BACKUP_DIR}-$TIMESTAMP"
-fi
-
-cp -a "$PROJECT_DIR" "$BACKUP_DIR" || { echo "Failed to create backup"; exit 1; }
-echo "Backup created at $BACKUP_DIR"
 
 # ==================== DEPENDENCIES ====================
 echo "Checking required tools..."
@@ -88,6 +70,7 @@ if [ ! -f "$BINARY_NAME" ]; then
     echo "Error: Binary '$BINARY_NAME' was not created."
     exit 1
 fi
+
 echo "Build successful!"
 
 # ==================== INSTALL BINARY ====================
@@ -97,7 +80,7 @@ if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)"; then
     sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 fi
 
-# ==================== INSTALL ICON (correct freedesktop way) ====================
+# ==================== INSTALL ICON ====================
 if [ -f "$ICON_SOURCE" ]; then
     if ask_overwrite "$ICON_DEST" "application icon"; then
         echo "Installing icon to hicolor theme..."
