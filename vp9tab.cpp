@@ -2,9 +2,7 @@
 #include <QToolTip>
 Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *vp9Layout = new QVBoxLayout(this);
-    /* -------------------------------------------------
-     * 1. Container
-     * ------------------------------------------------- */
+    // Picking the container
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Container:");
@@ -18,9 +16,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         vp9Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 2. Rate Control
-     * ------------------------------------------------- */
+    // Rate control options
     {
         QHBoxLayout *l = new QHBoxLayout();
         vp9EnableRCModeCheck = new QCheckBox("Custom Rate Control");
@@ -35,7 +31,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         vp9Layout->addLayout(l);
     }
-    // CRF Config
+    // CRF settings
     vp9CRFConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(vp9CRFConfigWidget);
@@ -44,7 +40,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9CRFSlider = new QSlider(Qt::Horizontal);
         vp9CRFSlider->setMaximumWidth(400);
         vp9CRFSlider->setRange(0, 63);
-        vp9CRFSlider->setValue(28); // Tweaked default
+        vp9CRFSlider->setValue(28);
         QLabel *val = new QLabel("28");
         l->addWidget(lbl);
         l->addWidget(vp9CRFSlider);
@@ -54,7 +50,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9Layout->addWidget(vp9CRFConfigWidget);
         vp9CRFConfigWidget->setVisible(false);
     }
-    // Bitrate Config
+    // Bitrate settings for ABR/CBR
     vp9BitrateConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(vp9BitrateConfigWidget);
@@ -74,9 +70,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9Layout->addWidget(vp9BitrateConfigWidget);
         vp9BitrateConfigWidget->setVisible(false);
     }
-    /* -------------------------------------------------
-     * 3. Lookahead
-     * ------------------------------------------------- */
+    // Lookahead frames
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -85,7 +79,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9LookaheadSlider = new QSlider(Qt::Horizontal);
         vp9LookaheadSlider->setMaximumWidth(300);
         vp9LookaheadSlider->setRange(0, 25);
-        vp9LookaheadSlider->setValue(16); // Tweaked default
+        vp9LookaheadSlider->setValue(16);
         vp9LookaheadSlider->setEnabled(false);
         QLabel *val = new QLabel("16");
         l->addWidget(vp9LookaheadCheck);
@@ -95,13 +89,11 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9LookaheadSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         vp9Layout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 4. VIDEO FILTERS (Grouped)
-     * ------------------------------------------------- */
+    // Video filters group
     QGroupBox *filtersGroup = new QGroupBox("Video Filters");
     QVBoxLayout *filtersLayout = new QVBoxLayout(filtersGroup);
     vp9Layout->addWidget(filtersGroup);
-    // Unsharpen
+    // Unsharpen filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -120,7 +112,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9UnsharpenStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    // Sharpen
+    // Sharpen filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -139,7 +131,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9SharpenStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    // Blur
+    // Blur filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -158,7 +150,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9BlurStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    // Noise Reduction
+    // Noise reduction
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -177,13 +169,11 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9NoiseReductionSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 5. GRAIN SECTION (Grouped)
-     * ------------------------------------------------- */
+    // Grain options
     QGroupBox *grainGroup = new QGroupBox("Grain Options");
     QVBoxLayout *grainLayout = new QVBoxLayout(grainGroup);
     vp9Layout->addWidget(grainGroup);
-    // Grain Synthesis
+    // Grain synthesis
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -202,13 +192,11 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9GrainSynthLevel, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         grainLayout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 6. ADVANCED SECTION
-     * ------------------------------------------------- */
+    // Advanced options group
     QGroupBox *advancedGroup = new QGroupBox("Advanced Options");
     QVBoxLayout *advancedLayout = new QVBoxLayout(advancedGroup);
     vp9Layout->addWidget(advancedGroup);
-    // Two-Pass
+    // Two-pass
     {
         QHBoxLayout *l = new QHBoxLayout();
         vp9TwoPassCheck = new QCheckBox("Enable Two-Pass Encoding");
@@ -217,7 +205,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // AQ Mode
+    // AQ mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AQ Mode:");
@@ -230,7 +218,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // AQ Strength
+    // AQ strength
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -249,7 +237,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9AQStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         advancedLayout->addWidget(w);
     }
-    // Key Frame Interval
+    // Keyframe interval
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
@@ -262,7 +250,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // CPU-used
+    // CPU usage preset
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("CPU-used:");
@@ -288,7 +276,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Tile Columns
+    // Tile columns
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Tile Columns:");
@@ -301,7 +289,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Tile Rows
+    // Tile rows
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Tile Rows:");
@@ -314,7 +302,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Deadline
+    // Deadline/quality mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Deadline:");
@@ -327,7 +315,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // New: Enable Row-MT
+    // Row multi-threading
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableRowMtCheck = new QCheckBox("Enable Row Multi-Threading");
@@ -336,7 +324,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // New: Screen Content Mode
+    // Screen content optimization
     {
         QHBoxLayout *l = new QHBoxLayout();
         screenContentCheck = new QCheckBox("Screen Content Mode");
@@ -345,9 +333,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 7. Audio
-     * ------------------------------------------------- */
+    // Audio settings
     {
         QHBoxLayout *l = new QHBoxLayout();
         vp9AudioCheck = new QCheckBox("Include Audio");
@@ -391,9 +377,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addWidget(vp9VorbisQualityBox);
         vp9Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 8. Reset Button
-     * ------------------------------------------------- */
+    // Reset to defaults button
     {
         QHBoxLayout *l = new QHBoxLayout();
         QPushButton *resetButton = new QPushButton("Reset to Defaults");
@@ -403,13 +387,11 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9Layout->addLayout(l);
         QObject::connect(resetButton, &QPushButton::clicked, this, &Vp9Tab::resetDefaults);
     }
-    /* -------------------------------------------------
-     * CONNECTIONS
-     * ------------------------------------------------- */
+    // Hooking up the signals
     vp9RCModeBox->setEnabled(false);
     vp9TwoPassCheck->setEnabled(false);
     vp9TwoPassCheck->setChecked(false);
-    // Rate-control visibility
+    // Toggling rate control widgets
     QObject::connect(vp9EnableRCModeCheck, &QCheckBox::toggled, [this](bool on){
         vp9RCModeBox->setEnabled(on);
         if (on) {
@@ -431,7 +413,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
             vp9BitrateConfigWidget->setVisible(m == "ABR" || m == "CBR");
         }
     });
-    // Filter enables
+    // Enabling sliders for filters
     QObject::connect(vp9LookaheadCheck, &QCheckBox::toggled,
                      [this](bool on){ vp9LookaheadSlider->setEnabled(on); });
     QObject::connect(vp9UnsharpenCheck, &QCheckBox::toggled,
@@ -444,12 +426,12 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
                      [this](bool on){ vp9NoiseReductionSlider->setEnabled(on); });
     QObject::connect(vp9GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ vp9GrainSynthLevel->setEnabled(on); });
-    // AQ strength
+    // Enabling AQ strength
     QObject::connect(vp9AQModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString m = vp9AQModeBox->currentText();
         vp9AQStrengthSlider->setEnabled(m == "Variance" || m == "Complexity");
     });
-    // Audio codec-specific
+    // Showing audio options based on codec
     QObject::connect(vp9AudioCodecBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString c = vp9AudioCodecBox->currentText();
         vp9VbrModeLabel->setVisible(c == "opus");
@@ -457,7 +439,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9VorbisQualityLabel->setVisible(c == "vorbis");
         vp9VorbisQualityBox->setVisible(c == "vorbis");
     });
-    // Container change
+    // Updating for container change
     QObject::connect(vp9ContainerBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &Vp9Tab::updateAudioCodecOptions);
     updateAudioCodecOptions();
 }
@@ -465,7 +447,7 @@ void Vp9Tab::updateAudioCodecOptions() {
     QString cont = vp9ContainerBox->currentText();
     QString cur = vp9AudioCodecBox->currentText();
     vp9AudioCodecBox->clear();
-    vp9AudioCodecBox->addItems({"opus", "vorbis"}); // VP9 always Opus/Vorbis
+    vp9AudioCodecBox->addItems({"opus", "vorbis"});
     int idx = vp9AudioCodecBox->findText(cur);
     vp9AudioCodecBox->setCurrentIndex(idx != -1 ? idx : 0);
     emit vp9AudioCodecBox->currentIndexChanged(vp9AudioCodecBox->currentIndex());
@@ -505,7 +487,7 @@ void Vp9Tab::resetDefaults() {
     vp9VorbisQualityBox->setCurrentIndex(0);
     enableRowMtCheck->setChecked(false);
     screenContentCheck->setChecked(false);
-    // Trigger UI updates
+    // Refresh the UI after reset
     vp9EnableRCModeCheck->toggled(false);
     vp9AQModeBox->currentIndexChanged(0);
     updateAudioCodecOptions();
