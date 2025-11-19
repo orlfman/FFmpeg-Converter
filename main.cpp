@@ -206,6 +206,7 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     QMainWindow window;
     window.setWindowTitle("FFmpeg Converter");
+    window.setWindowIcon(QIcon::fromTheme("ffmpeg-converter-qt"));
     window.resize(800, 600);
     QWidget *centralWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
