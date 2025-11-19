@@ -1285,10 +1285,6 @@ int main(int argc, char *argv[]) {
                 if (aqModeStr == "Variance") {
                     svtParams << "enable-variance-boost=1";
                     svtParams << "variance-boost-strength=" + QString::number(av1Tab->av1AQStrengthSlider->value());
-                } else if (aqModeStr == "Complexity") {
-                    int qpMin = 1 + (av1Tab->av1AQStrengthSlider->value() - 1) * 5;
-                    svtParams << "qp-min=" + QString::number(qpMin);
-                    svtParams << "qp-max=63";
                 }
             }
             if (av1Tab->av1EnableRCModeCheck->isChecked()) {
