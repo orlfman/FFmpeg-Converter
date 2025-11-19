@@ -2,6 +2,7 @@
 #include "converter.h"
 #include "vp9tab.h"
 #include "x265tab.h"
+#include "combinetab.h"
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
@@ -474,6 +475,11 @@ int main(int argc, char *argv[]) {
     vp9Scroll->setWidgetResizable(true);
     vp9Scroll->setWidget(vp9Tab);
     codecTabs->addTab(vp9Scroll, "VP9");
+    CombineTab *combineTab = new CombineTab();
+    QScrollArea *combineScroll = new QScrollArea();
+    combineScroll->setWidgetResizable(true);
+    combineScroll->setWidget(combineTab);
+    codecTabs->addTab(combineScroll, "Combine Videos");
     // Loading the default codec tab from settings
     QSettings tabSettings("FFmpegConverter", "Settings");
     int defaultTab = tabSettings.value("defaultCodecTab", 0).toInt();
@@ -515,6 +521,15 @@ int main(int argc, char *argv[]) {
     conversionProgress->setVisible(false);
     conversionProgress->setRange(0, 100);
     mainLayout->addWidget(conversionProgress);
+    QObject::connect(combineTab, &CombineTab::logMessage, logBox, &QTextEdit::append);
+    QObject::connect(combineTab, &CombineTab::logMessage, logBox, &QTextEdit::append);
+    QObject::connect(combineTab, &CombineTab::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, combineTab]() {
+        convertButton->setEnabled(true);
+        cancelButton->setEnabled(false);
+        conversionProgress->setVisible(false);
+        logBox->append("Concatenation finished!");
+        showConversionNotification(combineTab->getFinalOutputFile(), nullptr);
+    });
     auto getSampleRateInHz = [](const QString& sampleRateStr) -> QString {
         QString numericPart = sampleRateStr.split(" ").first();
         bool ok;
@@ -1006,7 +1021,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(clearLogButton, &QPushButton::clicked, [logBox]() {
         logBox->clear();
     });
-    QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck]() {
+QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
         logBox->clear();
         if (seekCheck->isChecked()) {
             bool okHH, okMM, okSS;
@@ -1029,11 +1044,18 @@ int main(int argc, char *argv[]) {
             }
         }
         logBox->append("=== CONVERSION STARTED ===");
-        QString inputFile = selectedFilesBox->text();
-        if (inputFile.isEmpty()) {
-            QMessageBox::warning(nullptr, "Error", "Please select an input file.");
-            return;
+
+        QString inputFile;
+        if (codecTabs->currentWidget() != combineScroll) {
+            inputFile = selectedFilesBox->text();
+            if (inputFile.isEmpty()) {
+                QMessageBox::warning(nullptr, "Error", "Please select an input file.");
+                return;
+            }
+        } else {
+            inputFile = "(Multiple files from Combine Videos tab)";
         }
+
         logBox->append("📁 Input: " + inputFile);
         logBox->append("🎛️ Scale: " + QString::number(scaleWidthSpin->value(), 'f', 2) + "x × " + QString::number(scaleHeightSpin->value(), 'f', 2) + "x");
         if (!qFuzzyCompare(scaleWidthSpin->value(), 1.0) || !qFuzzyCompare(scaleHeightSpin->value(), 1.0)) {
@@ -1075,21 +1097,24 @@ int main(int argc, char *argv[]) {
         }
         QString outputDir = outputDirBox->text();
         QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
-        QString extension;
-        bool twoPass;
-        QString codecStr;
-        if (currentTab == 0) {
-            extension = "." + av1Tab->av1ContainerBox->currentText();
-            twoPass = av1Tab->av1TwoPassCheck->isChecked();
-            codecStr = "av1";
-        } else if (currentTab == 1) {
-            extension = "." + x265Tab->x265ContainerBox->currentText();
-            twoPass = x265Tab->x265TwoPassCheck->isChecked();
-            codecStr = "x265";
-        } else if (currentTab == 2) {
-            extension = "." + vp9Tab->vp9ContainerBox->currentText();
-            twoPass = vp9Tab->vp9TwoPassCheck->isChecked();
-            codecStr = "vp9";
+        QString extension = ".mkv";
+        bool twoPass = false;
+        QString codecStr = "copy";
+
+        if (codecTabs->currentWidget() != combineScroll) {
+            if (currentTab == 0) {
+                extension = "." + av1Tab->av1ContainerBox->currentText();
+                twoPass = av1Tab->av1TwoPassCheck->isChecked();
+                codecStr = "av1";
+            } else if (currentTab == 1) {
+                extension = "." + x265Tab->x265ContainerBox->currentText();
+                twoPass = x265Tab->x265TwoPassCheck->isChecked();
+                codecStr = "x265";
+            } else if (currentTab == 2) {
+                extension = "." + vp9Tab->vp9ContainerBox->currentText();
+                twoPass = vp9Tab->vp9TwoPassCheck->isChecked();
+                codecStr = "vp9";
+            }
         }
         QStringList args;
         if (seekCheck->isChecked()) {
@@ -1470,6 +1495,7 @@ int main(int argc, char *argv[]) {
                 args << "-b:v" << "0";
             }
         }
+        if (codecTabs->currentWidget() != combineScroll) {
         QCheckBox *audioCheck;
         QComboBox *audioCodecBox;
         QComboBox *audioSampleRateBox;
@@ -1554,6 +1580,7 @@ int main(int argc, char *argv[]) {
         } else {
             args << "-an";
         }
+}
         QString ffmpegPath = settings.value("ffmpegPath", "").toString();
         if (ffmpegPath.isEmpty()) {
             ffmpegPath = "/usr/bin/ffmpeg";
@@ -1576,17 +1603,42 @@ int main(int argc, char *argv[]) {
             env.insert("LD_LIBRARY_PATH", svtAv1Path);
             logBox->append("📚 Using custom SVT-AV1 library path: " + svtAv1Path);
         }
-        converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked());
+        if (codecTabs->currentWidget() == combineScroll) {
+            logBox->append("=== STARTING VIDEO CONCATENATION ===");
+            combineTab->startConcatenation();
+            convertButton->setEnabled(false);
+            cancelButton->setEnabled(true);
+            conversionProgress->setVisible(true);
+            conversionProgress->setValue(0);
+            return;
+        } else {
+            converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked());
+        }
     });
-    QObject::connect(cancelButton, &QPushButton::clicked, converter, &Converter::cancel);
+    QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress]() {
+        if (converter->property("running").isValid()) {
+            converter->cancel();
+        }
+        combineTab->cancelConcatenation();
+        convertButton->setEnabled(true);
+        cancelButton->setEnabled(false);
+        conversionProgress->setVisible(false);
+    });
     QObject::connect(converter, &Converter::logMessage, logBox, &QTextEdit::append);
     QObject::connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);
-    QObject::connect(converter, &Converter::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, &window, converter, infoBox, selectedFilesBox]() {
+    QObject::connect(converter, &Converter::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, &window, converter, infoBox, selectedFilesBox, combineTab]() {
         logBox->append("All conversions done, preparing to update GUI...");
-        QString outputFile = converter->getFinalOutputFile();
-        if (!outputFile.isEmpty()) {
-            showConversionNotification(outputFile, &window);
+
+        QString normalOutput = converter->getFinalOutputFile();
+        QString combineOutput = combineTab->getFinalOutputFile();
+
+        if (!normalOutput.isEmpty()) {
+            showConversionNotification(normalOutput, &window);
         }
+        else if (!combineOutput.isEmpty() && QFile::exists(combineOutput)) {
+            showConversionNotification(combineOutput, &window);
+        }
+
         QTimer::singleShot(100, [convertButton, cancelButton, conversionProgress, logBox]() {
             logBox->append("Updating buttons and progress bar now...");
             convertButton->setEnabled(true);
@@ -1594,6 +1646,8 @@ int main(int argc, char *argv[]) {
             conversionProgress->setVisible(false);
             logBox->append("GUI updated successfully!");
         });
+
+        QString outputFile = normalOutput;
         QString inputInfo = infoBox->toHtml();
         QString outputInfo = "";
         if (outputFile.isEmpty()) {
