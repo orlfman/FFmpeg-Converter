@@ -3,9 +3,7 @@
 Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *av1Layout = new QVBoxLayout(this);
-    /* -------------------------------------------------
-     * 1. Container
-     * ------------------------------------------------- */
+    // Picking the output container
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Container:");
@@ -19,9 +17,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 2. Preset
-     * ------------------------------------------------- */
+    // Choosing the preset for speed vs quality
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Preset:");
@@ -38,9 +34,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 3. Rate Control (CRF / QP / VBR)
-     * ------------------------------------------------- */
+    // Setting up rate control options
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1EnableRCModeCheck = new QCheckBox("Custom Rate Control");
@@ -58,7 +52,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // CRF widget (hidden until CRF is selected)
+    // CRF settings, shows when CRF is picked
     av1CRFConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1CRFConfigWidget);
@@ -67,7 +61,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1CRFSlider = new QSlider(Qt::Horizontal);
         av1CRFSlider->setMaximumWidth(400);
         av1CRFSlider->setRange(0, 63);
-        av1CRFSlider->setValue(28); // Improved default (common AV1 sweet spot)
+        av1CRFSlider->setValue(28);
         QLabel *val = new QLabel("28");
         l->addWidget(lbl);
         l->addWidget(av1CRFSlider);
@@ -78,7 +72,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1CRFConfigWidget);
         av1CRFConfigWidget->setVisible(false);
     }
-    // QP widget
+    // QP settings, similar to CRF
     av1QPConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1QPConfigWidget);
@@ -87,7 +81,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1QPSlider = new QSlider(Qt::Horizontal);
         av1QPSlider->setMaximumWidth(400);
         av1QPSlider->setRange(0, 63);
-        av1QPSlider->setValue(28); // Match improved default
+        av1QPSlider->setValue(28);
         QLabel *val = new QLabel("28");
         l->addWidget(lbl);
         l->addWidget(av1QPSlider);
@@ -98,7 +92,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1QPConfigWidget);
         av1QPConfigWidget->setVisible(false);
     }
-    // VBR widget
+    // VBR settings for bitrate targeting
     av1VBRConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1VBRConfigWidget);
@@ -122,9 +116,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1VBRConfigWidget);
         av1VBRConfigWidget->setVisible(false);
     }
-    /* -------------------------------------------------
-     * 4. Tune & Level
-     * ------------------------------------------------- */
+    // Tune for specific metrics
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AV1 Tune:");
@@ -137,22 +129,21 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
+    // Encoding level for compatibility
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Encoding Level:");
         lbl->setToolTip("AV1 compatibility level. Auto works for most players.");
         av1LevelBox = new QComboBox();
         av1LevelBox->addItems({"Auto","2.0","2.1","3.0","3.1","4.0","4.1",
-            "5.0","5.1","5.2","5.3","6.0","6.1","6.2","6.3"});
+            "5.0","5.1","5.2","5.3","6.0","6.1","6.1","6.2","6.3"});
         av1LevelBox->setCurrentIndex(0);
         l->addWidget(lbl);
         l->addWidget(av1LevelBox);
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 5. Lookahead
-     * ------------------------------------------------- */
+    // Lookahead for better compression
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget();
@@ -163,7 +154,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1LookaheadSlider = new QSlider(Qt::Horizontal);
         av1LookaheadSlider->setMaximumWidth(300);
         av1LookaheadSlider->setRange(0, 120);
-        av1LookaheadSlider->setValue(35); // Improved default (SVT-AV1 sweet spot)
+        av1LookaheadSlider->setValue(35);
         av1LookaheadSlider->setEnabled(false);
         QLabel *val = new QLabel("35");
         l->addWidget(av1LookaheadCheck);
@@ -174,13 +165,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         av1Layout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 6. VIDEO FILTERS (Grouped for better UI)
-     * ------------------------------------------------- */
+    // Grouping video filters
     QGroupBox *filtersGroup = new QGroupBox("Video Filters");
     QVBoxLayout *filtersLayout = new QVBoxLayout(filtersGroup);
     av1Layout->addWidget(filtersGroup);
-    // Unsharpen
+    // Unsharpen filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -200,7 +189,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v/10.0,'f',1)); });
         filtersLayout->addWidget(w);
     }
-    // Sharpen
+    // Sharpen filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -220,7 +209,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v/10.0,'f',1)); });
         filtersLayout->addWidget(w);
     }
-    // Blur
+    // Blur filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -240,7 +229,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v/10.0,'f',1)); });
         filtersLayout->addWidget(w);
     }
-    // Noise Reduction
+    // Noise reduction
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -260,13 +249,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 7. GRAIN SECTION (Grouped)
-     * ------------------------------------------------- */
+    // Grain options group
     QGroupBox *grainGroup = new QGroupBox("Grain Options");
     QVBoxLayout *grainLayout = new QVBoxLayout(grainGroup);
     av1Layout->addWidget(grainGroup);
-    // Grain Synthesis (original FFmpeg noise filter)
+    // FFmpeg grain synthesis
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -286,7 +273,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         grainLayout->addWidget(w);
     }
-    // Native Film Grain Synthesis
+    // Native AV1 film grain
     {
         QHBoxLayout *l = new QHBoxLayout();
         nativeGrainCheck = new QCheckBox("Native Film Grain Synthesis");
@@ -305,10 +292,10 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [strengthVal](int v){ strengthVal->setText(QString::number(v)); });
         grainLayout->addLayout(l);
     }
-    // Grain Denoise
+    // Grain denoise level
     {
         QHBoxLayout *denoiseRow = new QHBoxLayout();
-        denoiseRow->setContentsMargins(20, 0, 0, 0); // Indent for alignment
+        denoiseRow->setContentsMargins(20, 0, 0, 0);
         QLabel *denoiseLbl = new QLabel("Grain Denoise:");
         denoiseLbl->setToolTip("Removes noise before adding grain. 0=off, 1=conservative, 2=aggressive.");
         grainDenoiseCombo = new QComboBox();
@@ -320,13 +307,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         denoiseRow->addStretch();
         grainLayout->addLayout(denoiseRow);
     }
-    /* -------------------------------------------------
-     * 8. ADVANCED SECTION (New Group)
-     * ------------------------------------------------- */
+    // Advanced options group
     QGroupBox *advancedGroup = new QGroupBox("Advanced Options");
     QVBoxLayout *advancedLayout = new QVBoxLayout(advancedGroup);
     av1Layout->addWidget(advancedGroup);
-    // Enable CDEF
+    // CDEF filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableCdefCheck = new QCheckBox("Enable CDEF");
@@ -336,7 +321,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Super-Res Mode
+    // Super-res mode
     {
         QHBoxLayout *comboRow = new QHBoxLayout();
         QLabel *lbl = new QLabel("Super-Res Mode:");
@@ -368,7 +353,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QObject::connect(superResDenomSlider, &QSlider::valueChanged,
                          [val](int v){ val->setText(QString::number(v)); });
     }
-    // Fast Decode
+    // Fast decode levels
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *fdLbl = new QLabel("Fast Decode:");
@@ -381,7 +366,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Low Latency
+    // Low latency mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         lowLatencyCheck = new QCheckBox("Low Latency Mode");
@@ -390,7 +375,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Spatio-Temporal Prediction
+    // Spatio-temporal prediction
     {
         QHBoxLayout *l = new QHBoxLayout();
         tplModelCheck = new QCheckBox("Spatio-Temporal Prediction");
@@ -399,7 +384,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // New: Enable TF
+    // Temporal filtering
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableTfCheck = new QCheckBox("Enable Temporal Filtering");
@@ -408,7 +393,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // New: Screen Content Tools
+    // Screen content mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *scmLbl = new QLabel("Screen Content Mode:");
@@ -421,9 +406,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 9. AQ Mode & Strength
-     * ------------------------------------------------- */
+    // AQ mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AQ Mode:");
@@ -436,6 +419,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
+    // AQ strength
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -455,9 +439,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         av1Layout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 10. Two-Pass
-     * ------------------------------------------------- */
+    // Two-pass encoding
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1TwoPassCheck = new QCheckBox("Enable Two-Pass Encoding");
@@ -466,9 +448,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 11. Keyframe / Threads / Tiles
-     * ------------------------------------------------- */
+    // Keyframe interval
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
@@ -481,6 +461,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
+    // Threads for encoding
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Threads:");
@@ -493,6 +474,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
+    // Tile rows
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Tile Rows:");
@@ -505,6 +487,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
+    // Tile columns
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Tile Columns:");
@@ -517,9 +500,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 12. COMPLETE AUDIO
-     * ------------------------------------------------- */
+    // Audio settings
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1AudioCheck = new QCheckBox("Include Audio");
@@ -548,7 +529,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1AudioBitrateBox->setCurrentIndex(1);
         l->addWidget(bLbl);
         l->addWidget(av1AudioBitrateBox);
-        // codec-specific controls (initially hidden)
+        // Extra options for specific codecs
         av1VbrModeLabel = new QLabel("VBR Mode:");
         av1VbrModeBox = new QComboBox();
         av1VbrModeBox->addItems({"Default","Constrained","Off"});
@@ -586,9 +567,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addWidget(av1VorbisQualityBox);
         av1Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 13. Reset Button
-     * ------------------------------------------------- */
+    // Reset button to defaults
     {
         QHBoxLayout *l = new QHBoxLayout();
         QPushButton *resetButton = new QPushButton("Reset to Defaults");
@@ -598,13 +577,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addLayout(l);
         QObject::connect(resetButton, &QPushButton::clicked, this, &Av1Tab::resetDefaults);
     }
-    /* -------------------------------------------------
-     * CONNECTIONS
-     * ------------------------------------------------- */
+    // Hooking up signals and slots
     av1RCModeBox->setEnabled(false);
     av1TwoPassCheck->setEnabled(false);
     av1TwoPassCheck->setChecked(false);
-    // Rate-control visibility
+    // Toggling rate control widgets
     QObject::connect(av1EnableRCModeCheck, &QCheckBox::toggled, [this](bool on){
         av1RCModeBox->setEnabled(on);
         if (on) {
@@ -630,7 +607,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
             av1TwoPassCheck->setEnabled(m=="VBR");
         }
     });
-    // Filter enable/disable
+    // Enabling sliders when checkboxes are ticked
     QObject::connect(av1LookaheadCheck, &QCheckBox::toggled,
                      [this](bool on){ av1LookaheadSlider->setEnabled(on); });
     QObject::connect(av1UnsharpenCheck, &QCheckBox::toggled,
@@ -648,12 +625,12 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          grainStrengthSlider->setEnabled(on);
                          grainDenoiseCombo->setEnabled(on);
                      });
-    // AQ strength enable
+    // Enabling AQ strength based on mode
     QObject::connect(av1AQModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString m = av1AQModeBox->currentText();
         av1AQStrengthSlider->setEnabled(m=="Variance" || m=="Complexity");
     });
-    // Audio codec-specific widgets
+    // Showing codec-specific audio options
     QObject::connect(av1AudioCodecBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString c = av1AudioCodecBox->currentText();
         av1VbrModeLabel->setVisible(c=="opus");
@@ -667,10 +644,10 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1VorbisQualityLabel->setVisible(c=="vorbis");
         av1VorbisQualityBox->setVisible(c=="vorbis");
     });
-    // Container → audio codec list
+    // Updating audio codecs based on container
     QObject::connect(av1ContainerBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
                      this, &Av1Tab::updateAudioCodecOptions);
-    // Mutual exclusion for low latency vs lookahead
+    // Making sure low latency and lookahead don't both run
     QObject::connect(lowLatencyCheck, &QCheckBox::toggled, [this](bool on){
         if (on && av1LookaheadCheck->isChecked()) {
             av1LookaheadCheck->setChecked(false);
@@ -684,13 +661,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
             QToolTip::showText(av1LookaheadCheck->mapToGlobal(QPoint(0,0)), "Lookahead disabled for low latency");
         }
     });
-    // initialise audio UI
+    // Starting audio setup
     updateAudioCodecOptions();
     av1AudioCodecBox->currentIndexChanged(av1AudioCodecBox->currentIndex());
 }
-/* -------------------------------------------------
- * Audio codec list according to container
- * ------------------------------------------------- */
+// Updating audio choices based on container
 void Av1Tab::updateAudioCodecOptions()
 {
     QString cont = av1ContainerBox->currentText();
@@ -703,9 +678,7 @@ void Av1Tab::updateAudioCodecOptions()
     int idx = av1AudioCodecBox->findText(cur);
     av1AudioCodecBox->setCurrentIndex(idx != -1 ? idx : 0);
 }
-/* -------------------------------------------------
- * New: Reset Defaults
- * ------------------------------------------------- */
+// Reset everything to defaults
 void Av1Tab::resetDefaults() {
     av1PresetBox->setCurrentIndex(8);
     av1EnableRCModeCheck->setChecked(false);
@@ -737,8 +710,8 @@ void Av1Tab::resetDefaults() {
     lowLatencyCheck->setChecked(false);
     tplModelCheck->setChecked(false);
     enableCdefCheck->setChecked(true);
-    screenContentModeBox->setCurrentIndex(0); // Was checkbox
-    fastDecodeBox->setCurrentIndex(0); // Replaced checks
+    screenContentModeBox->setCurrentIndex(0);
+    fastDecodeBox->setCurrentIndex(0);
     enableTfCheck->setChecked(false);
     av1AQModeBox->setCurrentIndex(0);
     av1AQStrengthSlider->setValue(2);
@@ -756,7 +729,7 @@ void Av1Tab::resetDefaults() {
     av1Mp3VbrBox->setCurrentIndex(0);
     av1FlacCompressionBox->setCurrentIndex(5);
     av1VorbisQualityBox->setCurrentIndex(0);
-    // Trigger UI updates
+    // Update the UI after reset
     av1EnableRCModeCheck->toggled(false);
     av1AQModeBox->currentIndexChanged(0);
     av1ContainerBox->currentIndexChanged(av1ContainerBox->currentIndex());
