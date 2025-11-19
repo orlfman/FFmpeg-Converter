@@ -13,7 +13,6 @@ class Vp9Tab : public QWidget {
     Q_OBJECT
 public:
     explicit Vp9Tab(QWidget *parent = nullptr);
-    // Public members for access from main.cpp
     QComboBox *vp9ContainerBox;
     QCheckBox *vp9EnableRCModeCheck;
     QComboBox *vp9RCModeBox;
@@ -46,9 +45,8 @@ public:
     QComboBox *vp9AudioBitrateBox;
     QComboBox *vp9VbrModeBox;
     QComboBox *vp9VorbisQualityBox;
-    // New features
-    QCheckBox *enableRowMtCheck; // New: Enable Row-MT
-    QCheckBox *screenContentCheck; // New: Screen Content Mode
+    QCheckBox *enableRowMtCheck;
+    QCheckBox *screenContentCheck;
 private:
     QWidget *vp9CRFConfigWidget;
     QWidget *vp9BitrateConfigWidget;
@@ -56,6 +54,6 @@ private:
     QLabel *vp9VorbisQualityLabel;
 private slots:
     void updateAudioCodecOptions();
-    void resetDefaults(); // New: Reset button slot
+    void resetDefaults();
 };
 #endif // VP9TAB_H
