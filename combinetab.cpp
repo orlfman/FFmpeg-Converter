@@ -38,7 +38,13 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     mainLayout->addLayout(outputLayout);
 
     QHBoxLayout *reencodeLayout = new QHBoxLayout();
-    reencodeCheck = new QCheckBox("Smart re-encode only if files are incompatible");
+    reencodeCheck = new QCheckBox("Re-encode");
+    reencodeCheck->setToolTip(
+        "If your videos use different audio / video codecs, "
+        "check this and it'll automatically re-encode everything to the video codec you picked.\n "
+        "Audio by default gets re-encoded to opus.\n "
+        "Leave it unchecked for no encoding (though might fail if they are incompatible)."
+    );
     reencodeCheck->setChecked(false);
     codecLabel = new QLabel("Target Codec:");
     targetCodecCombo = new QComboBox();
