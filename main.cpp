@@ -57,15 +57,13 @@ public:
     explicit SettingsDialog(QWidget *parent = nullptr) : QDialog(parent) {
         setWindowTitle("⚙️ Settings");
         setMinimumWidth(500);
-        resize(550, 350); // Increased height to accommodate new field
+        resize(550, 350);
         QVBoxLayout *mainLayout = new QVBoxLayout(this);
         QFormLayout *formLayout = new QFormLayout();
-        // Default Codec Tab
         defaultCodecComboBox = new QComboBox();
         defaultCodecComboBox->addItems({"AV1", "x265", "VP9"});
         defaultCodecComboBox->setCurrentIndex(0);
         formLayout->addRow("Default Codec Tab:", defaultCodecComboBox);
-        // FFmpeg Path
         ffmpegPathButton = new QPushButton("📁 Browse...");
         ffmpegPathLineEdit = new QLineEdit();
         ffmpegPathLineEdit->setReadOnly(true);
@@ -73,7 +71,6 @@ public:
         ffmpegLayout->addWidget(ffmpegPathLineEdit);
         ffmpegLayout->addWidget(ffmpegPathButton);
         formLayout->addRow("FFmpeg Path:", ffmpegLayout);
-        // SVT-AV1 Library Path
         svtAv1PathButton = new QPushButton("📁 Browse...");
         svtAv1PathLineEdit = new QLineEdit();
         svtAv1PathLineEdit->setReadOnly(true);
@@ -82,11 +79,9 @@ public:
         svtAv1Layout->addWidget(svtAv1PathLineEdit);
         svtAv1Layout->addWidget(svtAv1PathButton);
         formLayout->addRow("SVT-AV1 Library Path:", svtAv1Layout);
-        // Notification on Finish
         notifyOnFinishCheck = new QCheckBox();
         notifyOnFinishCheck->setText("Show notification when conversion finishes");
         formLayout->addRow(notifyOnFinishCheck);
-        // Output Directory
         defaultOutputDirButton = new QPushButton("📁 Browse...");
         defaultOutputDirLineEdit = new QLineEdit();
         defaultOutputDirLineEdit->setReadOnly(true);
@@ -108,7 +103,7 @@ public:
     int getDefaultCodecTab() const { return defaultCodecComboBox->currentIndex(); }
     QString getFFmpegPath() const { return ffmpegPathLineEdit->text(); }
     bool getNotifyOnFinish() const { return notifyOnFinishCheck->isChecked(); }
-    QString getSvtAv1Path() const { return svtAv1PathLineEdit->text(); } // New getter
+    QString getSvtAv1Path() const { return svtAv1PathLineEdit->text(); }
 private slots:
     void browseOutputDirectory() {
         QFileDialog dialog(this);
@@ -135,13 +130,11 @@ private slots:
         if (dialog.exec()) {
             QString selectedPath = dialog.selectedFiles().first();
             QProcess testProcess;
-            // Test ffmpeg
             testProcess.start(selectedPath, QStringList() << "-version");
             if (!testProcess.waitForFinished(5000) || testProcess.exitCode() != 0) {
                 QMessageBox::warning(this, "Error", "Invalid FFmpeg executable selected.");
                 return;
             }
-            // Test ffprobe
             QString ffprobePath = selectedPath.replace("ffmpeg", "ffprobe");
             testProcess.start(ffprobePath, QStringList() << "-version");
             if (!testProcess.waitForFinished(5000) || testProcess.exitCode() != 0) {
@@ -182,34 +175,32 @@ private:
     QComboBox *defaultCodecComboBox = nullptr;
     QPushButton *ffmpegPathButton = nullptr;
     QLineEdit *ffmpegPathLineEdit = nullptr;
-    QPushButton *svtAv1PathButton = nullptr; // New
-    QLineEdit *svtAv1PathLineEdit = nullptr; // New
+    QPushButton *svtAv1PathButton = nullptr;
+    QLineEdit *svtAv1PathLineEdit = nullptr;
     QPushButton *defaultOutputDirButton = nullptr;
     QLineEdit *defaultOutputDirLineEdit = nullptr;
     QCheckBox *notifyOnFinishCheck = nullptr;
 };
-// 🔥 NOTIFICATION FUNCTION
+// Function to show a notification when the conversion finishes
 void showConversionNotification(const QString& outputFile, QWidget* parent) {
     QSettings settings("FFmpegConverter", "Settings");
     if (!settings.value("notifyOnFinish", true).toBool()) return;
     QString title = "🎉 FFmpeg Converter - Done!";
     QString message = QString("Output saved:\n%1").arg(QFileInfo(outputFile).fileName());
-    // Try native notify-send first (GNOME/KDE/XFCE)
     QProcess notifyProcess;
     notifyProcess.start("notify-send", QStringList()
     << "--urgency=normal"
     << title
     << message
     << "--icon=video-x-generic");
-    notifyProcess.waitForFinished(2000); // 2 second timeout
-    // Fallback to QMessageBox if notify-send fails
+    notifyProcess.waitForFinished(2000);
     if (notifyProcess.exitCode() != 0) {
         QMessageBox::information(parent, title, message);
     }
 }
 #include "main.moc"
 int main(int argc, char *argv[]) {
-    Q_UNUSED(argc); // Minor polish: Suppress unused warnings
+    Q_UNUSED(argc); // Just suppressing those unused parameter warnings
     Q_UNUSED(argv);
     QApplication app(argc, argv);
     QMainWindow window;
@@ -218,7 +209,6 @@ int main(int argc, char *argv[]) {
     QWidget *centralWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     window.setCentralWidget(centralWidget);
-    // File selection layout
     QHBoxLayout *selectFilesLayout = new QHBoxLayout();
     QPushButton *selectFilesButton = new QPushButton("Select File");
     QLineEdit *selectedFilesBox = new QLineEdit();
@@ -226,71 +216,55 @@ int main(int argc, char *argv[]) {
     selectFilesLayout->addWidget(selectFilesButton);
     selectFilesLayout->addWidget(selectedFilesBox);
     mainLayout->addLayout(selectFilesLayout);
-    // ==================== FINAL + METADATA – 100% COMPILES & WORKS ====================
+    // This part handles output naming, including pulling titles from metadata
     QHBoxLayout *outputNameLayout = new QHBoxLayout();
-
     QComboBox *outputNameModeBox = new QComboBox();
-    outputNameModeBox->addItem("Output Name");   // 0
-    outputNameModeBox->addItem("Date");          // 1
-    outputNameModeBox->addItem("Random");        // 2
-    outputNameModeBox->addItem("UUID");          // 3
-    outputNameModeBox->addItem("Metadata");      // 4 ← NEW
+    outputNameModeBox->addItem("Output Name"); // 0
+    outputNameModeBox->addItem("Date"); // 1
+    outputNameModeBox->addItem("Random"); // 2
+    outputNameModeBox->addItem("UUID"); // 3
+    outputNameModeBox->addItem("Metadata"); // 4
     outputNameModeBox->setCurrentIndex(0);
-
     QLineEdit *outputNameBox = new QLineEdit();
     QCheckBox *overwriteCheck = new QCheckBox("Overwrite");
     overwriteCheck->setChecked(false);
     overwriteCheck->setToolTip("If checked, overwrite existing files instead of adding numbers.");
-
     QString originalFilename;
     QString cachedMetadataTitle;
-
-    // ONE AND ONLY QSettings declaration (used by everything below)
+    // Here's the QSettings instance that everything else uses
     QSettings settings("FFmpegConverter", "Settings");
-
     auto extractTitle = [selectedFilesBox, &settings]() -> QString {
         QString input = selectedFilesBox->text().trimmed();
         if (input.isEmpty()) return QString();
-
         QString ffmpegPath = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
         QString ffprobePath = ffmpegPath.isEmpty() ? "ffprobe" : ffmpegPath.replace("ffmpeg", "ffprobe", Qt::CaseInsensitive);
-
         QProcess p;
         p.start(ffprobePath, {"-v", "quiet", "-print_format", "json", "-show_entries", "format_tags=title,TAG:title", input});
         p.waitForFinished(8000);
         if (p.exitCode() != 0) return QString();
-
         QJsonDocument doc = QJsonDocument::fromJson(p.readAllStandardOutput());
         if (doc.isNull() || !doc.object().contains("format")) return QString();
-
         QJsonObject fmt = doc.object()["format"].toObject();
         QJsonObject tags = fmt["tags"].toObject();
-
         QString title = tags["title"].toString();
         if (title.isEmpty()) title = tags["TAG:title"].toString();
         if (title.isEmpty()) title = fmt["title"].toString();
-
         title.remove(QRegularExpression("[<>:\"|?*\\\\/]"));
         return title.trimmed();
     };
-
     auto refreshName = [outputNameBox, outputNameModeBox, selectedFilesBox, &originalFilename, &cachedMetadataTitle, &extractTitle]() {
         int mode = outputNameModeBox->currentIndex();
         QString input = selectedFilesBox->text().trimmed();
-
         if (!input.isEmpty()) {
             originalFilename = QFileInfo(input).baseName();
         }
-
         QString name;
-
-        if (mode == 0) { // Output Name
+        if (mode == 0) {
             outputNameBox->setReadOnly(false);
             name = originalFilename.isEmpty() ? "Output" : originalFilename;
         }
         else {
             outputNameBox->setReadOnly(true);
-
             if (mode == 1) name = QDateTime::currentDateTime().toString("yyyy-MM-dd_HH-mm-ss");
             else if (mode == 2) {
                 const QString chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -299,37 +273,29 @@ int main(int argc, char *argv[]) {
                 name = rand;
             }
             else if (mode == 3) name = QUuid::createUuid().toString(QUuid::WithoutBraces);
-            else if (mode == 4) { // Metadata
+            else if (mode == 4) {
                 if (cachedMetadataTitle.isEmpty()) cachedMetadataTitle = extractTitle();
                 name = cachedMetadataTitle.isEmpty() ? originalFilename : cachedMetadataTitle;
             }
         }
-
         outputNameBox->blockSignals(true);
         outputNameBox->setText(name);
         outputNameBox->blockSignals(false);
     };
-
     refreshName();
-
     QObject::connect(selectedFilesBox, &QLineEdit::textChanged, [&cachedMetadataTitle, refreshName]() {
         cachedMetadataTitle.clear();
         refreshName();
     });
-
     QObject::connect(outputNameModeBox, &QComboBox::activated, [outputNameModeBox, &cachedMetadataTitle, refreshName]() {
         if (outputNameModeBox->currentIndex() == 4) cachedMetadataTitle.clear();
         refreshName();
     });
-
     QObject::connect(outputNameBox, &QLineEdit::textEdited, [](const QString&) { /* preserve user text */ });
-
     outputNameLayout->addWidget(outputNameModeBox);
     outputNameLayout->addWidget(outputNameBox);
     outputNameLayout->addWidget(overwriteCheck);
     mainLayout->addLayout(outputNameLayout);
-    // ================================================================================
-    // Output directory layout
     QHBoxLayout *outputDirLayout = new QHBoxLayout();
     QPushButton *outputDirButton = new QPushButton("Output Directory");
     QString defaultOutputDir = settings.value("defaultOutputDir",
@@ -338,14 +304,13 @@ int main(int argc, char *argv[]) {
     outputDirLayout->addWidget(outputDirButton);
     outputDirLayout->addWidget(outputDirBox);
     mainLayout->addLayout(outputDirLayout);
-    // Scale width layout
     QHBoxLayout *scaleWidthLayout = new QHBoxLayout();
     QLabel *scaleWidthLabel = new QLabel("Scale Width:");
     QDoubleSpinBox *scaleWidthSpin = new QDoubleSpinBox();
     scaleWidthSpin->setRange(0.0, 10.0);
     scaleWidthSpin->setSingleStep(0.05);
     scaleWidthSpin->setDecimals(2);
-    scaleWidthSpin->setValue(1.0); // Default to 1.0 (no scaling)
+    scaleWidthSpin->setValue(1.0);
     scaleWidthSpin->setSuffix("x");
     scaleWidthSpin->setToolTip("Scale width by this factor (1.0 = original)");
     scaleWidthLayout->addWidget(scaleWidthLabel);
@@ -392,14 +357,13 @@ int main(int argc, char *argv[]) {
     scaleWidthLayout->addWidget(cropValueBox);
     scaleWidthLayout->addStretch();
     mainLayout->addLayout(scaleWidthLayout);
-    // Scale height layout
     QHBoxLayout *scaleHeightLayout = new QHBoxLayout();
     QLabel *scaleHeightLabel = new QLabel("Scale Height:");
     QDoubleSpinBox *scaleHeightSpin = new QDoubleSpinBox();
     scaleHeightSpin->setRange(0.0, 10.0);
     scaleHeightSpin->setSingleStep(0.05);
     scaleHeightSpin->setDecimals(2);
-    scaleHeightSpin->setValue(1.0); // Default to 1.0 (no scaling)
+    scaleHeightSpin->setValue(1.0);
     scaleHeightSpin->setSuffix("x");
     scaleHeightSpin->setToolTip("Scale height by this factor (1.0 = original)");
     scaleHeightLayout->addWidget(scaleHeightLabel);
@@ -474,7 +438,6 @@ int main(int argc, char *argv[]) {
     scaleHeightLayout->addWidget(customFrameRateBox);
     scaleHeightLayout->addStretch();
     mainLayout->addLayout(scaleHeightLayout);
-    // Options layout
     QHBoxLayout *optionsLayout = new QHBoxLayout();
     QLabel *rotateLabel = new QLabel("Rotate/Flip:");
     optionsLayout->addWidget(rotateLabel);
@@ -494,7 +457,6 @@ int main(int argc, char *argv[]) {
     optionsLayout->addWidget(deinterlaceCheck);
     optionsLayout->addStretch();
     mainLayout->addLayout(optionsLayout);
-    // Codec tabs
     QTabWidget *codecTabs = new QTabWidget();
     mainLayout->addWidget(codecTabs);
     Av1Tab *av1Tab = new Av1Tab();
@@ -512,18 +474,16 @@ int main(int argc, char *argv[]) {
     vp9Scroll->setWidgetResizable(true);
     vp9Scroll->setWidget(vp9Tab);
     codecTabs->addTab(vp9Scroll, "VP9");
-    // LOAD DEFAULT CODEC TAB FROM SETTINGS
+    // Loading the default codec tab from settings
     QSettings tabSettings("FFmpegConverter", "Settings");
     int defaultTab = tabSettings.value("defaultCodecTab", 0).toInt();
     codecTabs->setCurrentIndex(defaultTab);
-    // Information tab
     QWidget *infoTab = new QWidget();
     QVBoxLayout *infoLayout = new QVBoxLayout(infoTab);
     QTextEdit *infoBox = new QTextEdit();
     infoBox->setReadOnly(true);
     infoLayout->addWidget(infoBox);
     codecTabs->addTab(infoTab, "Information");
-    // Console tab
     QWidget *consoleTab = new QWidget();
     QVBoxLayout *consoleLayout = new QVBoxLayout(consoleTab);
     codecTabs->addTab(consoleTab, "Console");
@@ -542,7 +502,6 @@ int main(int argc, char *argv[]) {
     QTextEdit *logBox = new QTextEdit();
     logBox->setReadOnly(true);
     consoleLayout->addWidget(logBox);
-    // Conversion controls
     QHBoxLayout *conversionControlsLayout = new QHBoxLayout();
     QPushButton *convertButton = new QPushButton("Convert");
     QPushButton *cancelButton = new QPushButton("Cancel");
@@ -595,11 +554,11 @@ int main(int argc, char *argv[]) {
                 ffprobePath = "/usr/bin/ffprobe";
             } else {
                 QFileInfo ffmpegInfo(ffmpegPath);
-                QString probeCandidate = ffmpegInfo.absolutePath() + "/ffprobe" + ffmpegInfo.suffix(); // Preserve extension if any
+                QString probeCandidate = ffmpegInfo.absolutePath() + "/ffprobe" + ffmpegInfo.suffix();
                 if (QFile::exists(probeCandidate)) {
                     ffprobePath = probeCandidate;
                 } else {
-                    ffprobePath = "/usr/bin/ffprobe"; // Fallback to system ffprobe on Arch
+                    ffprobePath = "/usr/bin/ffprobe";
                     QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection, Q_ARG(QString, "⚠️ ffprobe not found near custom ffmpeg (" + ffmpegPath + "), using system: " + ffprobePath));
                 }
             }
@@ -607,7 +566,7 @@ int main(int argc, char *argv[]) {
             QString ffprobeCommand = ffprobePath + " " + args.join(" ");
             QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection, Q_ARG(QString, "Executing ffprobe: " + ffprobeCommand));
             ffprobe.start(ffprobePath, args);
-            if (!ffprobe.waitForFinished(10000)) { // 10-second timeout
+            if (!ffprobe.waitForFinished(10000)) {
                 QString error = ffprobe.readAllStandardError();
                 QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection, Q_ARG(QString, "ffprobe failed: " + error));
                 QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Failed to retrieve information: " + error));
@@ -622,7 +581,6 @@ int main(int argc, char *argv[]) {
                 QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Unable to retrieve information: " + error));
                 return;
             }
-            // Existing parsing code
             QString resolution = "N/A", videoCodec = "N/A", frameRate = "N/A", videoBitRate = "N/A";
             QString audioCodec = "N/A", pixFmt = "N/A", durationStr = "N/A", fileContainer = "N/A", title = "N/A";
             QString aspectRatio = "N/A", colorSpace = "N/A", pixelFormat = "N/A", audioSampleRate = "N/A";
@@ -706,7 +664,7 @@ int main(int argc, char *argv[]) {
                 if (pixelFormat.contains("10")) pixFmt = "10-bit";
                 else if (pixelFormat.contains("12")) pixFmt = "12-bit";
                 else pixFmt = "8-bit";
-                // New: Auto-set UI checkboxes based on input
+                // Automatically set the 8/10-bit checkboxes based on the input video
                 bool isTenBit = (pixFmt == "10-bit");
                 QMetaObject::invokeMethod(tenBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, isTenBit));
                 QMetaObject::invokeMethod(eightBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, !isTenBit));
@@ -754,22 +712,21 @@ int main(int argc, char *argv[]) {
             QMetaObject::invokeMethod(infoBox, "setHtml", Qt::QueuedConnection, Q_ARG(QString, infoText));
         }));
     };
-    // *** MENU BAR - 100% CLEAN QT6 ***
+    // Setting up the menu bar, all good for Qt6
     QMenuBar *menuBar = window.menuBar();
-    // File Menu
     QMenu *fileMenu = menuBar->addMenu("&File");
-    // 🔥 GOD TIER FILE BROWSER WITH THUMBNAILS
+    // Sweet file browser with thumbnails
     auto *openAction = new QAction("&Open File...", &window);
     openAction->setShortcut(QKeySequence::Open);
     fileMenu->addAction(openAction);
-    // 🔥 RECENT FILES SUBMENU (Auto-populates!)
+    // Recent files submenu that updates itself
     QMenu *recentMenu = fileMenu->addMenu("Recent Files");
     std::function<void()> updateRecentMenu = [&]() {
         recentMenu->clear();
         QSettings settings("FFmpegConverter", "Recent");
         QStringList recent = settings.value("recentFiles").toStringList();
         int count = 0;
-        QStringList validRecent; // To store only existing files
+        QStringList validRecent;
         for (const QString& file : recent) {
             if (QFile::exists(file)) {
                 validRecent.append(file);
@@ -782,7 +739,6 @@ int main(int argc, char *argv[]) {
                 });
             }
         }
-        // Save back only valid (existing) files to clean the list
         settings.setValue("recentFiles", validRecent);
         if (count == 0) {
             recentMenu->addAction("(No recent files)")->setEnabled(false);
@@ -797,9 +753,9 @@ int main(int argc, char *argv[]) {
             updateRecentMenu();
         });
     };
-    updateRecentMenu(); // Call it once to populate at startup
-    // 🔥 SETTINGS MENU ⚙️
+    updateRecentMenu();
     fileMenu->addSeparator();
+    // Settings dialog trigger
     auto *settingsAction = new QAction("&Settings...", &window);
     settingsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Comma));
     fileMenu->addAction(settingsAction);
@@ -811,12 +767,11 @@ int main(int argc, char *argv[]) {
             settings.setValue("defaultCodecTab", dialog.getDefaultCodecTab());
             settings.setValue("ffmpegPath", dialog.getFFmpegPath());
             settings.setValue("notifyOnFinish", dialog.getNotifyOnFinish());
-            settings.setValue("svtAv1Path", dialog.getSvtAv1Path()); // New
+            settings.setValue("svtAv1Path", dialog.getSvtAv1Path());
             QMessageBox::information(&window, "✅ Settings Saved",
                                      "✓ Default codec tab\n✓ FFmpeg path\n✓ SVT-AV1 library path\n✓ Output directory\n✓ Notifications");
         }
     });
-    // Now connect the openAction (after updateRecentMenu is defined)
     QObject::connect(openAction, &QAction::triggered, [&]() {
         QFileDialog dialog(&window);
         dialog.setWindowTitle("🎬 Select Video File");
@@ -832,8 +787,6 @@ int main(int argc, char *argv[]) {
             selectedFilesBox->setText(file);
             QFileInfo fileInfo(file);
             outputNameBox->setText(fileInfo.baseName());
-            //updateInfo(file);
-            // 🔥 SAVE RECENT
             QStringList recent = settings.value("recentFiles").toStringList();
             recent.removeAll(file);
             recent.prepend(file);
@@ -848,17 +801,15 @@ int main(int argc, char *argv[]) {
     exitAction->setShortcut(QKeySequence::Quit);
     QObject::connect(exitAction, &QAction::triggered, &window, &QMainWindow::close);
     fileMenu->addAction(exitAction);
-    // View Menu
     QMenu *viewMenu = menuBar->addMenu("&View");
-    // 🔥 VIEW INPUT FILE
+    // Open input file in default viewer
     auto *viewInputAction = new QAction("📁 View Input File", &window);
     viewInputAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_I));
     viewMenu->addAction(viewInputAction);
-    // 🔥 VIEW OUTPUT FILE
+    // Open output file in default viewer
     auto *viewOutputAction = new QAction("🎬 View Output File", &window);
     viewOutputAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
     viewMenu->addAction(viewOutputAction);
-    // Connect View Input File
     QObject::connect(viewInputAction, &QAction::triggered, [selectedFilesBox]() {
         QString inputFile = selectedFilesBox->text().trimmed();
         if (inputFile.isEmpty() || !QFile::exists(inputFile)) {
@@ -867,7 +818,6 @@ int main(int argc, char *argv[]) {
         }
         QProcess::startDetached("xdg-open", QStringList() << inputFile);
     });
-    // Connect View Output File
     QObject::connect(viewOutputAction, &QAction::triggered, [converter]() {
         QString outputFile = converter->getFinalOutputFile();
         if (outputFile.isEmpty() || !QFile::exists(outputFile)) {
@@ -876,7 +826,6 @@ int main(int argc, char *argv[]) {
         }
         QProcess::startDetached("xdg-open", QStringList() << outputFile);
     });
-    // Help Menu
     QMenu *helpMenu = menuBar->addMenu("&Help");
     auto *aboutAction = new QAction("&About", &window);
     QObject::connect(aboutAction, &QAction::triggered, [&window]() {
@@ -884,7 +833,7 @@ int main(int argc, char *argv[]) {
                            "FFmpeg Converter v1.0\nBuilt with Qt 6\nFor video enthusiasts!");
     });
     helpMenu->addAction(aboutAction);
-    // ALL SIGNALS CONNECTED HERE - AFTER EVERYTHING IS DEFINED
+    // Connecting all signals down here so everything's defined first
     QObject::connect(selectFilesButton, &QPushButton::clicked, [&]() {
         QFileDialog dialog(&window);
         dialog.setWindowTitle("🎬 Select Video File - Thumbnail Preview");
@@ -899,7 +848,6 @@ int main(int argc, char *argv[]) {
             selectedFilesBox->setText(file);
             QFileInfo fileInfo(file);
             outputNameBox->setText(fileInfo.baseName());
-            // 🔥 SAVE TO RECENT
             QStringList recent = settings.value("recentFiles").toStringList();
             recent.removeAll(file);
             recent.prepend(file);
@@ -907,7 +855,6 @@ int main(int argc, char *argv[]) {
             settings.setValue("recentFiles", recent);
             settings.setValue("lastVideoDir", QFileInfo(file).absolutePath());
             updateRecentMenu();
-            // updateInfo(file);
         }
     });
     QObject::connect(outputDirButton, &QPushButton::clicked, [&]() {
@@ -980,11 +927,11 @@ int main(int argc, char *argv[]) {
             }
         }
         if (!filtered.isEmpty()) {
-            logBox->append("Crop detect output (filtered): " + filtered.last()); // Log only last for less spam
+            logBox->append("Crop detect output (filtered): " + filtered.last());
         }
         QRegularExpression cropRegex("crop=(\\d+:\\d+:\\d+:\\d+)");
         QString cropValue;
-        for (int i = lines.size() - 1; i >= 0; --i) { // Search from end for last match
+        for (int i = lines.size() - 1; i >= 0; --i) {
             QRegularExpressionMatch match = cropRegex.match(lines[i]);
             if (match.hasMatch()) {
                 cropValue = match.captured(1);
@@ -1185,7 +1132,7 @@ int main(int argc, char *argv[]) {
         if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
             QString cropValue = cropValueBox->text();
             if (cropValue.startsWith("crop=")) {
-                cropValue = cropValue.mid(5); // Remove "crop=" prefix
+                cropValue = cropValue.mid(5);
             }
             filters << "crop=" + cropValue;
         }
@@ -1310,32 +1257,29 @@ int main(int argc, char *argv[]) {
             if (av1Tab->nativeGrainCheck->isChecked()) {
                 int strength = av1Tab->grainStrengthSlider->value();
                 if (strength > 0) {
-                    svtParams << "film-grain=" + QString::number(strength); // FIXED: Use for grain strength
+                    svtParams << "film-grain=" + QString::number(strength);
                 }
-                int denoise = av1Tab->grainDenoiseCombo->currentIndex(); // FIXED: 0/1/2 from combo
+                int denoise = av1Tab->grainDenoiseCombo->currentIndex();
                 svtParams << "film-grain-denoise=" + QString::number(denoise);
-                // Removed invalid film-grain-table
             }
             int superResMode = av1Tab->superResModeBox->currentIndex();
             if (superResMode > 0) {
                 svtParams << "superres-mode=" + QString::number(superResMode);
-                int denom = av1Tab->superResDenomSlider->value(); // FIXED: Use for --superres-denom
+                int denom = av1Tab->superResDenomSlider->value();
                 svtParams << "superres-denom=" + QString::number(denom);
-                // Removed invalid superres-denoise
             }
-            int fdLevel = av1Tab->fastDecodeBox->currentIndex(); // 0 off, 1 level1, 2 level2
+            int fdLevel = av1Tab->fastDecodeBox->currentIndex();
             if (fdLevel > 0) svtParams << "fast-decode=" + QString::number(fdLevel);
             if (av1Tab->lowLatencyCheck->isChecked()) {
-                svtParams << "irefresh-type=1"; // FIXED: Open GOP for low latency
-                svtParams << "lookahead=0"; // FIXED: No lookahead for low latency
-                // Removed invalid low-latency and reduced-ref-frames
+                svtParams << "irefresh-type=1";
+                svtParams << "lookahead=0";
             }
             if (av1Tab->tplModelCheck->isChecked()) {
-                svtParams << "enable-tpl-la=1"; // FIXED: Use --tpl instead of enable-tpl-model (synonym, but doc uses tpl)
+                svtParams << "enable-tpl-la=1";
             }
             svtParams << "enable-cdef=" + QString(av1Tab->enableCdefCheck->isChecked() ? "1" : "0");
             if (av1Tab->av1LookaheadCheck->isChecked()) {
-                svtParams << "lookahead=" + QString::number(av1Tab->av1LookaheadSlider->value()); // FIXED: Use --lad (synonym for lookahead)
+                svtParams << "lookahead=" + QString::number(av1Tab->av1LookaheadSlider->value());
             }
             QString aqModeStr = av1Tab->av1AQModeBox->currentText();
             if (aqModeStr != "Automatic") {
@@ -1367,12 +1311,10 @@ int main(int argc, char *argv[]) {
             } else {
                 svtParams << "crf=35";
             }
-            // New: Temporal Filtering
             if (av1Tab->enableTfCheck->isChecked()) {
                 svtParams << "enable-tf=1";
             }
-            // New: Screen Content Tools
-            int scm = av1Tab->screenContentModeBox->currentIndex(); // 0 off, 1 forced, 2 auto
+            int scm = av1Tab->screenContentModeBox->currentIndex();
             svtParams << "scm=" + QString::number(scm);
             if (!svtParams.isEmpty()) {
                 args << "-svtav1-params" << svtParams.join(":");
@@ -1442,7 +1384,7 @@ int main(int argc, char *argv[]) {
                 (aqModeStr == "Auto-Variance Biased") ? 3 : 0;
                 args << "-aq-mode" << QString::number(aqMode);
             }
-            x265Params << "aq-strength=" + QString::number(x265Tab->x265AQStrengthSlider->value()); // Moved inside to fix warning
+            x265Params << "aq-strength=" + QString::number(x265Tab->x265AQStrengthSlider->value());
             if (x265Tab->enablePsyRdCheck->isChecked()) {
                 x265Params << "psy-rd=1.0";
             }
@@ -1625,7 +1567,7 @@ int main(int argc, char *argv[]) {
             logBox->append("⚠️ Warning: FFmpeg path is empty in settings, falling back to: " + ffmpegPath);
         }
         logBox->append("🔍 Debug: ffmpegPath used: " + ffmpegPath);
-        logBox->append("📽️ Using FFmpeg path: " + ffmpegPath); // Log early
+        logBox->append("📽️ Using FFmpeg path: " + ffmpegPath);
         QString fullCommand = ffmpegPath + " -i \"" + inputFile + "\" " + args.join(" ") + " \"" + QDir::cleanPath(outputDir + "/" + baseName + extension) + "\"";
         logBox->append("\n🔧 FULL FFmpeg COMMAND:");
         logBox->append(fullCommand);
@@ -1643,7 +1585,6 @@ int main(int argc, char *argv[]) {
         }
         converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked());
     });
-    // QObject::connect(selectedFilesBox, &QLineEdit::textChanged, updateInfo);
     QObject::connect(cancelButton, &QPushButton::clicked, converter, &Converter::cancel);
     QObject::connect(converter, &Converter::logMessage, logBox, &QTextEdit::append);
     QObject::connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);
@@ -1660,7 +1601,7 @@ int main(int argc, char *argv[]) {
             conversionProgress->setVisible(false);
             logBox->append("GUI updated successfully!");
         });
-        QString inputInfo = infoBox->toHtml(); // Preserve current input file info
+        QString inputInfo = infoBox->toHtml();
         QString outputInfo = "";
         if (outputFile.isEmpty()) {
             outputInfo = "No output file specified.";
@@ -1689,7 +1630,7 @@ int main(int argc, char *argv[]) {
                 QString ffprobeCommand = ffprobePath + " " + args.join(" ");
                 logBox->append("Executing ffprobe for output: " + ffprobeCommand);
                 ffprobe.start(ffprobePath, args);
-                if (!ffprobe.waitForFinished(10000)) { // 10-second timeout
+                if (!ffprobe.waitForFinished(10000)) {
                     QString error = ffprobe.readAllStandardError();
                     logBox->append("⚠️ ffprobe failed for output: " + error);
                     outputInfo = "Failed to retrieve output file information: " + error;
@@ -1812,7 +1753,7 @@ int main(int argc, char *argv[]) {
     });
     QTimer* debounceTimer = new QTimer(&window);
     debounceTimer->setSingleShot(true);
-    static bool isProcessing = false; // Add flag to prevent re-entry
+    static bool isProcessing = false;
     QObject::connect(selectedFilesBox, &QLineEdit::textChanged, [&debounceTimer, &updateInfo, logBox](const QString &text) {
         logBox->append("🔍 textChanged triggered with: " + text);
         if (!text.isEmpty() && !isProcessing) {
@@ -1822,7 +1763,7 @@ int main(int argc, char *argv[]) {
     });
     QObject::connect(debounceTimer, &QTimer::timeout, [selectedFilesBox, &updateInfo]() {
         updateInfo(selectedFilesBox->text());
-        isProcessing = false; // Reset flag
+        isProcessing = false;
     });
     window.show();
     return app.exec();
