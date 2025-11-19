@@ -1,73 +1,132 @@
 #!/bin/bash
+
+# ==================== CONFIG ====================
 PROJECT_DIR="/mnt/storage2/Source Projects/ffmpeg_converter_qt"
 BACKUP_DIR="/mnt/storage2/Source Projects/ffmpeg_converter_qt-back"
 BUILD_DIR="$PROJECT_DIR/build"
 BINARY_NAME="ffmpeg_converter_qt"
 INSTALL_DIR="/usr/local/bin"
-# Function to check for dependencies
+
+# Desktop integration
+DESKTOP_SOURCE="$PROJECT_DIR/FFmpegConverter.desktop"
+DESKTOP_DEST="/usr/share/applications/FFmpegConverter.desktop"
+ICON_SOURCE="$PROJECT_DIR/ffmpeg-converter-qt.png"
+ICON_DEST="/usr/share/icons/hicolor/512x512/apps/ffmpeg-converter-qt.png"
+
+# ==================== HELPERS ====================
 check_dependency() {
     if ! command -v "$1" &> /dev/null; then
-        echo "Error: $1 is not installed. Please install it."
+        echo "Error: $1 is not installed. Please install it and try again."
         exit 1
     fi
 }
-# Create backup
-echo "Creating backup..."
+
+ask_overwrite() {
+    local path="$1"
+    local name="$2"
+    if [ -e "$path" ]; then
+        echo "Warning: $name already exists at $path"
+        read -p "Overwrite? [y/N] " -n 1 -r REPLY
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            return 0
+        else
+            echo "→ Skipping $name"
+            return 1
+        fi
+    else
+        return 0  # doesn't exist → safe to install
+    fi
+}
+
+# ==================== BACKUP ====================
+echo "Creating backup of the project..."
 if [ ! -d "$PROJECT_DIR" ]; then
-    echo "Error: Source directory $PROJECT_DIR does not exist."
+    echo "Error: Project directory not found: $PROJECT_DIR"
     exit 1
 fi
-# If backup directory exists, rename it with a timestamp
+
 if [ -d "$BACKUP_DIR" ]; then
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    BACKUP_ARCHIVE="$BACKUP_DIR-$TIMESTAMP"
-    echo "Previous backup found, renaming to $BACKUP_ARCHIVE..."
-    mv "$BACKUP_DIR" "$BACKUP_ARCHIVE" || { echo "Error: Failed to rename previous backup"; exit 1; }
+    mv "$BACKUP_DIR" "${BACKUP_DIR}-$TIMESTAMP"
+    echo "Old backup moved to ${BACKUP_DIR}-$TIMESTAMP"
 fi
-# Copy project directory to backup
-cp -r "$PROJECT_DIR" "$BACKUP_DIR" || { echo "Error: Failed to create backup at $BACKUP_DIR"; exit 1; }
-echo "Backup created successfully at $BACKUP_DIR"
-# Check required dependencies
-echo "Checking dependencies..."
+
+cp -a "$PROJECT_DIR" "$BACKUP_DIR" || { echo "Failed to create backup"; exit 1; }
+echo "Backup created at $BACKUP_DIR"
+
+# ==================== DEPENDENCIES ====================
+echo "Checking required tools..."
 check_dependency cmake
 check_dependency make
 check_dependency g++
 check_dependency ffmpeg
 check_dependency qmake6
+
 if ! qmake6 --version | grep -q "Qt version 6"; then
-    echo "Error: Qt 6 is required. Please install Qt 6 libraries."
+    echo "Error: This project requires Qt 6. Make sure Qt6 development packages are installed."
     exit 1
 fi
-# Create and enter build directory
+
+# ==================== BUILD ====================
+echo "Preparing build directory..."
 mkdir -p "$BUILD_DIR"
-cd "$BUILD_DIR" || { echo "Error: Cannot change to build directory"; exit 1; }
-# Clean build directory
-if [ -n "$(ls -A)" ]; then
-    echo "Cleaning build directory..."
-    rm -rf *
+cd "$BUILD_DIR" || exit 1
+
+if [ -n "$(ls -A .)" ]; then
+    echo "Cleaning previous build files..."
+    rm -rf ./*
 fi
-# Run cmake
-echo "Running cmake..."
-sleep 2s
-cmake .. || { echo "Error: cmake failed"; exit 1; }
-# Run build
-echo "Running build..."
-cmake --build . || { echo "Error: build failed"; exit 1; }
-# Check for binary
+
+echo "Configuring with cmake..."
+cmake .. || { echo "cmake failed"; exit 1; }
+
+echo "Building the project..."
+cmake --build . -- -j$(nproc) || { echo "Build failed"; exit 1; }
+
 if [ ! -f "$BINARY_NAME" ]; then
-    echo "Error: Binary '$BINARY_NAME' not found in $BUILD_DIR"
+    echo "Error: Binary '$BINARY_NAME' was not created."
     exit 1
 fi
-# Check if binary already exists in /usr/local/bin and prompt for overwrite
-if [ -f "$INSTALL_DIR/$BINARY_NAME" ]; then
-    echo "Warning: '$BINARY_NAME' already exists in $INSTALL_DIR."
-    read -p "Do you want to overwrite it? [y/N] " REPLY
-    if [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ]; then
-        echo "Installation aborted."
-        exit 0
-    fi
+echo "Build successful!"
+
+# ==================== INSTALL BINARY ====================
+if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)"; then
+    echo "Installing binary to $INSTALL_DIR..."
+    sudo cp "$BINARY_NAME" "$INSTALL_DIR/" || { echo "Failed to install binary"; exit 1; }
+    sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 fi
-# Install binary
-echo "Installing binary to $INSTALL_DIR..."
-sudo cp "$BINARY_NAME" "$INSTALL_DIR/" || { echo "Error: Failed to copy binary to $INSTALL_DIR"; exit 1; }
-echo "Build and installation completed successfully!"
+
+# ==================== INSTALL ICON (correct freedesktop way) ====================
+if [ -f "$ICON_SOURCE" ]; then
+    if ask_overwrite "$ICON_DEST" "application icon"; then
+        echo "Installing icon to hicolor theme..."
+        sudo mkdir -p "/usr/share/icons/hicolor/512x512/apps"
+        sudo cp "$ICON_SOURCE" "$ICON_DEST"
+        sudo gtk-update-icon-cache /usr/share/icons/hicolor -q 2>/dev/null || true
+        sudo xdg-icon-resource forceupdate 2>/dev/null || true
+        echo "Icon installed and cache updated"
+    fi
+else
+    echo "Warning: Icon not found at $ICON_SOURCE"
+fi
+
+# ==================== INSTALL .desktop FILE ====================
+if [ -f "$DESKTOP_SOURCE" ]; then
+    if ask_overwrite "$DESKTOP_DEST" ".desktop entry"; then
+        echo "Installing desktop entry..."
+        sudo cp "$DESKTOP_SOURCE" "$DESKTOP_DEST" || { echo "Failed to install .desktop file"; exit 1; }
+        sudo chmod 644 "$DESKTOP_DEST"
+        sudo update-desktop-database /usr/share/applications/ 2>/dev/null || true
+    fi
+else
+    echo "Warning: .desktop file not found at $DESKTOP_SOURCE – skipping menu entry."
+fi
+
+# ==================== DONE ====================
+echo
+echo "========================================"
+echo "Build and installation completed!"
+echo "You can now run the app with: $BINARY_NAME"
+echo "or find 'FFmpeg Converter' in your application menu."
+echo "========================================"
