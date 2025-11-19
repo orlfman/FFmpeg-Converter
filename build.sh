@@ -1,11 +1,10 @@
 #!/bin/bash
-# ==================== CONFIG ====================
-PROJECT_DIR="/mnt/storage2/Source Projects/ffmpeg_converter_qt"
+# ==================== PATHS ====================
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 BUILD_DIR="$PROJECT_DIR/build"
 BINARY_NAME="ffmpeg_converter_qt"
 INSTALL_DIR="/usr/local/bin"
-
-# Desktop integration
 DESKTOP_SOURCE="$PROJECT_DIR/FFmpegConverter.desktop"
 DESKTOP_DEST="/usr/share/applications/FFmpegConverter.desktop"
 ICON_SOURCE="$PROJECT_DIR/ffmpeg-converter-qt.png"
@@ -38,6 +37,7 @@ ask_overwrite() {
 }
 
 # ==================== DEPENDENCIES ====================
+echo "Detected project directory: $PROJECT_DIR"
 echo "Checking required tools..."
 check_dependency cmake
 check_dependency make
@@ -91,7 +91,7 @@ if [ -f "$ICON_SOURCE" ]; then
         echo "Icon installed and cache updated"
     fi
 else
-    echo "Warning: Icon not found at $ICON_SOURCE"
+    echo "Warning: Icon not found at $ICON_SOURCE (looked in $PROJECT_DIR)"
 fi
 
 # ==================== INSTALL .desktop FILE ====================
