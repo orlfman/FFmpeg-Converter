@@ -424,7 +424,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
         QLabel *lbl = new QLabel("AQ Strength:");
-        lbl->setToolTip("Higher = more adaptive (range 1-4). Only for Variance/Complexity modes.");
+        lbl->setToolTip("Variance Boost Strength (1–4). Only used when AQ Mode = Variance. Ignored in Complexity mode");
         av1AQStrengthSlider = new QSlider(Qt::Horizontal);
         av1AQStrengthSlider->setMaximumWidth(300);
         av1AQStrengthSlider->setRange(1, 4);
@@ -439,6 +439,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         av1Layout->addWidget(w);
     }
+    QObject::connect(av1AQModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     [this](int index) {
+                         bool isComplexity = (index == 3);
+                         av1AQStrengthSlider->setEnabled(!isComplexity);
+                     });
     // Two-pass encoding
     {
         QHBoxLayout *l = new QHBoxLayout();
@@ -628,7 +633,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     // Enabling AQ strength based on mode
     QObject::connect(av1AQModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString m = av1AQModeBox->currentText();
-        av1AQStrengthSlider->setEnabled(m=="Variance" || m=="Complexity");
+        av1AQStrengthSlider->setEnabled(m == "Variance");
     });
     // Showing codec-specific audio options
     QObject::connect(av1AudioCodecBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
