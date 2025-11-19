@@ -2,9 +2,7 @@
 #include <QToolTip>
 X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *x265Layout = new QVBoxLayout(this);
-    /* -------------------------------------------------
-     * 1. Container
-     * ------------------------------------------------- */
+    // Container selection
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Container:");
@@ -18,9 +16,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 2. Preset
-     * ------------------------------------------------- */
+    // Preset for balancing speed and quality
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Preset:");
@@ -34,9 +30,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 3. Rate Control
-     * ------------------------------------------------- */
+    // Rate control setup
     {
         QHBoxLayout *l = new QHBoxLayout();
         x265EnableRCModeCheck = new QCheckBox("Custom Rate Control");
@@ -51,7 +45,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    // QP Config
+    // QP settings, shows when QP selected
     x265QPConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(x265QPConfigWidget);
@@ -70,7 +64,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265Layout->addWidget(x265QPConfigWidget);
         x265QPConfigWidget->setVisible(false);
     }
-    // CRF Config
+    // CRF settings
     x265CRFConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(x265CRFConfigWidget);
@@ -89,7 +83,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265Layout->addWidget(x265CRFConfigWidget);
         x265CRFConfigWidget->setVisible(false);
     }
-    // ABR Config
+    // ABR settings
     x265ABRConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(x265ABRConfigWidget);
@@ -112,7 +106,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265Layout->addWidget(x265ABRConfigWidget);
         x265ABRConfigWidget->setVisible(false);
     }
-    // CBR Config
+    // CBR settings
     x265CBRConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(x265CBRConfigWidget);
@@ -132,9 +126,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265Layout->addWidget(x265CBRConfigWidget);
         x265CBRConfigWidget->setVisible(false);
     }
-    /* -------------------------------------------------
-     * 4. Tune & Level
-     * ------------------------------------------------- */
+    // Tune for content type
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("x265 Tune:");
@@ -147,6 +139,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
+    // Encoding level
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Encoding Level:");
@@ -159,13 +152,11 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 5. Advanced Features (Grouped)
-     * ------------------------------------------------- */
+    // Advanced options group
     QGroupBox *advancedGroup = new QGroupBox("Advanced Options");
     QVBoxLayout *advancedLayout = new QVBoxLayout(advancedGroup);
     x265Layout->addWidget(advancedGroup);
-    // Strong Intra Smoothing
+    // Strong intra smoothing
     {
         QHBoxLayout *l = new QHBoxLayout();
         strongIntraCheck = new QCheckBox("Strong Intra Smoothing");
@@ -175,7 +166,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // RDOQ Level
+    // RDOQ level
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("RDOQ Level:");
@@ -188,7 +179,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // SAO Filtering
+    // SAO filter
     {
         QHBoxLayout *l = new QHBoxLayout();
         saoCheck = new QCheckBox("SAO Filtering");
@@ -198,7 +189,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Limit Refs
+    // Limit references
     QHBoxLayout *limitRefsLayout = new QHBoxLayout();
     QLabel *limitRefsLabel = new QLabel("Limit Refs:");
     limitRefsLabel->setToolTip("Limits reference frames for faster encoding.");
@@ -209,7 +200,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
     limitRefsLayout->addWidget(limitRefsBox);
     limitRefsLayout->addStretch();
     advancedLayout->addLayout(limitRefsLayout);
-    // New: Enable Psy-RD
+    // Psy-RD
     {
         QHBoxLayout *l = new QHBoxLayout();
         enablePsyRdCheck = new QCheckBox("Enable Psy-RD");
@@ -218,7 +209,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // New: Enable Cutree
+    // Cutree
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableCutreeCheck = new QCheckBox("Enable Cutree");
@@ -227,9 +218,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 6. Lookahead
-     * ------------------------------------------------- */
+    // Lookahead frames
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -238,7 +227,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265LookaheadSlider = new QSlider(Qt::Horizontal);
         x265LookaheadSlider->setMaximumWidth(300);
         x265LookaheadSlider->setRange(0, 250);
-        x265LookaheadSlider->setValue(40); // Tweaked default
+        x265LookaheadSlider->setValue(40);
         x265LookaheadSlider->setEnabled(false);
         QLabel *val = new QLabel("40");
         l->addWidget(x265LookaheadCheck);
@@ -248,9 +237,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265LookaheadSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         x265Layout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 7. VIDEO FILTERS (Grouped)
-     * ------------------------------------------------- */
+    // Video filters group
     QGroupBox *filtersGroup = new QGroupBox("Video Filters");
     QVBoxLayout *filtersLayout = new QVBoxLayout(filtersGroup);
     x265Layout->addWidget(filtersGroup);
@@ -311,7 +298,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265BlurStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    // Noise Reduction
+    // Noise reduction
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -330,13 +317,11 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265NoiseReductionSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 8. GRAIN SECTION (Grouped)
-     * ------------------------------------------------- */
+    // Grain options
     QGroupBox *grainGroup = new QGroupBox("Grain Options");
     QVBoxLayout *grainLayout = new QVBoxLayout(grainGroup);
     x265Layout->addWidget(grainGroup);
-    // Grain Synthesis
+    // Grain synthesis
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -355,9 +340,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265GrainSynthLevel, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         grainLayout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 9. AQ Mode & Strength
-     * ------------------------------------------------- */
+    // AQ mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AQ Mode:");
@@ -370,6 +353,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
+    // AQ strength
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
@@ -388,9 +372,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265AQStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         x265Layout->addWidget(w);
     }
-    /* -------------------------------------------------
-     * 10. Two-Pass
-     * ------------------------------------------------- */
+    // Two-pass
     {
         QHBoxLayout *l = new QHBoxLayout();
         x265TwoPassCheck = new QCheckBox("Enable Two-Pass Encoding");
@@ -399,9 +381,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 11. Keyframe / Threads
-     * ------------------------------------------------- */
+    // Keyframe interval
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
@@ -414,6 +394,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
+    // Threads
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Threads:");
@@ -426,6 +407,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
+    // Frame threads
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Frame Threads:");
@@ -438,9 +420,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 12. Audio
-     * ------------------------------------------------- */
+    // Audio settings
     {
         QHBoxLayout *l = new QHBoxLayout();
         x265AudioCheck = new QCheckBox("Include Audio");
@@ -505,9 +485,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addWidget(x265VorbisQualityBox);
         x265Layout->addLayout(l);
     }
-    /* -------------------------------------------------
-     * 13. Reset Button
-     * ------------------------------------------------- */
+    // Reset button
     {
         QHBoxLayout *l = new QHBoxLayout();
         QPushButton *resetButton = new QPushButton("Reset to Defaults");
@@ -517,13 +495,11 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265Layout->addLayout(l);
         QObject::connect(resetButton, &QPushButton::clicked, this, &X265Tab::resetDefaults);
     }
-    /* -------------------------------------------------
-     * CONNECTIONS
-     * ------------------------------------------------- */
+    // Signals and slots
     x265RCModeBox->setEnabled(false);
     x265TwoPassCheck->setEnabled(false);
     x265TwoPassCheck->setChecked(false);
-    // Rate-control visibility
+    // Toggling rate control widgets
     QObject::connect(x265EnableRCModeCheck, &QCheckBox::toggled, [this](bool on){
         x265RCModeBox->setEnabled(on);
         if (on) {
@@ -552,7 +528,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
             x265TwoPassCheck->setEnabled(m == "ABR" || m == "CBR");
         }
     });
-    // Filter enables
+    // Enabling filter sliders
     QObject::connect(x265LookaheadCheck, &QCheckBox::toggled,
                      [this](bool on){ x265LookaheadSlider->setEnabled(on); });
     QObject::connect(x265UnsharpenCheck, &QCheckBox::toggled,
@@ -565,12 +541,12 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
                      [this](bool on){ x265NoiseReductionSlider->setEnabled(on); });
     QObject::connect(x265GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ x265GrainSynthLevel->setEnabled(on); });
-    // AQ strength
+    // AQ strength enable
     QObject::connect(x265AQModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString m = x265AQModeBox->currentText();
         x265AQStrengthSlider->setEnabled(m != "Automatic" && m != "Disabled");
     });
-    // Audio codec-specific
+    // Showing codec-specific audio options
     QObject::connect(x265AudioCodecBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString c = x265AudioCodecBox->currentText();
         x265VbrModeLabel->setVisible(c == "opus");
@@ -584,7 +560,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         x265VorbisQualityLabel->setVisible(c == "vorbis");
         x265VorbisQualityBox->setVisible(c == "vorbis");
     });
-    // Container change
+    // Updating for container change
     QObject::connect(x265ContainerBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &X265Tab::updateAudioCodecOptions);
     updateAudioCodecOptions();
 }
@@ -650,7 +626,7 @@ void X265Tab::resetDefaults() {
     x265VorbisQualityBox->setCurrentIndex(0);
     enablePsyRdCheck->setChecked(false);
     enableCutreeCheck->setChecked(false);
-    // Trigger UI updates
+    // Refresh UI
     x265EnableRCModeCheck->toggled(false);
     x265AQModeBox->currentIndexChanged(0);
     updateAudioCodecOptions();
