@@ -13,7 +13,7 @@ class Av1Tab : public QWidget {
     Q_OBJECT
 public:
     explicit Av1Tab(QWidget *parent = nullptr);
-    // Public members for access from main.cpp
+    // These are public so main.cpp can access them easily
     QComboBox *av1ContainerBox;
     QComboBox *av1PresetBox;
     QCheckBox *av1EnableRCModeCheck;
@@ -52,17 +52,17 @@ public:
     QComboBox *av1Mp3VbrBox;
     QComboBox *av1FlacCompressionBox;
     QComboBox *av1VorbisQualityBox;
-    // 🔥 FIXED AV1-ONLY FEATURES
+    // Some AV1-specific features I fixed up
     QCheckBox *nativeGrainCheck;
-    QSlider *grainStrengthSlider; // Renamed from grainDenoiseSlider for --film-grain (0-50)
-    QComboBox *grainDenoiseCombo; // New: for --film-grain-denoise (0/1/2)
+    QSlider *grainStrengthSlider;
+    QComboBox *grainDenoiseCombo;
     QComboBox *superResModeBox;
-    QSlider *superResDenomSlider; // Renamed from superResDenoiseSlider for --superres-denom (8-16)
-    QCheckBox *lowLatencyCheck; // Will map to valid params in main.cpp
+    QSlider *superResDenomSlider;
+    QCheckBox *lowLatencyCheck;
     QCheckBox *tplModelCheck;
     QCheckBox *enableCdefCheck;
-    // New features
-    QCheckBox *enableTfCheck; // New: Enable TF (temporal filtering)
+    // A couple new things I added
+    QCheckBox *enableTfCheck;
     QComboBox *fastDecodeBox;
     QComboBox *screenContentModeBox;
 private:
@@ -76,6 +76,6 @@ private:
     QLabel *av1VorbisQualityLabel;
 private slots:
     void updateAudioCodecOptions();
-    void resetDefaults(); // New: Reset button slot
+    void resetDefaults(); // Handles resetting everything to defaults
 };
 #endif // AV1TAB_H
