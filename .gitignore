@@ -1,0 +1,17 @@
+# Build artifacts
+build/
+*.o
+*.o.d
+*.exe
+ffmpeg_converter_qt  # If this is the built binary
+
+# CMake/QMake temp files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+*.stash
+
+# Other common ignores
+*.log
+*.tmp
