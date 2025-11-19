@@ -19,11 +19,9 @@ class CombineTab : public QWidget {
 public:
     explicit CombineTab(QWidget *parent = nullptr);
 
-    // Public so main.cpp can call start/stop when Convert/Cancel is pressed
     void startConcatenation();
     void cancelConcatenation();
 
-    // Returns the final output file path (for notification)
     QString getFinalOutputFile() const { return finalOutputFile; }
 
 signals:
