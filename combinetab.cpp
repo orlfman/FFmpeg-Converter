@@ -20,7 +20,7 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     inputLayout->addWidget(inputDirEdit);
     mainLayout->addLayout(inputLayout);
 
-    // Output directory + name
+    // Output directory and name
     QHBoxLayout *outputLayout = new QHBoxLayout();
     QPushButton *outputBtn = new QPushButton("Output Folder");
     outputDirEdit = new QLineEdit();
@@ -174,7 +174,7 @@ void CombineTab::startConcatenation()
         return;
     }
 
-    // Sort by user-defined order
+    // Sort by user defined order
     QMap<int, QString> sorted;
     QList<int> keys = orderMap.keys();
     std::sort(keys.begin(), keys.end());
@@ -185,6 +185,6 @@ void CombineTab::startConcatenation()
 
 void CombineTab::cancelConcatenation()
 {
-    // No easy way to cancel mid-concat, but we can at least inform user
+    // No easy way to cancel middle of a concat, but can at least try to inform the user
     QMessageBox::information(this, "Cancelled", "Concatenation cancelled.");
 }
