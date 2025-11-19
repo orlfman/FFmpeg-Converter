@@ -13,7 +13,6 @@ class X265Tab : public QWidget {
     Q_OBJECT
 public:
     explicit X265Tab(QWidget *parent = nullptr);
-    // Public members for access from main.cpp
     QComboBox *x265ContainerBox;
     QComboBox *x265PresetBox;
     QCheckBox *x265EnableRCModeCheck;
@@ -56,9 +55,8 @@ public:
     QComboBox *rdoqLevelBox;
     QCheckBox *saoCheck;
     QComboBox *limitRefsBox;
-    // New features
-    QCheckBox *enablePsyRdCheck; // New: Enable Psy-RD
-    QCheckBox *enableCutreeCheck; // New: Enable Cutree
+    QCheckBox *enablePsyRdCheck;
+    QCheckBox *enableCutreeCheck;
 private:
     QWidget *x265CBRConfigWidget;
     QWidget *x265CRFConfigWidget;
@@ -71,6 +69,6 @@ private:
     QLabel *x265VorbisQualityLabel;
 private slots:
     void updateAudioCodecOptions();
-    void resetDefaults(); // New: Reset button slot
+    void resetDefaults();
 };
 #endif // X265TAB_H
