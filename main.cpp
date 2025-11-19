@@ -1241,17 +1241,14 @@ int main(int argc, char *argv[]) {
             QStringList svtParams;
             QString tune = av1Tab->av1TuneBox->currentText();
             if (tune != "Auto") {
-                int tuneVal = (tune == "Subjective SSIM (VQ)") ? 0 :
-                (tune == "PSNR") ? 1 :
-                (tune == "SSIM") ? 2 :
-                (tune == "Visual Distortion") ? 3 :
-                (tune == "Perceptual") ? 4 :
-                (tune == "Noise SSIM") ? 5 :
-                (tune == "VMAF") ? 6 :
-                (tune == "VMAF Neg") ? 7 :
-                (tune == "Butteraugli") ? 8 :
-                (tune == "Butteraugli-XL") ? 9 :
-                (tune == "CAMBI") ? 10 : 0;
+                int tuneVal;
+                if (tune == "Subjective SSIM (VQ)")      tuneVal = 0;
+                else if (tune == "PSNR")                 tuneVal = 1;
+                else if (tune == "SSIM")                 tuneVal = 2;
+                else if (tune == "VMAF")                 tuneVal = 6;
+                else if (tune == "VMAF Neg")             tuneVal = 7;
+                else                                     tuneVal = 0;  // fallback
+
                 svtParams << "tune=" + QString::number(tuneVal);
             }
             if (av1Tab->nativeGrainCheck->isChecked()) {

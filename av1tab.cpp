@@ -120,9 +120,9 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AV1 Tune:");
-        lbl->setToolTip("Optimizes for specific quality metrics (e.g., PSNR for sharpness).");
+        lbl->setToolTip("Optimizes for specific quality metrics (PSNR for sharpness, VQ for default, etc. Note, VMAF(neg) is made for netflix and only works in certain versions of svt builds).");
         av1TuneBox = new QComboBox();
-        av1TuneBox->addItems({"Auto", "Subjective SSIM (VQ)", "PSNR", "SSIM", "Visual Distortion", "Perceptual", "Noise SSIM", "VMAF", "VMAF Neg", "Butteraugli", "Butteraugli-XL", "CAMBI"});
+        av1TuneBox->addItems({"Auto", "Subjective SSIM (VQ)", "PSNR", "SSIM", "VMAF", "VMAF Neg"});
         av1TuneBox->setCurrentIndex(0);
         l->addWidget(lbl);
         l->addWidget(av1TuneBox);
