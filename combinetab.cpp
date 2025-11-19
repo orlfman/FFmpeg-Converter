@@ -1,4 +1,5 @@
 #include "combinetab.h"
+
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
@@ -7,31 +8,36 @@
 #include <QTextStream>
 #include <QTemporaryFile>
 #include <QDebug>
+#include <QFileInfo>
+#include <algorithm>
+
 CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    // Input directory
     QHBoxLayout *inputLayout = new QHBoxLayout();
-    QPushButton *inputBtn = new QPushButton("Select Input Folder");
+    QPushButton *inputBtn = new QPushButton("Select Folder");
     inputDirEdit = new QLineEdit();
     inputDirEdit->setReadOnly(true);
     inputLayout->addWidget(inputBtn);
     inputLayout->addWidget(inputDirEdit);
     mainLayout->addLayout(inputLayout);
 
-    // Output directory and name
     QHBoxLayout *outputLayout = new QHBoxLayout();
     QPushButton *outputBtn = new QPushButton("Output Folder");
     outputDirEdit = new QLineEdit();
     outputDirEdit->setReadOnly(true);
-    outputNameEdit = new QLineEdit("combined_video.mkv");
+    outputNameEdit = new QLineEdit("combined_video");
+    containerCombo = new QComboBox();
+    containerCombo->addItems({"mkv", "webm", "mp4"});
+    containerCombo->setCurrentIndex(0);
+
     outputLayout->addWidget(outputBtn);
     outputLayout->addWidget(outputDirEdit);
     outputLayout->addWidget(outputNameEdit);
+    outputLayout->addWidget(containerCombo);
     mainLayout->addLayout(outputLayout);
 
-    // Table
     table = new QTableWidget(0, 2);
     table->setHorizontalHeaderLabels({"Order (0=skip)", "Filename"});
     table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -40,12 +46,51 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     mainLayout->addWidget(table);
 
-    // Connect buttons
     connect(inputBtn, &QPushButton::clicked, this, &CombineTab::selectInputDirectory);
     connect(outputBtn, &QPushButton::clicked, this, &CombineTab::selectOutputDirectory);
     connect(inputBtn, &QPushButton::clicked, this, &CombineTab::populateTable);
 
+    connect(containerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CombineTab::smartUpdateExtension);
+    connect(outputNameEdit, &QLineEdit::textChanged, this, &CombineTab::smartUpdateExtension);
+
     setLayout(mainLayout);
+}
+
+void CombineTab::smartUpdateExtension()
+{
+    QString currentText = outputNameEdit->text();
+    QString desiredExt = containerCombo->currentText();
+    QString currentExt = QFileInfo(currentText).suffix().toLower();
+
+    if (currentText.isEmpty() || currentExt.isEmpty() || currentExt != desiredExt) {
+        int cursorPos = outputNameEdit->cursorPosition();
+
+        QString baseName = QFileInfo(currentText).completeBaseName();
+        if (baseName.isEmpty()) {
+            baseName = "combined_video";
+        }
+
+        QString newText = baseName + "." + desiredExt;
+
+        if (newText != currentText) {
+            outputNameEdit->blockSignals(true);
+            outputNameEdit->setText(newText);
+            outputNameEdit->blockSignals(false);
+
+            int newCursorPos = baseName.length();
+            outputNameEdit->setCursorPosition(newCursorPos);
+        }
+    }
+}
+
+QString CombineTab::getFinalOutputFile() const
+{
+    if (outputDirEdit->text().isEmpty() || outputNameEdit->text().isEmpty())
+        return QString();
+
+    QString base = QFileInfo(outputNameEdit->text()).completeBaseName();
+    QString ext = containerCombo->currentText();
+    return QDir(outputDirEdit->text()).filePath(base + "." + ext);
 }
 
 void CombineTab::selectInputDirectory()
@@ -79,7 +124,6 @@ void CombineTab::populateTable()
     table->setRowCount(files.size());
     for (int i = 0; i < files.size(); ++i) {
         const QFileInfo &fi = files.at(i);
-
         QSpinBox *spin = new QSpinBox();
         spin->setRange(0, 9999);
         spin->setValue(0);
@@ -110,7 +154,7 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
     stream.flush();
     concatTempFile->close();
 
-    finalOutputFile = QDir(outputDirEdit->text()).filePath(outputNameEdit->text());
+    finalOutputFile = getFinalOutputFile();
 
     QSettings settings("FFmpegConverter", "Settings");
     QString ffmpegPath = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
@@ -118,11 +162,11 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
 
     QStringList args;
     args << "-f" << "concat"
-    << "-safe" << "0"
-    << "-i" << concatTempFile->fileName()
-    << "-c" << "copy"
-    << "-y"
-    << finalOutputFile;
+         << "-safe" << "0"
+         << "-i" << concatTempFile->fileName()
+         << "-c" << "copy"
+         << "-y"
+         << finalOutputFile;
 
     QProcess *proc = new QProcess(this);
     emit logMessage("Starting video combine...");
@@ -130,14 +174,14 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
 
     connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
             this, [this, proc](int exitCode, QProcess::ExitStatus) {
-                if (exitCode == 0) {
-                    emit logMessage("Combine finished successfully: " + finalOutputFile);
-                } else {
-                    emit logMessage("Combine failed with code " + QString::number(exitCode));
-                }
-                proc->deleteLater();
-                emit conversionFinished();
-            });
+        if (exitCode == 0) {
+            emit logMessage("Combine finished successfully: " + finalOutputFile);
+        } else {
+            emit logMessage("Combine failed with code " + QString::number(exitCode));
+        }
+        proc->deleteLater();
+        emit conversionFinished();
+    });
 
     connect(proc, &QProcess::readyReadStandardOutput, this, [this, proc]() {
         emit logMessage(proc->readAllStandardOutput().trimmed());
@@ -174,10 +218,9 @@ void CombineTab::startConcatenation()
         return;
     }
 
-    // Sort by user defined order
-    QMap<int, QString> sorted;
     QList<int> keys = orderMap.keys();
     std::sort(keys.begin(), keys.end());
+    QMap<int, QString> sorted;
     for (int k : keys) sorted[k] = orderMap[k];
 
     createConcatListFile(sorted);
@@ -185,6 +228,5 @@ void CombineTab::startConcatenation()
 
 void CombineTab::cancelConcatenation()
 {
-    // No easy way to cancel middle of a concat, but can at least try to inform the user
     QMessageBox::information(this, "Cancelled", "Concatenation cancelled.");
 }

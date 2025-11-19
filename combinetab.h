@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <QComboBox>
 
 class CombineTab : public QWidget {
     Q_OBJECT
@@ -22,7 +23,7 @@ public:
     void startConcatenation();
     void cancelConcatenation();
 
-    QString getFinalOutputFile() const { return finalOutputFile; }
+    QString getFinalOutputFile() const;
 
 signals:
     void logMessage(const QString &msg);
@@ -34,12 +35,13 @@ private slots:
     void populateTable();
 
 private:
+    void smartUpdateExtension();
     QTemporaryFile *concatTempFile = nullptr;
     QLineEdit *inputDirEdit;
     QLineEdit *outputDirEdit;
     QLineEdit *outputNameEdit;
     QTableWidget *table;
-
+    QComboBox *containerCombo = nullptr;
     QStringList videoExtensions = {"*.mp4", "*.mkv", "*.webm", "*.avi", "*.mov", "*.wmv", "*.flv", "*.m4v", "*.ts", "*.m2ts", "*.mpg", "*.mpeg"};
 
     QString finalOutputFile;
