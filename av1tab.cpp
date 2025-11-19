@@ -297,9 +297,9 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QHBoxLayout *denoiseRow = new QHBoxLayout();
         denoiseRow->setContentsMargins(20, 0, 0, 0);
         QLabel *denoiseLbl = new QLabel("Grain Denoise:");
-        denoiseLbl->setToolTip("Removes noise before adding grain. 0=off, 1=conservative, 2=aggressive.");
+        denoiseLbl->setToolTip("0 = Add grain on top of existing noise, 1 = Denoise first, then add clean synthetic grain");
         grainDenoiseCombo = new QComboBox();
-        grainDenoiseCombo->addItems({"0 (Off)", "1 (Conservative)", "2 (Aggressive)"});
+        grainDenoiseCombo->addItems({"0 (Off)", "1 (On - Denoise + Add Grain)"});
         grainDenoiseCombo->setCurrentIndex(0);
         grainDenoiseCombo->setEnabled(false);
         denoiseRow->addWidget(denoiseLbl);
