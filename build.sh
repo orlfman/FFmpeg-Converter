@@ -1,5 +1,4 @@
 #!/bin/bash
-# ==================== PATHS ====================
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR"
 BUILD_DIR="$PROJECT_DIR/build"
@@ -10,7 +9,6 @@ DESKTOP_DEST="/usr/share/applications/FFmpegConverter.desktop"
 ICON_SOURCE="$PROJECT_DIR/ffmpeg-converter-qt.png"
 ICON_DEST="/usr/share/icons/hicolor/512x512/apps/ffmpeg-converter-qt.png"
 
-# ==================== HELPERS ====================
 check_dependency() {
     if ! command -v "$1" &> /dev/null; then
         echo "Error: $1 is not installed. Please install it and try again."
@@ -32,11 +30,10 @@ ask_overwrite() {
             return 1
         fi
     else
-        return 0  # doesn't exist = safe to install
+        return 0
     fi
 }
 
-# ==================== DEPENDENCIES ====================
 echo "Detected project directory: $PROJECT_DIR"
 echo "Checking required tools..."
 check_dependency cmake
@@ -50,7 +47,6 @@ if ! qmake6 --version | grep -q "Qt version 6"; then
     exit 1
 fi
 
-# ==================== BUILD ====================
 echo "Preparing build directory..."
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR" || exit 1
@@ -73,14 +69,12 @@ fi
 
 echo "Build successful!"
 
-# ==================== INSTALL BINARY ====================
 if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)"; then
     echo "Installing binary to $INSTALL_DIR..."
     sudo cp "$BINARY_NAME" "$INSTALL_DIR/" || { echo "Failed to install binary"; exit 1; }
     sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 fi
 
-# ==================== INSTALL ICON ====================
 if [ -f "$ICON_SOURCE" ]; then
     if ask_overwrite "$ICON_DEST" "application icon"; then
         echo "Installing icon to hicolor theme..."
@@ -94,7 +88,6 @@ else
     echo "Warning: Icon not found at $ICON_SOURCE (looked in $PROJECT_DIR)"
 fi
 
-# ==================== INSTALL .desktop FILE ====================
 if [ -f "$DESKTOP_SOURCE" ]; then
     if ask_overwrite "$DESKTOP_DEST" ".desktop entry"; then
         echo "Installing desktop entry..."
@@ -106,7 +99,6 @@ else
     echo "Warning: .desktop file not found at $DESKTOP_SOURCE – skipping menu entry."
 fi
 
-# ==================== DONE ====================
 echo
 echo "========================================"
 echo "Build and installation completed!"
