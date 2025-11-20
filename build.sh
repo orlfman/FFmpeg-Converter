@@ -16,21 +16,31 @@ check_dependency() {
     fi
 }
 
+check_sha() {
+    local source="$1"
+    local dest="$2"
+    [ ! -e "$dest" ] && return 1
+    source_sha=$(sha256sum "$source" | awk '{print $1}')
+    dest_sha=$(sha256sum "$dest" | awk '{print $1}')
+    [ "$source_sha" != "$dest_sha" ]
+}
+
 ask_overwrite() {
     local path="$1"
     local name="$2"
-    if [ -e "$path" ]; then
-        echo "Warning: $name already exists at $path"
-        read -p "Overwrite? [y/N] " -n 1 -r REPLY
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            return 0
-        else
-            echo "→ Skipping $name"
-            return 1
-        fi
-    else
+    local source="$3"
+    if ! check_sha "$source" "$path"; then
+        echo "→ $name is up to date, skipping"
+        return 1
+    fi
+    echo "Warning: $name exists at $path but is different or missing"
+    read -p "Overwrite? [y/N] " -n 1 -r REPLY
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
         return 0
+    else
+        echo "→ Skipping $name"
+        return 1
     fi
 }
 
@@ -50,8 +60,7 @@ fi
 echo "Preparing build directory..."
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR" || exit 1
-
-if [ -n "$(ls -A .)" ]; then
+if [ -n "$(ls -A . 2>/dev/null)" ]; then
     echo "Cleaning previous build files..."
     rm -rf ./*
 fi
@@ -66,32 +75,30 @@ if [ ! -f "$BINARY_NAME" ]; then
     echo "Error: Binary '$BINARY_NAME' was not created."
     exit 1
 fi
-
 echo "Build successful!"
 
-if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)"; then
-    echo "Installing binary to $INSTALL_DIR..."
-    sudo cp "$BINARY_NAME" "$INSTALL_DIR/" || { echo "Failed to install binary"; exit 1; }
-    sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
+# Binary, icon, and desktop all use the same logic now
+if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)" "$BUILD_DIR/$BINARY_NAME"; then
+    echo "Installing binary..."
+    sudo cp "$BINARY_NAME" "$INSTALL_DIR/" && sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 fi
 
 if [ -f "$ICON_SOURCE" ]; then
-    if ask_overwrite "$ICON_DEST" "application icon"; then
-        echo "Installing icon to hicolor theme..."
-        sudo mkdir -p "/usr/share/icons/hicolor/512x512/apps"
+    if ask_overwrite "$ICON_DEST" "application icon" "$ICON_SOURCE"; then
+        echo "Installing icon..."
+        sudo mkdir -p "$(dirname "$ICON_DEST")"
         sudo cp "$ICON_SOURCE" "$ICON_DEST"
         sudo gtk-update-icon-cache /usr/share/icons/hicolor -q 2>/dev/null || true
-        sudo xdg-icon-resource forceupdate 2>/dev/null || true
-        echo "Icon installed and cache updated"
+        echo "Icon installed"
     fi
 else
-    echo "Warning: Icon not found at $ICON_SOURCE (looked in $PROJECT_DIR)"
+    echo "Warning: Icon not found at $ICON_SOURCE"
 fi
 
 if [ -f "$DESKTOP_SOURCE" ]; then
-    if ask_overwrite "$DESKTOP_DEST" ".desktop entry"; then
+    if ask_overwrite "$DESKTOP_DEST" ".desktop entry" "$DESKTOP_SOURCE"; then
         echo "Installing desktop entry..."
-        sudo cp "$DESKTOP_SOURCE" "$DESKTOP_DEST" || { echo "Failed to install .desktop file"; exit 1; }
+        sudo cp "$DESKTOP_SOURCE" "$DESKTOP_DEST"
         sudo chmod 644 "$DESKTOP_DEST"
         sudo update-desktop-database /usr/share/applications/ 2>/dev/null || true
     fi
@@ -102,6 +109,6 @@ fi
 echo
 echo "========================================"
 echo "Build and installation completed!"
-echo "You can now run the app with: $BINARY_NAME"
-echo "or find 'FFmpeg Converter' in your application menu."
+echo "Run with: $BINARY_NAME"
+echo "or find 'FFmpeg Converter' in your menu."
 echo "========================================"
