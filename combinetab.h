@@ -50,7 +50,7 @@ private:
     QCheckBox *reencodeCheck = nullptr;
     QComboBox *targetCodecCombo = nullptr;
     QLabel *codecLabel = nullptr;
-
+    QLineEdit *searchBox = nullptr;
     QStringList videoExtensions = {"*.mp4", "*.mkv", "*.webm", "*.avi", "*.mov", "*.wmv", "*.flv", "*.m4v", "*.ts", "*.m2ts", "*.mpg", "*.mpeg"};
     QString finalOutputFile;
 };

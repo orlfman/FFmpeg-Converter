@@ -58,6 +58,14 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     codecLabel->setVisible(false);
     targetCodecCombo->setVisible(false);
 
+    QHBoxLayout *searchLayout = new QHBoxLayout();
+    QLabel *searchLabel = new QLabel("Search:");
+    searchBox = new QLineEdit();
+    searchBox->setPlaceholderText("Type to filter videos...");
+    searchLayout->addWidget(searchLabel);
+    searchLayout->addWidget(searchBox);
+    mainLayout->addLayout(searchLayout);
+
     table = new QTableWidget(0, 2);
     table->setHorizontalHeaderLabels({"Order (0=skip)", "Filename"});
     table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -65,6 +73,19 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     mainLayout->addWidget(table);
+
+    connect(searchBox, &QLineEdit::textChanged, this, [this](const QString &text) {
+        QString filter = text.toLower().trimmed();
+
+        for (int row = 0; row < table->rowCount(); ++row) {
+            QTableWidgetItem *item = table->item(row, 1);
+            if (!item) continue;
+
+            QString filename = item->text().toLower();
+            bool matches = filename.contains(filter);
+            table->setRowHidden(row, !matches);
+        }
+    });
 
     connect(inputBtn, &QPushButton::clicked, this, &CombineTab::selectInputDirectory);
     connect(outputBtn, &QPushButton::clicked, this, &CombineTab::selectOutputDirectory);
@@ -125,7 +146,7 @@ QString CombineTab::getFinalOutputFile() const
     if (outputDirEdit->text().isEmpty() || outputNameEdit->text().isEmpty())
         return QString();
 
-    QString base = QFileInfo(outputNameEdit->  text()).completeBaseName();
+    QString base = QFileInfo(outputNameEdit->text()).completeBaseName();
     QString ext = containerCombo->currentText();
     return QDir(outputDirEdit->text()).filePath(base + "." + ext);
 }
