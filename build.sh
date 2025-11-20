@@ -25,22 +25,26 @@ check_sha() {
     [ "$source_sha" != "$dest_sha" ]
 }
 
-ask_overwrite() {
+ask_upgrade() {
     local path="$1"
     local name="$2"
     local source="$3"
+    if [ ! -e "$path" ]; then
+        echo "→ No $name found on system — installing fresh"
+        return 0
+    fi
     if ! check_sha "$source" "$path"; then
-        echo "→ $name is up to date, skipping"
+        echo "→ $name is already up to date — nothing to do"
         return 1
     fi
-    echo "Warning: $name exists at $path but is different or missing"
-    read -p "Overwrite? [y/N] " -n 1 -r REPLY
+    echo "→ New version of $name available!"
+    read -p "Upgrade? [Y/n] " -n 1 -r REPLY
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        return 0
-    else
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
         echo "→ Skipping $name"
         return 1
+    else
+        return 0
     fi
 }
 
@@ -77,14 +81,13 @@ if [ ! -f "$BINARY_NAME" ]; then
 fi
 echo "Build successful!"
 
-# Binary, icon, and desktop all use the same logic now
-if ask_overwrite "$INSTALL_DIR/$BINARY_NAME" "binary ($BINARY_NAME)" "$BUILD_DIR/$BINARY_NAME"; then
+if ask_upgrade "$INSTALL_DIR/$BINARY_NAME" "binary" "$BUILD_DIR/$BINARY_NAME"; then
     echo "Installing binary..."
     sudo cp "$BINARY_NAME" "$INSTALL_DIR/" && sudo chmod 755 "$INSTALL_DIR/$BINARY_NAME"
 fi
 
 if [ -f "$ICON_SOURCE" ]; then
-    if ask_overwrite "$ICON_DEST" "application icon" "$ICON_SOURCE"; then
+    if ask_upgrade "$ICON_DEST" "application icon" "$ICON_SOURCE"; then
         echo "Installing icon..."
         sudo mkdir -p "$(dirname "$ICON_DEST")"
         sudo cp "$ICON_SOURCE" "$ICON_DEST"
@@ -96,7 +99,7 @@ else
 fi
 
 if [ -f "$DESKTOP_SOURCE" ]; then
-    if ask_overwrite "$DESKTOP_DEST" ".desktop entry" "$DESKTOP_SOURCE"; then
+    if ask_upgrade "$DESKTOP_DEST" ".desktop entry" "$DESKTOP_SOURCE"; then
         echo "Installing desktop entry..."
         sudo cp "$DESKTOP_SOURCE" "$DESKTOP_DEST"
         sudo chmod 644 "$DESKTOP_DEST"

@@ -846,7 +846,7 @@ int main(int argc, char *argv[]) {
     auto *aboutAction = new QAction("&About", &window);
     QObject::connect(aboutAction, &QAction::triggered, [&window]() {
         QMessageBox::about(&window, "About FFmpeg Converter",
-                           "FFmpeg Converter v2.0\nBuilt with Qt 6\nFor video enthusiasts!");
+                           "FFmpeg Converter v2.0.1\nBuilt with Qt 6\nFor video enthusiasts!");
     });
     helpMenu->addAction(aboutAction);
     // Connecting all signals down here so everything's defined first
