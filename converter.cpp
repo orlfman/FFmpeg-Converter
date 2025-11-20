@@ -169,7 +169,6 @@ void Converter::readProcessOutput() {
                 emit logMessage(line.trimmed());
                 }
         }
-        // Grabbing progress from the time stamp in stderr
         QRegularExpression timeRegex("time=(\\d{2}:\\d{2}:\\d{2}\\.\\d{2})");
         QRegularExpressionMatch match = timeRegex.match(stderrOutput);
         if (match.hasMatch()) {
@@ -216,7 +215,6 @@ void Converter::processFinished(QPointer<QProcess> processPtr, int exitCode, QPr
                     emit logMessage("✅ Stats file created: " + statsFile);
                 } else {
                     emit logMessage("❌ Stats file missing after first pass: " + statsFile);
-                    // Skip the second pass if there's no stats file
                     emit conversionFinished();
                     return;
                 }
@@ -263,7 +261,7 @@ double Converter::getDuration(const QString &inputFile) {
     QStringList args = {"-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", inputFile};
     emit logMessage("Executing ffprobe: " + ffprobePath + " " + args.join(" "));
     ffprobe.start(ffprobePath, args);
-    if (!ffprobe.waitForFinished(10000)) { // Give it up to 10 seconds to finish
+    if (!ffprobe.waitForFinished(10000)) {
         QString error = ffprobe.readAllStandardError();
         emit logMessage("⚠️ ffprobe failed: " + error);
         QMessageBox::warning(nullptr, "Error", "Failed to retrieve duration: " + error);
