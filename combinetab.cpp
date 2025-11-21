@@ -248,6 +248,7 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
                     emit logMessage("Combine failed (code " + QString::number(exitCode) + ")");
                 }
                 proc->deleteLater();
+                concatProcess = nullptr;
                 emit conversionFinished();
             });
 
@@ -339,5 +340,10 @@ void CombineTab::startConcatenation()
 
 void CombineTab::cancelConcatenation()
 {
-    QMessageBox::information(this, "Cancelled", "Concatenation cancelled (if running).");
+    if (concatProcess && (concatProcess->state() == QProcess::Running || concatProcess->state() == QProcess::Starting)) {
+        concatProcess->kill();
+        concatProcess->waitForFinished(3000);
+        emit logMessage("🛑 Concatenation cancelled by user");
+    }
+    concatProcess = nullptr;
 }

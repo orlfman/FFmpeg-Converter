@@ -153,7 +153,8 @@ void Converter::readProcessOutput() {
                 !line.contains("libavformat") && !line.contains("libavdevice") &&
                 !line.contains("libavfilter") && !line.contains("libswscale") &&
                 !line.contains("libswresample") && !line.contains("configuration:") &&
-                !line.contains("built with") && !line.contains("Queue input")) {
+                !line.contains("built with") && !line.contains("Queue input") &&
+                !line.contains("Past duration")) {
                 emit logMessage(line.trimmed());
                 }
         }

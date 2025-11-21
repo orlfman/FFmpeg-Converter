@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QStringList>
 #include <QTemporaryFile>
+#include <QProcess>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QLabel>
@@ -42,6 +43,7 @@ private:
     void createConcatListFile(const QMap<int, QString> &orderMap);
 
     QTemporaryFile *concatTempFile = nullptr;
+    QProcess *concatProcess = nullptr;
     QLineEdit *inputDirEdit = nullptr;
     QLineEdit *outputDirEdit = nullptr;
     QLineEdit *outputNameEdit = nullptr;

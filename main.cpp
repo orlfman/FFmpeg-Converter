@@ -1616,15 +1616,13 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked());
         }
     });
-    QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress]() {
-        if (converter->property("running").isValid()) {
-            converter->cancel();
-        }
-        combineTab->cancelConcatenation();
-        convertButton->setEnabled(true);
-        cancelButton->setEnabled(false);
-        conversionProgress->setVisible(false);
-    });
+QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress]() {
+    converter->cancel();
+    combineTab->cancelConcatenation();
+    convertButton->setEnabled(true);
+    cancelButton->setEnabled(false);
+    conversionProgress->setVisible(false);
+});
     QObject::connect(converter, &Converter::logMessage, logBox, &QTextEdit::append);
     QObject::connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);
     QObject::connect(converter, &Converter::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, &window, converter, infoBox, selectedFilesBox, combineTab]() {
