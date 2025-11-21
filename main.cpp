@@ -523,7 +523,6 @@ int main(int argc, char *argv[]) {
     conversionProgress->setRange(0, 100);
     mainLayout->addWidget(conversionProgress);
     QObject::connect(combineTab, &CombineTab::logMessage, logBox, &QTextEdit::append);
-    QObject::connect(combineTab, &CombineTab::logMessage, logBox, &QTextEdit::append);
     QObject::connect(combineTab, &CombineTab::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, combineTab]() {
         convertButton->setEnabled(true);
         cancelButton->setEnabled(false);
