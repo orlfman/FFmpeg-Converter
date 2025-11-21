@@ -457,6 +457,9 @@ int main(int argc, char *argv[]) {
     QCheckBox *deinterlaceCheck = new QCheckBox("Deinterlace");
     deinterlaceCheck->setToolTip("Convert interlaced video to progressive scan.");
     optionsLayout->addWidget(deinterlaceCheck);
+    QCheckBox *deblockCheck = new QCheckBox("Deblock");
+    deblockCheck->setToolTip("Removes ugly block artifacts from low-bitrate or old videos");
+    optionsLayout->addWidget(deblockCheck);
     optionsLayout->addStretch();
     mainLayout->addLayout(optionsLayout);
     QTabWidget *codecTabs = new QTabWidget();
@@ -1021,7 +1024,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(clearLogButton, &QPushButton::clicked, [logBox]() {
         logBox->clear();
     });
-QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
+QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, deblockCheck, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
         logBox->clear();
         if (seekCheck->isChecked()) {
             bool okHH, okMM, okSS;
@@ -1162,6 +1165,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             filters << "crop=" + cropValue;
         }
         if (deinterlaceCheck->isChecked()) filters << "yadif";
+        if (deblockCheck->isChecked()) filters << "deblock";
         double scaleWidthValue = scaleWidthSpin->value();
         double scaleHeightValue = scaleHeightSpin->value();
         QString selectedFilter = scaleFilterBox->currentText();
