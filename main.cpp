@@ -458,10 +458,31 @@ int main(int argc, char *argv[]) {
     deinterlaceCheck->setToolTip("Convert interlaced video to progressive scan.");
     optionsLayout->addWidget(deinterlaceCheck);
     QCheckBox *deblockCheck = new QCheckBox("Deblock");
-    deblockCheck->setToolTip("Removes ugly block artifacts from low-bitrate or old videos");
+    deblockCheck->setToolTip("Removes ugly block artifacts from low bitrate or old videos");
     optionsLayout->addWidget(deblockCheck);
-    optionsLayout->addStretch();
+    QCheckBox *normalizeAudioCheck = new QCheckBox("Normalize Audio");
+    normalizeAudioCheck->setToolTip("Makes audio in videos play at the same loudness. No sudden spikes or quietness.");
+    optionsLayout->addWidget(normalizeAudioCheck);
+    QCheckBox *denoiseCheck = new QCheckBox("Denoise");
+    denoiseCheck->setToolTip("Fast, strong denoiser preset. Removes grain/noise");
+    optionsLayout->addWidget(denoiseCheck);
+    QCheckBox *toneMapCheck = new QCheckBox("HDR to SDR");
+    toneMapCheck->setToolTip("Fixes washed out look on HDR videos when playing in SDR mode");
+    optionsLayout->addWidget(toneMapCheck);
+    QCheckBox *superSharpCheck = new QCheckBox("Super Sharp");
+    superSharpCheck->setToolTip("Light sharpen plus detail pop, quick sharp preset");
+    optionsLayout->addWidget(superSharpCheck);
     mainLayout->addLayout(optionsLayout);
+    QHBoxLayout *presetLayout = new QHBoxLayout();
+    QLabel *presetLabel = new QLabel("Quality Preset:");
+    QComboBox *presetCombo = new QComboBox();
+    presetCombo->addItems({"Custom", "Tiny file", "Small", "Good", "High quality", "Archive"});
+    presetCombo->setCurrentIndex(0);
+    presetCombo->setToolTip("One click presets for current codec");
+    presetLayout->addWidget(presetLabel);
+    presetLayout->addWidget(presetCombo);
+    presetLayout->addStretch();
+    mainLayout->addLayout(presetLayout);
     QTabWidget *codecTabs = new QTabWidget();
     mainLayout->addWidget(codecTabs);
     Av1Tab *av1Tab = new Av1Tab();
@@ -1024,7 +1045,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(clearLogButton, &QPushButton::clicked, [logBox]() {
         logBox->clear();
     });
-QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, deblockCheck, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
+QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, deblockCheck, normalizeAudioCheck, denoiseCheck, toneMapCheck, superSharpCheck, presetCombo, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
         logBox->clear();
         if (seekCheck->isChecked()) {
             bool okHH, okMM, okSS;
@@ -1069,6 +1090,34 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         logBox->append("🌈 Range: " + scaleRangeBox->currentText());
         logBox->append("🎨 Pixel Format: " + (tenBitCheck->isChecked() ? colorFormatBox->currentText() : eightBitColorFormatBox->currentText()));
         int currentTab = codecTabs->currentIndex();
+        if (presetCombo->currentIndex() > 0) {
+            int p = presetCombo->currentIndex();
+
+            if (currentTab == 0) {
+                av1Tab->av1PresetBox->setCurrentText(p <= 2 ? "10" : p == 3 ? "9" : p == 4 ? "8" : "6");
+                if (!av1Tab->av1EnableRCModeCheck->isChecked()) {
+                    av1Tab->av1EnableRCModeCheck->setChecked(true);
+                    av1Tab->av1RCModeBox->setCurrentText("CRF");
+                }
+                av1Tab->av1CRFSlider->setValue(p == 1 ? 50 : p == 2 ? 40 : p == 3 ? 32 : p == 4 ? 24 : 18);
+
+            } else if (currentTab == 1) {
+                x265Tab->x265PresetBox->setCurrentText(p <= 2 ? "veryfast" : p == 3 ? "medium" : p == 4 ? "slow" : "slower");
+                if (!x265Tab->x265EnableRCModeCheck->isChecked()) {
+                    x265Tab->x265EnableRCModeCheck->setChecked(true);
+                    x265Tab->x265RCModeBox->setCurrentText("CRF");
+                }
+                x265Tab->x265CRFSlider->setValue(p == 1 ? 35 : p == 2 ? 30 : p == 3 ? 25 : p == 4 ? 20 : 16);
+
+            } else if (currentTab == 2) {
+                vp9Tab->vp9CpuUsedBox->setCurrentText(p <= 3 ? "5" : "4");
+                if (!vp9Tab->vp9EnableRCModeCheck->isChecked()) {
+                    vp9Tab->vp9EnableRCModeCheck->setChecked(true);
+                    vp9Tab->vp9RCModeBox->setCurrentText("CRF");
+                }
+                vp9Tab->vp9CRFSlider->setValue(p == 1 ? 50 : p == 2 ? 42 : p == 3 ? 34 : p == 4 ? 26 : 20);
+            }
+        }
         logBox->append("🔀 Codec: " + QString(currentTab == 0 ? "AV1" : currentTab == 1 ? "x265" : "VP9"));
         if (currentTab == 0 && av1Tab->av1EnableRCModeCheck->isChecked()) {
             QString rcMode = av1Tab->av1RCModeBox->currentText();
@@ -1140,130 +1189,91 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         }
         if (preserveMetadataCheck->isChecked()) args << "-map_metadata" << "0";
         if (removeChaptersCheck->isChecked()) args << "-map_chapters" << "-1";
-        QStringList filters;
-        QString rotationFilter;
-        QString rotation = rotationBox->currentText();
-        if (rotation == "90° Clockwise") {
-            rotationFilter = "transpose=1";
-        } else if (rotation == "90° Counterclockwise") {
-            rotationFilter = "transpose=2";
-        } else if (rotation == "180°") {
-            rotationFilter = "transpose=1,transpose=1";
-        } else if (rotation == "Horizontal Flip") {
-            rotationFilter = "hflip";
-        } else if (rotation == "Vertical Flip") {
-            rotationFilter = "vflip";
-        }
-        if (!rotationFilter.isEmpty()) {
-            filters << rotationFilter;
-        }
-        if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
-            QString cropValue = cropValueBox->text();
-            if (cropValue.startsWith("crop=")) {
-                cropValue = cropValue.mid(5);
-            }
-            filters << "crop=" + cropValue;
-        }
-        if (deinterlaceCheck->isChecked()) filters << "yadif";
-        if (deblockCheck->isChecked()) filters << "deblock";
-        double scaleWidthValue = scaleWidthSpin->value();
-        double scaleHeightValue = scaleHeightSpin->value();
-        QString selectedFilter = scaleFilterBox->currentText();
-        QString scaleRange = scaleRangeBox->currentText();
-        QString widthExpr = (qFuzzyCompare(scaleWidthValue, 1.0)) ? "iw" : QString("trunc(iw*%1/2)*2").arg(scaleWidthValue);
-        QString heightExpr = (qFuzzyCompare(scaleHeightValue, 1.0)) ? "ih" : QString("trunc(ih*%1/2)*2").arg(scaleHeightValue);
-        if (!qFuzzyCompare(scaleWidthValue, 1.0) || !qFuzzyCompare(scaleHeightValue, 1.0)) {
-            filters << QString("zscale=w=%1:h=%2:filter=%3:r=%4").arg(widthExpr, heightExpr, selectedFilter, scaleRange);
-        }
-        QString fps = frameRateBox->currentText();
-        if (fps != "Original") {
-            QString fpsValue = (fps == "Custom") ? customFrameRateBox->text() : fps;
-            bool ok;
-            double fpsNum = fpsValue.toDouble(&ok);
-            if (ok && fpsNum > 0) filters << "fps=" + QString::number(fpsNum);
-        }
-        if (currentTab == 0) {
-            if (av1Tab->av1UnsharpenCheck->isChecked()) {
-                double strength = av1Tab->av1UnsharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=5:5:%1:5:5:0.0").arg(strength);
-            }
-            if (av1Tab->av1SharpenCheck->isChecked()) {
-                double strength = av1Tab->av1SharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=3:3:%1:3:3:0.0").arg(strength);
-            }
-            if (av1Tab->av1BlurCheck->isChecked()) {
-                double strength = av1Tab->av1BlurStrengthSlider->value() / 10.0;
-                filters << QString("smartblur=%1:0.5:0").arg(strength);
-            }
-            if (av1Tab->av1NoiseReductionCheck->isChecked()) {
-                double strength = av1Tab->av1NoiseReductionSlider->value();
-                filters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(strength);
-            }
-            if (av1Tab->av1GrainSynthCheck->isChecked()) {
-                int level = av1Tab->av1GrainSynthLevel->value();
-                filters << QString("noise=alls=%1:allf=t").arg(level);
-            }
-        } else if (currentTab == 1) {
-            if (x265Tab->x265UnsharpenCheck->isChecked()) {
-                double strength = x265Tab->x265UnsharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=5:5:%1:5:5:0.0").arg(strength);
-            }
-            if (x265Tab->x265SharpenCheck->isChecked()) {
-                double strength = x265Tab->x265SharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=3:3:%1:3:3:0.0").arg(strength);
-            }
-            if (x265Tab->x265BlurCheck->isChecked()) {
-                double strength = x265Tab->x265BlurStrengthSlider->value() / 10.0;
-                filters << QString("smartblur=%1:0.5:0").arg(strength);
-            }
-            if (x265Tab->x265NoiseReductionCheck->isChecked()) {
-                double strength = x265Tab->x265NoiseReductionSlider->value();
-                filters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(strength);
-            }
-            if (x265Tab->x265GrainSynthCheck->isChecked()) {
-                int level = x265Tab->x265GrainSynthLevel->value();
-                filters << QString("noise=alls=%1:allf=t").arg(level);
-            }
-        } else if (currentTab == 2) {
-            if (vp9Tab->vp9UnsharpenCheck->isChecked()) {
-                double strength = vp9Tab->vp9UnsharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=5:5:%1:5:5:0.0").arg(strength);
-            }
-            if (vp9Tab->vp9SharpenCheck->isChecked()) {
-                double strength = vp9Tab->vp9SharpenStrengthSlider->value() / 10.0;
-                filters << QString("unsharp=3:3:%1:3:3:0.0").arg(strength);
-            }
-            if (vp9Tab->vp9BlurCheck->isChecked()) {
-                double strength = vp9Tab->vp9BlurStrengthSlider->value() / 10.0;
-                filters << QString("smartblur=%1:0.5:0").arg(strength);
-            }
-            if (vp9Tab->vp9NoiseReductionCheck->isChecked()) {
-                double strength = vp9Tab->vp9NoiseReductionSlider->value();
-                filters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(strength);
-            }
-            if (vp9Tab->vp9GrainSynthCheck->isChecked()) {
-                int level = vp9Tab->vp9GrainSynthLevel->value();
-                filters << QString("noise=alls=%1:allf=t").arg(level);
-            }
-        }
-        QString pixFmt = "yuv420p";
-        if (eightBitCheck->isChecked()) {
-            QString format = eightBitColorFormatBox->currentText();
-            pixFmt = (format == "8-bit 4:2:0") ? "yuv420p" : (format == "8-bit 4:2:2") ? "yuv422p" : "yuv444p";
-        } else if (tenBitCheck->isChecked()) {
-            QString format = colorFormatBox->currentText();
-            pixFmt = (format == "10-bit 4:2:0") ? "yuv420p10le" : (format == "10-bit 4:2:2") ? "yuv422p10le" : "yuv444p10le";
-            if (!filters.contains("format=" + pixFmt)) {
-                filters << "format=" + pixFmt;
-            }
-        }
-        QString filterChain = filters.join(",");
-        if (!filterChain.isEmpty()) {
-            logBox->append("🛠️ Video filters: " + filterChain);
-            args << "-vf" << filterChain;
+    QStringList videoFilters;
+    QStringList audioFilters;
+
+    // Rotation/Flip
+    QString rotationFilter;
+    QString rotation = rotationBox->currentText();
+    if (rotation == "90° Clockwise") rotationFilter = "transpose=1";
+    else if (rotation == "90° Counterclockwise") rotationFilter = "transpose=2";
+    else if (rotation == "180°") rotationFilter = "transpose=1,transpose=1";
+    else if (rotation == "Horizontal Flip") rotationFilter = "hflip";
+    else if (rotation == "Vertical Flip") rotationFilter = "vflip";
+    if (!rotationFilter.isEmpty()) videoFilters << rotationFilter;
+
+    // Crop
+    if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
+        QString cropValue = cropValueBox->text();
+        if (cropValue.startsWith("crop=")) cropValue = cropValue.mid(5);
+        videoFilters << "crop=" + cropValue;
+    }
+
+    // Deinterlace, Deblock, Denoise, Super Sharp
+    if (deinterlaceCheck->isChecked()) videoFilters << "yadif";
+    if (deblockCheck->isChecked())     videoFilters << "deblock";
+    if (denoiseCheck->isChecked())     videoFilters << "hqdn3d=4:3:6:4.5";
+    if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
+
+    // HDR to SDR Tone Mapping
+    if (toneMapCheck->isChecked()) {
+        videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
+    }
+
+    double sw = scaleWidthSpin->value();
+    double sh = scaleHeightSpin->value();
+    QString filterName = scaleFilterBox->currentText();
+    if (!qFuzzyCompare(sw, 1.0) || !qFuzzyCompare(sh, 1.0)) {
+        QString w = qFuzzyCompare(sw, 1.0) ? "iw" : QString("trunc(iw*%1/2)*2").arg(sw);
+        QString h = qFuzzyCompare(sh, 1.0) ? "ih" : QString("trunc(ih*%1/2)*2").arg(sh);
+
+        if (filterName == "spline16" || filterName == "spline36") {
+            videoFilters << QString("zscale=w=%1:h=%2:filter=%3").arg(w, h, filterName);
         } else {
-            logBox->append("🛠️ Video filters: None");
+            videoFilters << QString("scale=w=%1:h=%2:flags=%3").arg(w, h, filterName.toLower());
         }
+
+        if (scaleRangeBox->currentText() != "input") {
+            videoFilters << QString("zscale=range=%1").arg(scaleRangeBox->currentText().toLower());
+        }
+    }
+
+    // Frame rate
+    if (frameRateBox->currentText() != "Original") {
+        QString fpsValue = (frameRateBox->currentText() == "Custom") ? customFrameRateBox->text() : frameRateBox->currentText();
+        videoFilters << "fps=" + fpsValue;
+    }
+
+    // Pixel format — always last ( overrides tonemap if needed)
+    QString pixFmt;
+    if (tenBitCheck->isChecked()) {
+        QString f = colorFormatBox->currentText();
+        pixFmt = f == "10-bit 4:2:0" ? "yuv420p10le" : f == "10-bit 4:2:2" ? "yuv422p10le" : "yuv444p10le";
+    } else {
+        QString f = eightBitColorFormatBox->currentText();
+        pixFmt = f == "8-bit 4:2:0" ? "yuv420p" : f == "8-bit 4:2:2" ? "yuv422p" : "yuv444p";
+    }
+    videoFilters << "format=" + pixFmt;
+
+    // Audio normalization
+    if (normalizeAudioCheck->isChecked()) {
+        audioFilters << "loudnorm=I=-23:TP=-1.5:LRA=11";
+    }
+
+    // Apply filters
+    if (!videoFilters.isEmpty()) {
+        QString chain = videoFilters.join(",");
+        logBox->append("🛠️ Video filters: " + chain);
+        args << "-vf" << chain;
+    } else {
+        logBox->append("🛠️ Video filters: None");
+    }
+
+    if (!audioFilters.isEmpty()) {
+        QString chain = audioFilters.join(",");
+        logBox->append("🔊 Audio filter: " + chain);
+        args << "-af" << chain;
+    }
         if (currentTab == 0) {
             args << "-c:v" << "libsvtav1";
             args << "-preset" << av1Tab->av1PresetBox->currentText();

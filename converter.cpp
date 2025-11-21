@@ -148,15 +148,30 @@ void Converter::readProcessOutput() {
         QString stderrOutput = process->readAllStandardError();
         QStringList stderrLines = stderrOutput.split("\n", Qt::SkipEmptyParts);
         for (const QString &line : stderrLines) {
-            if (!line.contains("ffmpeg version") && !line.contains("ffprobe version") &&
-                !line.contains("libavutil") && !line.contains("libavcodec") &&
-                !line.contains("libavformat") && !line.contains("libavdevice") &&
-                !line.contains("libavfilter") && !line.contains("libswscale") &&
-                !line.contains("libswresample") && !line.contains("configuration:") &&
-                !line.contains("built with") && !line.contains("Queue input") &&
-                !line.contains("Past duration")) {
-                emit logMessage(line.trimmed());
+            if (line.contains("ffmpeg version") || line.contains("ffprobe version") ||
+                line.contains("libavutil") || line.contains("libavcodec") ||
+                line.contains("libavformat") || line.contains("libavdevice") ||
+                line.contains("libavfilter") || line.contains("libswscale") ||
+                line.contains("libswresample") || line.contains("configuration:") ||
+                line.contains("built with") || line.contains("Queue input") ||
+                line.contains("Past duration")) {
+                continue;
                 }
+                if (line.startsWith("frame=") ||
+                    line.startsWith("fps=") ||
+                    line.startsWith("stream_") ||
+                    line.startsWith("bitrate=") ||
+                    line.startsWith("total_size=") ||
+                    line.startsWith("out_time_ms=") ||
+                    line.startsWith("out_time_us=") ||
+                    line.startsWith("out_time=") ||
+                    line.startsWith("dup_frames=") ||
+                    line.startsWith("drop_frames=") ||
+                    line.startsWith("speed=") ||
+                    line.startsWith("progress=")) {
+                    continue;
+                    }
+                    emit logMessage(line.trimmed());
         }
         QString stdoutOutput = process->readAllStandardOutput();
         QStringList stdoutLines = stdoutOutput.split("\n", Qt::SkipEmptyParts);
