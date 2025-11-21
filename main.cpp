@@ -1220,6 +1220,74 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
     }
 
+    // codec filters
+    if (currentTab == 0) { // AV1
+        if (av1Tab->av1UnsharpenCheck->isChecked()) {
+            double s = av1Tab->av1UnsharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
+        }
+        if (av1Tab->av1SharpenCheck->isChecked()) {
+            double s = av1Tab->av1SharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
+        }
+        if (av1Tab->av1BlurCheck->isChecked()) {
+            double s = av1Tab->av1BlurStrengthSlider->value() / 10.0;
+            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
+        }
+        if (av1Tab->av1NoiseReductionCheck->isChecked()) {
+            double s = av1Tab->av1NoiseReductionSlider->value();
+            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
+        }
+        if (av1Tab->av1GrainSynthCheck->isChecked()) {
+            int level = av1Tab->av1GrainSynthLevel->value();
+            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
+        }
+    }
+    else if (currentTab == 1) { // x265
+        if (x265Tab->x265UnsharpenCheck->isChecked()) {
+            double s = x265Tab->x265UnsharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
+        }
+        if (x265Tab->x265SharpenCheck->isChecked()) {
+            double s = x265Tab->x265SharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
+        }
+        if (x265Tab->x265BlurCheck->isChecked()) {
+            double s = x265Tab->x265BlurStrengthSlider->value() / 10.0;
+            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
+        }
+        if (x265Tab->x265NoiseReductionCheck->isChecked()) {
+            double s = x265Tab->x265NoiseReductionSlider->value();
+            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
+        }
+        if (x265Tab->x265GrainSynthCheck->isChecked()) {
+            int level = x265Tab->x265GrainSynthLevel->value();
+            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
+        }
+    }
+    else if (currentTab == 2) { // VP9
+        if (vp9Tab->vp9UnsharpenCheck->isChecked()) {
+            double s = vp9Tab->vp9UnsharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
+        }
+        if (vp9Tab->vp9SharpenCheck->isChecked()) {
+            double s = vp9Tab->vp9SharpenStrengthSlider->value() / 10.0;
+            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
+        }
+        if (vp9Tab->vp9BlurCheck->isChecked()) {
+            double s = vp9Tab->vp9BlurStrengthSlider->value() / 10.0;
+            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
+        }
+        if (vp9Tab->vp9NoiseReductionCheck->isChecked()) {
+            double s = vp9Tab->vp9NoiseReductionSlider->value();
+            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
+        }
+        if (vp9Tab->vp9GrainSynthCheck->isChecked()) {
+            int level = vp9Tab->vp9GrainSynthLevel->value();
+            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
+        }
+    }
+
     double sw = scaleWidthSpin->value();
     double sh = scaleHeightSpin->value();
     QString filterName = scaleFilterBox->currentText();
