@@ -52,6 +52,7 @@
 #include <QtConcurrent>
 #include <QRandomGenerator>
 #include <QUuid>
+#include <QObject>
 class SettingsDialog : public QDialog {
     Q_OBJECT
 public:
@@ -481,6 +482,41 @@ int main(int argc, char *argv[]) {
     presetCombo->setToolTip("One click presets for current codec");
     presetLayout->addWidget(presetLabel);
     presetLayout->addWidget(presetCombo);
+    QCheckBox *videoSpeedCheck = new QCheckBox();
+    videoSpeedCheck->setToolTip("Enable video speed change");
+    QLabel *videoSpeedLabel = new QLabel("   Video Speed:");
+    QComboBox *videoSpeedCombo = new QComboBox();
+    videoSpeedCombo->setToolTip("Percentage change (positive = faster, negative = slower, 0% = normal)");
+    videoSpeedCombo->setEnabled(false);
+    QCheckBox *audioSpeedCheck = new QCheckBox();
+    audioSpeedCheck->setToolTip("Enable audio speed change (pitch preserved)");
+    QLabel *audioSpeedLabel = new QLabel("   Audio Speed:");
+    QComboBox *audioSpeedCombo = new QComboBox();
+    audioSpeedCombo->setToolTip("Percentage change (positive = faster, negative = slower, 0% = normal)");
+    audioSpeedCombo->setEnabled(false);
+    QStringList speedPercentages;
+    for (int i = 100; i >= 5; i -= 5) speedPercentages << QString("%1%").arg(i);
+    speedPercentages << "0%";
+    for (int i = -5; i >= -100; i -= 5) speedPercentages << QString("%1%").arg(i);
+    videoSpeedCombo->addItems(speedPercentages);
+    audioSpeedCombo->addItems(speedPercentages);
+    videoSpeedCombo->setCurrentText("0%");
+    audioSpeedCombo->setCurrentText("0%");
+    QObject::connect(videoSpeedCheck, &QCheckBox::toggled, [videoSpeedCombo](bool checked) {
+        videoSpeedCombo->setEnabled(checked);
+        if (!checked) videoSpeedCombo->setCurrentText("0%");
+    });
+        QObject::connect(audioSpeedCheck, &QCheckBox::toggled, [audioSpeedCombo](bool checked) {
+        audioSpeedCombo->setEnabled(checked);
+        if (!checked) audioSpeedCombo->setCurrentText("0%");
+    });
+    presetLayout->addSpacing(30);
+    presetLayout->addWidget(videoSpeedCheck);
+    presetLayout->addWidget(videoSpeedLabel);
+    presetLayout->addWidget(videoSpeedCombo);
+    presetLayout->addWidget(audioSpeedCheck);
+    presetLayout->addWidget(audioSpeedLabel);
+    presetLayout->addWidget(audioSpeedCombo);
     presetLayout->addStretch();
     mainLayout->addLayout(presetLayout);
     QTabWidget *codecTabs = new QTabWidget();
@@ -1045,7 +1081,7 @@ int main(int argc, char *argv[]) {
     QObject::connect(clearLogButton, &QPushButton::clicked, [logBox]() {
         logBox->clear();
     });
-QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, deblockCheck, normalizeAudioCheck, denoiseCheck, toneMapCheck, superSharpCheck, presetCombo, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll]() {
+QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton, cancelButton, selectedFilesBox, outputDirBox, outputNameBox, scaleWidthSpin, scaleHeightSpin, scaleFilterBox, scaleRangeBox, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, cropCheck, cropValueBox, seekCheck, seekHH, seekMM, seekSS, timeCheck, timeHH, timeMM, timeSS, frameRateBox, customFrameRateBox, preserveMetadataCheck, removeChaptersCheck, deinterlaceCheck, deblockCheck, normalizeAudioCheck, denoiseCheck, toneMapCheck, superSharpCheck, presetCombo, rotationBox, av1Tab, x265Tab, vp9Tab, logBox, conversionProgress, codecTabs, getSampleRateInHz, getBitrateValue, &updateRecentMenu, &settings, overwriteCheck, combineTab, combineScroll, videoSpeedCheck, videoSpeedCombo, audioSpeedCheck, audioSpeedCombo]() {
         logBox->clear();
         if (seekCheck->isChecked()) {
             bool okHH, okMM, okSS;
@@ -1192,7 +1228,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     QStringList videoFilters;
     QStringList audioFilters;
 
-    // Rotation/Flip
     QString rotationFilter;
     QString rotation = rotationBox->currentText();
     if (rotation == "90° Clockwise") rotationFilter = "transpose=1";
@@ -1202,25 +1237,21 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     else if (rotation == "Vertical Flip") rotationFilter = "vflip";
     if (!rotationFilter.isEmpty()) videoFilters << rotationFilter;
 
-    // Crop
     if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
         QString cropValue = cropValueBox->text();
         if (cropValue.startsWith("crop=")) cropValue = cropValue.mid(5);
         videoFilters << "crop=" + cropValue;
     }
 
-    // Deinterlace, Deblock, Denoise, Super Sharp
     if (deinterlaceCheck->isChecked()) videoFilters << "yadif";
     if (deblockCheck->isChecked())     videoFilters << "deblock";
     if (denoiseCheck->isChecked())     videoFilters << "hqdn3d=4:3:6:4.5";
     if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
 
-    // HDR to SDR Tone Mapping
     if (toneMapCheck->isChecked()) {
         videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
     }
 
-    // codec filters
     if (currentTab == 0) { // AV1
         if (av1Tab->av1UnsharpenCheck->isChecked()) {
             double s = av1Tab->av1UnsharpenStrengthSlider->value() / 10.0;
@@ -1306,13 +1337,11 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         }
     }
 
-    // Frame rate
     if (frameRateBox->currentText() != "Original") {
         QString fpsValue = (frameRateBox->currentText() == "Custom") ? customFrameRateBox->text() : frameRateBox->currentText();
         videoFilters << "fps=" + fpsValue;
     }
 
-    // Pixel format — always last ( overrides tonemap if needed)
     QString pixFmt;
     if (tenBitCheck->isChecked()) {
         QString f = colorFormatBox->currentText();
@@ -1323,12 +1352,64 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     }
     videoFilters << "format=" + pixFmt;
 
-    // Audio normalization
     if (normalizeAudioCheck->isChecked()) {
         audioFilters << "loudnorm=I=-23:TP=-1.5:LRA=11";
     }
+    auto getPercentChange = [](const QString &str) -> double {
+        if (str == "0%") return 0.0;
+        return str.chopped(1).toDouble();
+    };
 
-    // Apply filters
+    double videoPercent = videoSpeedCheck->isChecked() ? getPercentChange(videoSpeedCombo->currentText()) : 0.0;
+    double audioPercent = audioSpeedCheck->isChecked() ? getPercentChange(audioSpeedCombo->currentText()) : 0.0;
+
+    double videoMultiplier = 1.0 + videoPercent / 100.0;
+    double audioMultiplier = 1.0 + audioPercent / 100.0;
+
+    if (videoPercent <= -100.0) {
+        videoMultiplier = 0.001;
+        logBox->append("⚠️ -100% video speed → using extremely slow (0.001×)");
+    }
+    if (audioPercent <= -100.0) {
+        audioMultiplier = 0.001;
+        logBox->append("⚠️ -100% audio speed → using extremely slow (0.001×)");
+    }
+
+    if (!qFuzzyCompare(videoMultiplier, 1.0)) {
+        double ptsFactor = 1.0 / videoMultiplier;
+        videoFilters << QString("setpts=%1*PTS").arg(ptsFactor, 0, 'g', 12);
+        logBox->append(QString("✓ Video speed: %1×").arg(videoMultiplier, 0, 'g', 4));
+    }
+
+    if (!qFuzzyCompare(audioMultiplier, 1.0)) {
+        auto buildAtempoChain = [](double m) -> QString {
+            if (qFuzzyCompare(m, 1.0)) return "";
+            QStringList p;
+            double t = m;
+            if (m > 1.0) {
+                while (t > 2.0) {
+                    p << "atempo=2.0";
+                    t /= 2.0;
+                }
+            } else if (m < 1.0) {
+                while (t < 0.5) {
+                    p << "atempo=0.5";
+                    t /= 0.5;
+                }
+            }
+            if (!qFuzzyCompare(t, 1.0)) {
+                p << QString("atempo=%1").arg(t, 0, 'g', 12);
+            }
+            return p.join(",");
+        };
+
+        QString chain = buildAtempoChain(audioMultiplier);
+        if (!chain.isEmpty()) {
+            audioFilters.prepend(chain);
+            logBox->append(QString("✓ Audio speed: %1× → chain: %2").arg(audioMultiplier, 0, 'g', 4).arg(chain));
+        }
+    }
+
     if (!videoFilters.isEmpty()) {
         QString chain = videoFilters.join(",");
         logBox->append("🛠️ Video filters: " + chain);
