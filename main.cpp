@@ -477,7 +477,7 @@ int main(int argc, char *argv[]) {
     QHBoxLayout *presetLayout = new QHBoxLayout();
     QLabel *presetLabel = new QLabel("Quality Preset:");
     QComboBox *presetCombo = new QComboBox();
-    presetCombo->addItems({"Custom", "Tiny file", "Small", "Good", "High quality", "Archive"});
+    presetCombo->addItems({"Custom", "Medium", "High", "Quality", "High Quality", "Ultra"});
     presetCombo->setCurrentIndex(0);
     presetCombo->setToolTip("One click presets for current codec");
     presetLayout->addWidget(presetLabel);
@@ -1130,14 +1130,100 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             int p = presetCombo->currentIndex();
 
             if (currentTab == 0) {
-                av1Tab->av1PresetBox->setCurrentText(p <= 2 ? "10" : p == 3 ? "9" : p == 4 ? "8" : "6");
+                av1Tab->av1ContainerBox->setCurrentText("webm");
+
+                av1Tab->av1AudioCheck->setChecked(true);
+                av1Tab->av1AudioCodecBox->setCurrentText("opus");
+                av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+
                 if (!av1Tab->av1EnableRCModeCheck->isChecked()) {
                     av1Tab->av1EnableRCModeCheck->setChecked(true);
                     av1Tab->av1RCModeBox->setCurrentText("CRF");
                 }
-                av1Tab->av1CRFSlider->setValue(p == 1 ? 50 : p == 2 ? 40 : p == 3 ? 32 : p == 4 ? 24 : 18);
 
-            } else if (currentTab == 1) {
+switch (p) {
+case 1:
+av1Tab->av1PresetBox->setCurrentText("10");
+av1Tab->av1CRFSlider->setValue(37);
+av1Tab->av1TuneBox->setCurrentText("PSNR");
+av1Tab->av1AudioBitrateBox->setCurrentText("128 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Default");
+eightBitCheck->setChecked(true);
+eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(false);
+av1Tab->enableTfCheck->setChecked(false);
+av1Tab->enableCdefCheck->setChecked(false);
+av1Tab->av1LookaheadCheck->setChecked(false);
+av1Tab->av1SharpenCheck->setChecked(false);
+break;
+
+case 2:
+av1Tab->av1PresetBox->setCurrentText("9");
+av1Tab->av1CRFSlider->setValue(31);
+av1Tab->av1TuneBox->setCurrentText("PSNR");
+av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Default");
+eightBitCheck->setChecked(true);
+eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(true);
+av1Tab->enableTfCheck->setChecked(true);
+av1Tab->enableCdefCheck->setChecked(false);
+av1Tab->av1LookaheadCheck->setChecked(false);
+av1Tab->av1SharpenCheck->setChecked(false);
+break;
+
+case 3:
+av1Tab->av1PresetBox->setCurrentText("8");
+av1Tab->av1CRFSlider->setValue(27);
+av1Tab->av1TuneBox->setCurrentText("SSIM");
+av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Default");
+eightBitCheck->setChecked(true);
+eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(true);
+av1Tab->enableTfCheck->setChecked(true);
+av1Tab->enableCdefCheck->setChecked(false);
+av1Tab->av1LookaheadCheck->setChecked(true);
+av1Tab->av1LookaheadSlider->setValue(40);
+av1Tab->av1SharpenCheck->setChecked(false);
+break;
+
+case 4:
+av1Tab->av1PresetBox->setCurrentText("8");
+av1Tab->av1CRFSlider->setValue(21);
+av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Constrained");
+tenBitCheck->setChecked(true);
+colorFormatBox->setCurrentText("10-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(true);
+av1Tab->enableTfCheck->setChecked(true);
+av1Tab->enableCdefCheck->setChecked(false);
+av1Tab->av1LookaheadCheck->setChecked(true);
+av1Tab->av1LookaheadSlider->setValue(80);
+av1Tab->av1SharpenCheck->setChecked(true);
+av1Tab->av1SharpenStrengthSlider->setValue(5);
+break;
+
+case 5:
+av1Tab->av1PresetBox->setCurrentText("6");
+av1Tab->av1CRFSlider->setValue(18);
+av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+av1Tab->av1AudioBitrateBox->setCurrentText("512 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Off");
+tenBitCheck->setChecked(true);
+colorFormatBox->setCurrentText("10-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(true);
+av1Tab->enableTfCheck->setChecked(true);
+av1Tab->enableCdefCheck->setChecked(true);
+av1Tab->av1LookaheadCheck->setChecked(true);
+av1Tab->av1LookaheadSlider->setValue(120);
+av1Tab->av1SharpenCheck->setChecked(true);
+av1Tab->av1SharpenStrengthSlider->setValue(10);
+break;
+            }
+            }
+            else if (currentTab == 1) {
                 x265Tab->x265PresetBox->setCurrentText(p <= 2 ? "veryfast" : p == 3 ? "medium" : p == 4 ? "slow" : "slower");
                 if (!x265Tab->x265EnableRCModeCheck->isChecked()) {
                     x265Tab->x265EnableRCModeCheck->setChecked(true);
