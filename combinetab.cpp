@@ -45,7 +45,7 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
         "Audio by default gets re-encoded to opus.\n "
         "Leave it unchecked for no encoding (though might fail if they are incompatible)."
     );
-    reencodeCheck->setChecked(false);
+    reencodeCheck->setChecked(true);
     codecLabel = new QLabel("Target Codec:");
     targetCodecCombo = new QComboBox();
 
@@ -54,9 +54,6 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     reencodeLayout->addWidget(targetCodecCombo);
     reencodeLayout->addStretch();
     mainLayout->addLayout(reencodeLayout);
-
-    codecLabel->setVisible(false);
-    targetCodecCombo->setVisible(false);
 
     QHBoxLayout *searchLayout = new QHBoxLayout();
     QLabel *searchLabel = new QLabel("Search:");
@@ -98,6 +95,7 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
 
     updateCodecOptions();
     setLayout(mainLayout);
+    onReencodeToggled(reencodeCheck->isChecked());
 }
 
 void CombineTab::onReencodeToggled(bool checked)
