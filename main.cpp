@@ -477,7 +477,7 @@ int main(int argc, char *argv[]) {
     QHBoxLayout *presetLayout = new QHBoxLayout();
     QLabel *presetLabel = new QLabel("Quality Preset:");
     QComboBox *presetCombo = new QComboBox();
-    presetCombo->addItems({"Custom", "Medium", "High", "Quality", "High Quality", "Ultra"});
+    presetCombo->addItems({"Custom", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra"});
     presetCombo->setCurrentIndex(0);
     presetCombo->setToolTip("One click presets for current codec");
     presetLayout->addWidget(presetLabel);
@@ -1143,6 +1143,24 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
 
 switch (p) {
 case 1:
+av1Tab->av1PresetBox->setCurrentText("9");
+av1Tab->av1CRFSlider->setValue(30);
+av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+av1Tab->av1KeyIntBox->setCurrentText("120");
+av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
+av1Tab->av1VbrModeBox->setCurrentText("Constrained");
+eightBitCheck->setChecked(true);
+eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+av1Tab->tplModelCheck->setChecked(true);
+av1Tab->enableTfCheck->setChecked(true);
+av1Tab->enableCdefCheck->setChecked(true);
+av1Tab->av1LookaheadCheck->setChecked(true);
+av1Tab->av1LookaheadSlider->setValue(60);
+av1Tab->fastDecodeBox->setCurrentIndex(2);
+av1Tab->av1SharpenCheck->setChecked(false);
+break;
+
+case 2:
 av1Tab->av1PresetBox->setCurrentText("10");
 av1Tab->av1CRFSlider->setValue(37);
 av1Tab->av1TuneBox->setCurrentText("PSNR");
@@ -1155,9 +1173,11 @@ av1Tab->enableTfCheck->setChecked(false);
 av1Tab->enableCdefCheck->setChecked(false);
 av1Tab->av1LookaheadCheck->setChecked(false);
 av1Tab->av1SharpenCheck->setChecked(false);
+av1Tab->fastDecodeBox->setCurrentIndex(0);
+av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
-case 2:
+case 3:
 av1Tab->av1PresetBox->setCurrentText("9");
 av1Tab->av1CRFSlider->setValue(31);
 av1Tab->av1TuneBox->setCurrentText("PSNR");
@@ -1170,9 +1190,11 @@ av1Tab->enableTfCheck->setChecked(true);
 av1Tab->enableCdefCheck->setChecked(false);
 av1Tab->av1LookaheadCheck->setChecked(false);
 av1Tab->av1SharpenCheck->setChecked(false);
+av1Tab->fastDecodeBox->setCurrentIndex(0);
+av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
-case 3:
+case 4:
 av1Tab->av1PresetBox->setCurrentText("8");
 av1Tab->av1CRFSlider->setValue(27);
 av1Tab->av1TuneBox->setCurrentText("SSIM");
@@ -1186,9 +1208,11 @@ av1Tab->enableCdefCheck->setChecked(false);
 av1Tab->av1LookaheadCheck->setChecked(true);
 av1Tab->av1LookaheadSlider->setValue(40);
 av1Tab->av1SharpenCheck->setChecked(false);
+av1Tab->fastDecodeBox->setCurrentIndex(0);
+av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
-case 4:
+case 5:
 av1Tab->av1PresetBox->setCurrentText("8");
 av1Tab->av1CRFSlider->setValue(21);
 av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
@@ -1203,9 +1227,11 @@ av1Tab->av1LookaheadCheck->setChecked(true);
 av1Tab->av1LookaheadSlider->setValue(80);
 av1Tab->av1SharpenCheck->setChecked(true);
 av1Tab->av1SharpenStrengthSlider->setValue(5);
+av1Tab->fastDecodeBox->setCurrentIndex(0);
+av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
-case 5:
+case 6:
 av1Tab->av1PresetBox->setCurrentText("6");
 av1Tab->av1CRFSlider->setValue(18);
 av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
@@ -1220,6 +1246,8 @@ av1Tab->av1LookaheadCheck->setChecked(true);
 av1Tab->av1LookaheadSlider->setValue(120);
 av1Tab->av1SharpenCheck->setChecked(true);
 av1Tab->av1SharpenStrengthSlider->setValue(10);
+av1Tab->fastDecodeBox->setCurrentIndex(0);
+av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
             }
             }
