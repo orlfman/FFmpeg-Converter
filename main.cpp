@@ -547,6 +547,16 @@ int main(int argc, char *argv[]) {
     int defaultTab = tabSettings.value("defaultCodecTab", 0).toInt();
     codecTabs->setCurrentIndex(defaultTab);
     Presets::connectPresets(presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox);
+    auto forceCustom = [presetCombo]() { presetCombo->setCurrentIndex(0); };
+
+    for (auto* tab : { static_cast<QWidget*>(av1Tab), static_cast<QWidget*>(x265Tab), static_cast<QWidget*>(vp9Tab)}) {
+        for (QPushButton* btn : tab->findChildren<QPushButton*>()) {
+            if (btn && btn->text() == "Reset to Defaults") {
+                QObject::connect(btn, &QPushButton::clicked, forceCustom);
+                break;
+            }
+        }
+    }
     QWidget *infoTab = new QWidget();
     QVBoxLayout *infoLayout = new QVBoxLayout(infoTab);
     QTextEdit *infoBox = new QTextEdit();
