@@ -14,7 +14,7 @@ void Presets::connectPresets(
 {
     auto applyPreset = [presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox]() {
         int p = presetCombo->currentIndex();
-        if (p == 0) return;  // Custom = do nothing
+        if (p == 0) return;  // Custom
 
         int currentTab = codecTabs->currentIndex();
 
@@ -185,11 +185,10 @@ void Presets::connectPresets(
             int crf = (p == 1) ? 50 : (p == 2 ? 42 : (p == 3 ? 34 : (p == 4 ? 26 : 20)));
             vp9Tab->vp9CRFSlider->setValue(crf);
         }
-        // Preset name stays selected – perfect!
     };
 
     QObject::connect(presetCombo, &QComboBox::currentIndexChanged, applyPreset);
     QObject::connect(codecTabs, &QTabWidget::currentChanged, [presetCombo](int) {
-        presetCombo->setCurrentIndex(0);  // Back to Custom when switching tabs
+        presetCombo->setCurrentIndex(0);  // Switch back to custom when switching tabs
     });
 }
