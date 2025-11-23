@@ -1126,23 +1126,17 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         logBox->append("🌈 Range: " + scaleRangeBox->currentText());
         logBox->append("🎨 Pixel Format: " + (tenBitCheck->isChecked() ? colorFormatBox->currentText() : eightBitColorFormatBox->currentText()));
         int currentTab = codecTabs->currentIndex();
-        if (presetCombo->currentIndex() > 0) {
-            int p = presetCombo->currentIndex();
-
-            if (currentTab == 0) {
-                av1Tab->av1ContainerBox->setCurrentText("webm");
-
-                av1Tab->av1AudioCheck->setChecked(true);
-                av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-
-                if (!av1Tab->av1EnableRCModeCheck->isChecked()) {
-                    av1Tab->av1EnableRCModeCheck->setChecked(true);
-                    av1Tab->av1RCModeBox->setCurrentText("CRF");
-                }
-
+if (presetCombo->currentIndex() > 0) {
+    int p = presetCombo->currentIndex();
+if (currentTab == 0) {
 switch (p) {
 case 1:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("9");
 av1Tab->av1CRFSlider->setValue(30);
 av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
@@ -1161,6 +1155,12 @@ av1Tab->av1SharpenCheck->setChecked(false);
 break;
 
 case 2:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("10");
 av1Tab->av1CRFSlider->setValue(37);
 av1Tab->av1TuneBox->setCurrentText("PSNR");
@@ -1178,6 +1178,12 @@ av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
 case 3:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("9");
 av1Tab->av1CRFSlider->setValue(31);
 av1Tab->av1TuneBox->setCurrentText("PSNR");
@@ -1195,6 +1201,12 @@ av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
 case 4:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("8");
 av1Tab->av1CRFSlider->setValue(27);
 av1Tab->av1TuneBox->setCurrentText("SSIM");
@@ -1213,6 +1225,12 @@ av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
 case 5:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("8");
 av1Tab->av1CRFSlider->setValue(21);
 av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
@@ -1232,6 +1250,12 @@ av1Tab->av1KeyIntBox->setCurrentText("240");
 break;
 
 case 6:
+av1Tab->av1ContainerBox->setCurrentText("webm");
+av1Tab->av1AudioCheck->setChecked(true);
+av1Tab->av1AudioCodecBox->setCurrentText("opus");
+av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+av1Tab->av1EnableRCModeCheck->setChecked(true);
+av1Tab->av1RCModeBox->setCurrentText("CRF");
 av1Tab->av1PresetBox->setCurrentText("6");
 av1Tab->av1CRFSlider->setValue(18);
 av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
