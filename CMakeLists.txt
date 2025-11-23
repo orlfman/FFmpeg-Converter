@@ -11,5 +11,6 @@ add_executable(ffmpeg_converter_qt
     x265tab.cpp
     vp9tab.cpp
     combinetab.cpp
+    presets.cpp
 )
 target_link_libraries(ffmpeg_converter_qt PRIVATE Qt6::Core Qt6::Widgets Qt6::Concurrent)

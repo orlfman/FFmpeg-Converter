@@ -3,6 +3,7 @@
 #include "vp9tab.h"
 #include "x265tab.h"
 #include "combinetab.h"
+#include "presets.h"
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
@@ -545,6 +546,7 @@ int main(int argc, char *argv[]) {
     QSettings tabSettings("FFmpegConverter", "Settings");
     int defaultTab = tabSettings.value("defaultCodecTab", 0).toInt();
     codecTabs->setCurrentIndex(defaultTab);
+    Presets::connectPresets(presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox);
     QWidget *infoTab = new QWidget();
     QVBoxLayout *infoLayout = new QVBoxLayout(infoTab);
     QTextEdit *infoBox = new QTextEdit();
@@ -1126,172 +1128,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         logBox->append("🌈 Range: " + scaleRangeBox->currentText());
         logBox->append("🎨 Pixel Format: " + (tenBitCheck->isChecked() ? colorFormatBox->currentText() : eightBitColorFormatBox->currentText()));
         int currentTab = codecTabs->currentIndex();
-if (presetCombo->currentIndex() > 0) {
-    int p = presetCombo->currentIndex();
-if (currentTab == 0) {
-switch (p) {
-case 1:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("9");
-av1Tab->av1CRFSlider->setValue(30);
-av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-av1Tab->av1KeyIntBox->setCurrentText("120");
-av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Constrained");
-eightBitCheck->setChecked(true);
-eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(true);
-av1Tab->enableTfCheck->setChecked(true);
-av1Tab->enableCdefCheck->setChecked(true);
-av1Tab->av1LookaheadCheck->setChecked(true);
-av1Tab->av1LookaheadSlider->setValue(60);
-av1Tab->fastDecodeBox->setCurrentIndex(2);
-av1Tab->av1SharpenCheck->setChecked(false);
-break;
-
-case 2:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("10");
-av1Tab->av1CRFSlider->setValue(37);
-av1Tab->av1TuneBox->setCurrentText("PSNR");
-av1Tab->av1AudioBitrateBox->setCurrentText("128 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Default");
-eightBitCheck->setChecked(true);
-eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(false);
-av1Tab->enableTfCheck->setChecked(false);
-av1Tab->enableCdefCheck->setChecked(false);
-av1Tab->av1LookaheadCheck->setChecked(false);
-av1Tab->av1SharpenCheck->setChecked(false);
-av1Tab->fastDecodeBox->setCurrentIndex(0);
-av1Tab->av1KeyIntBox->setCurrentText("240");
-break;
-
-case 3:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("9");
-av1Tab->av1CRFSlider->setValue(31);
-av1Tab->av1TuneBox->setCurrentText("PSNR");
-av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Default");
-eightBitCheck->setChecked(true);
-eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(true);
-av1Tab->enableTfCheck->setChecked(true);
-av1Tab->enableCdefCheck->setChecked(false);
-av1Tab->av1LookaheadCheck->setChecked(false);
-av1Tab->av1SharpenCheck->setChecked(false);
-av1Tab->fastDecodeBox->setCurrentIndex(0);
-av1Tab->av1KeyIntBox->setCurrentText("240");
-break;
-
-case 4:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("8");
-av1Tab->av1CRFSlider->setValue(27);
-av1Tab->av1TuneBox->setCurrentText("SSIM");
-av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Default");
-eightBitCheck->setChecked(true);
-eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(true);
-av1Tab->enableTfCheck->setChecked(true);
-av1Tab->enableCdefCheck->setChecked(false);
-av1Tab->av1LookaheadCheck->setChecked(true);
-av1Tab->av1LookaheadSlider->setValue(40);
-av1Tab->av1SharpenCheck->setChecked(false);
-av1Tab->fastDecodeBox->setCurrentIndex(0);
-av1Tab->av1KeyIntBox->setCurrentText("240");
-break;
-
-case 5:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("8");
-av1Tab->av1CRFSlider->setValue(21);
-av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Constrained");
-tenBitCheck->setChecked(true);
-colorFormatBox->setCurrentText("10-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(true);
-av1Tab->enableTfCheck->setChecked(true);
-av1Tab->enableCdefCheck->setChecked(false);
-av1Tab->av1LookaheadCheck->setChecked(true);
-av1Tab->av1LookaheadSlider->setValue(80);
-av1Tab->av1SharpenCheck->setChecked(true);
-av1Tab->av1SharpenStrengthSlider->setValue(5);
-av1Tab->fastDecodeBox->setCurrentIndex(0);
-av1Tab->av1KeyIntBox->setCurrentText("240");
-break;
-
-case 6:
-av1Tab->av1ContainerBox->setCurrentText("webm");
-av1Tab->av1AudioCheck->setChecked(true);
-av1Tab->av1AudioCodecBox->setCurrentText("opus");
-av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
-av1Tab->av1EnableRCModeCheck->setChecked(true);
-av1Tab->av1RCModeBox->setCurrentText("CRF");
-av1Tab->av1PresetBox->setCurrentText("6");
-av1Tab->av1CRFSlider->setValue(18);
-av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-av1Tab->av1AudioBitrateBox->setCurrentText("512 kbps");
-av1Tab->av1VbrModeBox->setCurrentText("Off");
-tenBitCheck->setChecked(true);
-colorFormatBox->setCurrentText("10-bit 4:2:0");
-av1Tab->tplModelCheck->setChecked(true);
-av1Tab->enableTfCheck->setChecked(true);
-av1Tab->enableCdefCheck->setChecked(true);
-av1Tab->av1LookaheadCheck->setChecked(true);
-av1Tab->av1LookaheadSlider->setValue(120);
-av1Tab->av1SharpenCheck->setChecked(true);
-av1Tab->av1SharpenStrengthSlider->setValue(10);
-av1Tab->fastDecodeBox->setCurrentIndex(0);
-av1Tab->av1KeyIntBox->setCurrentText("240");
-break;
-            }
-            }
-            else if (currentTab == 1) {
-                x265Tab->x265PresetBox->setCurrentText(p <= 2 ? "veryfast" : p == 3 ? "medium" : p == 4 ? "slow" : "slower");
-                if (!x265Tab->x265EnableRCModeCheck->isChecked()) {
-                    x265Tab->x265EnableRCModeCheck->setChecked(true);
-                    x265Tab->x265RCModeBox->setCurrentText("CRF");
-                }
-                x265Tab->x265CRFSlider->setValue(p == 1 ? 35 : p == 2 ? 30 : p == 3 ? 25 : p == 4 ? 20 : 16);
-
-            } else if (currentTab == 2) {
-                vp9Tab->vp9CpuUsedBox->setCurrentText(p <= 3 ? "5" : "4");
-                if (!vp9Tab->vp9EnableRCModeCheck->isChecked()) {
-                    vp9Tab->vp9EnableRCModeCheck->setChecked(true);
-                    vp9Tab->vp9RCModeBox->setCurrentText("CRF");
-                }
-                vp9Tab->vp9CRFSlider->setValue(p == 1 ? 50 : p == 2 ? 42 : p == 3 ? 34 : p == 4 ? 26 : 20);
-            }
-        }
         logBox->append("🔀 Codec: " + QString(currentTab == 0 ? "AV1" : currentTab == 1 ? "x265" : "VP9"));
         if (currentTab == 0 && av1Tab->av1EnableRCModeCheck->isChecked()) {
             QString rcMode = av1Tab->av1RCModeBox->currentText();
