@@ -300,14 +300,132 @@ void Presets::connectPresets(
                 }
             }
             else if (currentTab == 1) { // x265
-                QString presetStr = (p <= 2) ? "veryfast" : (p == 3 ? "medium" : (p == 4 ? "slow" : "slower"));
-                x265Tab->x265PresetBox->setCurrentText(presetStr);
-                if (!x265Tab->x265EnableRCModeCheck->isChecked()) {
-                    x265Tab->x265EnableRCModeCheck->setChecked(true);
-                    x265Tab->x265RCModeBox->setCurrentText("CRF");
+                x265Tab->x265ContainerBox->setCurrentText("mp4");
+                x265Tab->x265AudioCheck->setChecked(true);
+                x265Tab->x265AudioCodecBox->setCurrentText("opus");
+                x265Tab->x265AudioSampleRateBox->setCurrentText("48 KHz");
+                x265Tab->x265EnableRCModeCheck->setChecked(true);
+                x265Tab->x265RCModeBox->setCurrentText("CRF");
+                x265Tab->x265TuneBox->setCurrentText("film");
+                x265Tab->x265KeyIntBox->setCurrentText("240");
+                x265Tab->saoCheck->setChecked(true);
+                x265Tab->x265AQModeBox->setCurrentText("Variance");
+                x265Tab->x265VbrModeBox->setCurrentText("Default");
+
+                switch (p) {
+                    case 1: // Streaming
+                        x265Tab->x265PresetBox->setCurrentText("veryfast");
+                        x265Tab->x265CRFSlider->setValue(30);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("128 kbps");
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(10);
+                        x265Tab->x265AQStrengthSlider->setValue(0.6);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(0);
+                        x265Tab->limitRefsBox->setCurrentIndex(0);
+                        x265Tab->enablePsyRdCheck->setChecked(false);
+                        x265Tab->enableCutreeCheck->setChecked(false);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(false);
+                        x265Tab->x265KeyIntBox->setCurrentText("120");
+                        break;
+                    case 2: // Medium
+                        x265Tab->x265PresetBox->setCurrentText("fast");
+                        x265Tab->x265CRFSlider->setValue(25);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("192 kbps");
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(20);
+                        x265Tab->x265AQStrengthSlider->setValue(0.8);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(0);
+                        x265Tab->limitRefsBox->setCurrentIndex(1);
+                        x265Tab->enablePsyRdCheck->setChecked(false);
+                        x265Tab->enableCutreeCheck->setChecked(false);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(false);
+                        break;
+                    case 3: // High
+                        x265Tab->x265PresetBox->setCurrentText("medium");
+                        x265Tab->x265CRFSlider->setValue(22);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("256 kbps");
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(40);
+                        x265Tab->x265AQStrengthSlider->setValue(1.0);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(1);
+                        x265Tab->limitRefsBox->setCurrentIndex(2);
+                        x265Tab->enablePsyRdCheck->setChecked(true);
+                        x265Tab->enableCutreeCheck->setChecked(false);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(false);
+                        x265Tab->strongIntraCheck->setChecked(false);
+                        break;
+                    case 4: // Quality
+                        x265Tab->x265PresetBox->setCurrentText("slow");
+                        x265Tab->x265CRFSlider->setValue(19);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("320 kbps");
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(60);
+                        x265Tab->x265AQStrengthSlider->setValue(1.0);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(1);
+                        x265Tab->limitRefsBox->setCurrentIndex(3);
+                        x265Tab->enablePsyRdCheck->setChecked(true);
+                        x265Tab->enableCutreeCheck->setChecked(true);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(false);
+                        x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->x265EnableRCModeCheck->setChecked(true);
+                        x265Tab->x265RCModeBox->setCurrentText("CRF");
+                        break;
+                    case 5: // High Quality
+                        x265Tab->x265PresetBox->setCurrentText("slower");
+                        x265Tab->x265CRFSlider->setValue(16);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("384 kbps");
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(80);
+                        x265Tab->x265AQStrengthSlider->setValue(1.2);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x265Tab->limitRefsBox->setCurrentIndex(3);
+                        x265Tab->enablePsyRdCheck->setChecked(true);
+                        x265Tab->enableCutreeCheck->setChecked(true);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(true);
+                        x265Tab->x265SharpenStrengthSlider->setValue(5);
+                        x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->x265EnableRCModeCheck->setChecked(true);
+                        x265Tab->x265RCModeBox->setCurrentText("CRF");
+                        break;
+                    case 6: // Ultra
+                        x265Tab->x265PresetBox->setCurrentText("veryslow");
+                        x265Tab->x265CRFSlider->setValue(14);
+                        x265Tab->x265AudioBitrateBox->setCurrentText("512 kbps");
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(120);
+                        x265Tab->x265AQStrengthSlider->setValue(1.4);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x265Tab->limitRefsBox->setCurrentIndex(3);
+                        x265Tab->enablePsyRdCheck->setChecked(true);
+                        x265Tab->enableCutreeCheck->setChecked(true);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(true);
+                        x265Tab->x265SharpenStrengthSlider->setValue(8);
+                        x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->x265EnableRCModeCheck->setChecked(true);
+                        x265Tab->x265RCModeBox->setCurrentText("CRF");
+                        break;
                 }
-                int crf = (p == 1) ? 35 : (p == 2 ? 30 : (p == 3 ? 25 : (p == 4 ? 20 : 16)));
-                x265Tab->x265CRFSlider->setValue(crf);
+                x265Tab->x265LevelBox->setCurrentText("auto");
+                x265Tab->x265ThreadsBox->setCurrentText("Automatic");
+                x265Tab->x265FrameThreadsBox->setCurrentText("Automatic");
             }
             else if (currentTab == 2) { // VP9
                 QString cpu = (p <= 3) ? "5" : "4";

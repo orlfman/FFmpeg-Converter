@@ -1180,6 +1180,11 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             } else if (currentTab == 1) {
                 extension = "." + x265Tab->x265ContainerBox->currentText();
                 twoPass = x265Tab->x265TwoPassCheck->isChecked();
+                if (x265Tab->x265EnableRCModeCheck->isChecked() && x265Tab->x265RCModeBox->currentText() == "CRF") {
+                    twoPass = false;
+                } else if (!x265Tab->x265EnableRCModeCheck->isChecked()) {
+                    twoPass = false;
+                }
                 codecStr = "x265";
             } else if (currentTab == 2) {
                 extension = "." + vp9Tab->vp9ContainerBox->currentText();
@@ -1588,6 +1593,9 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 }
             } else {
                 args << "-crf" << "23";
+                if (x265Tab->x265TwoPassCheck->isChecked()) {  // If manual two-pass with default
+                    x265Params << "vbv-maxrate=0" << "vbv-bufsize=0";
+                }
             }
         } else if (currentTab == 2) {
             args << "-c:v" << "libvpx-vp9";

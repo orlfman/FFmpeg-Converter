@@ -57,6 +57,14 @@ public:
     QComboBox *limitRefsBox;
     QCheckBox *enablePsyRdCheck;
     QCheckBox *enableCutreeCheck;
+    QGroupBox *deblockGroup;
+    QSlider *deblockAlphaSlider;
+    QSlider *deblockBetaSlider;
+    QLabel *deblockAlphaLabel;
+    QLabel *deblockBetaLabel;
+    QCheckBox *pmodeCheck;
+    QComboBox *refFramesBox;
+    QCheckBox *weightpCheck;
 private:
     QWidget *x265CBRConfigWidget;
     QWidget *x265CRFConfigWidget;
