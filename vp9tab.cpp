@@ -40,8 +40,8 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9CRFSlider = new QSlider(Qt::Horizontal);
         vp9CRFSlider->setMaximumWidth(400);
         vp9CRFSlider->setRange(0, 63);
-        vp9CRFSlider->setValue(28);
-        QLabel *val = new QLabel("28");
+        vp9CRFSlider->setValue(31);
+        QLabel *val = new QLabel("31");
         l->addWidget(lbl);
         l->addWidget(vp9CRFSlider);
         l->addWidget(val);
@@ -319,6 +319,7 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableRowMtCheck = new QCheckBox("Enable Row Multi-Threading");
+        enableRowMtCheck->setChecked(true);
         enableRowMtCheck->setToolTip("Faster encoding on multi-core CPUs.");
         l->addWidget(enableRowMtCheck);
         l->addStretch();
@@ -456,7 +457,7 @@ void Vp9Tab::resetDefaults() {
     vp9ContainerBox->setCurrentIndex(1);
     vp9EnableRCModeCheck->setChecked(false);
     vp9RCModeBox->setCurrentIndex(0);
-    vp9CRFSlider->setValue(28);
+    vp9CRFSlider->setValue(31);
     vp9BitrateSlider->setValue(1000);
     vp9LookaheadCheck->setChecked(false);
     vp9LookaheadSlider->setValue(16);
@@ -487,6 +488,7 @@ void Vp9Tab::resetDefaults() {
     vp9VorbisQualityBox->setCurrentIndex(0);
     enableRowMtCheck->setChecked(false);
     screenContentCheck->setChecked(false);
+    enableRowMtCheck->setChecked(true);
     // Refresh the UI after reset
     vp9EnableRCModeCheck->toggled(false);
     vp9AQModeBox->currentIndexChanged(0);

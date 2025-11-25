@@ -433,14 +433,96 @@ void Presets::connectPresets(
                 x265Tab->x265FrameThreadsBox->setCurrentText("Automatic");
             }
             else if (currentTab == 2) { // VP9
-                QString cpu = (p <= 3) ? "5" : "4";
-                vp9Tab->vp9CpuUsedBox->setCurrentText(cpu);
-                if (!vp9Tab->vp9EnableRCModeCheck->isChecked()) {
-                    vp9Tab->vp9EnableRCModeCheck->setChecked(true);
-                    vp9Tab->vp9RCModeBox->setCurrentText("CRF");
+                vp9Tab->vp9ContainerBox->setCurrentText("webm");
+                vp9Tab->vp9AudioCheck->setChecked(true);
+                vp9Tab->vp9AudioCodecBox->setCurrentText("opus");
+                vp9Tab->vp9AudioSampleRateBox->setCurrentText("48 kHz");
+                vp9Tab->vp9VbrModeBox->setCurrentText("Constrained");
+                vp9Tab->vp9EnableRCModeCheck->setChecked(true);
+                vp9Tab->vp9RCModeBox->setCurrentText("CRF");
+                vp9Tab->vp9AQModeBox->setCurrentText("Variance");
+                vp9Tab->enableRowMtCheck->setChecked(true);
+                vp9Tab->vp9TileColumnsBox->setCurrentText("4");
+                vp9Tab->vp9TileRowsBox->setCurrentText("Automatic");
+                vp9Tab->vp9KeyIntBox->setCurrentText("240");
+                vp9Tab->vp9ThreadsBox->setCurrentText("Automatic");
+                vp9Tab->screenContentCheck->setChecked(false);
+                vp9Tab->vp9LookaheadCheck->setChecked(true);
+                vp9Tab->vp9DeadlineBox->setCurrentText("good");
+                vp9Tab->vp9SharpenCheck->setChecked(false);
+                vp9Tab->vp9AQStrengthSlider->setValue(4);
+
+                switch (p) {
+                    case 1: // Streaming
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("5");
+                        vp9Tab->vp9CRFSlider->setValue(50);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("128 kbps");
+                        vp9Tab->vp9RCModeBox->setCurrentText("ABR");
+                        vp9Tab->vp9BitrateSlider->setValue(1500);
+                        vp9Tab->vp9LookaheadSlider->setValue(10);
+                        vp9Tab->vp9TwoPassCheck->setChecked(false);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("120");
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        vp9Tab->vp9DeadlineBox->setCurrentText("realtime");
+                        break;
+                    case 2: // Medium
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("4");
+                        vp9Tab->vp9CRFSlider->setValue(42);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("160 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(15);
+                        vp9Tab->vp9TwoPassCheck->setChecked(false);
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        vp9Tab->vp9AQStrengthSlider->setValue(5);
+                        break;
+                    case 3: // High
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("3");
+                        vp9Tab->vp9CRFSlider->setValue(34);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("192 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(20);
+                        vp9Tab->vp9TwoPassCheck->setChecked(false);
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        vp9Tab->vp9AQStrengthSlider->setValue(6);
+                        break;
+                    case 4: // Quality
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("2");
+                        vp9Tab->vp9CRFSlider->setValue(26);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("224 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(25);
+                        vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        vp9Tab->vp9AQStrengthSlider->setValue(7);
+                        break;
+                    case 5: // High Quality
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("1");
+                        vp9Tab->vp9CRFSlider->setValue(20);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("256 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(25);
+                        vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        vp9Tab->vp9SharpenCheck->setChecked(true);
+                        vp9Tab->vp9SharpenStrengthSlider->setValue(3);
+                        vp9Tab->vp9AQStrengthSlider->setValue(8);
+                        break;
+                    case 6: // Ultra
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("0");
+                        vp9Tab->vp9CRFSlider->setValue(15);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("320 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(25);
+                        vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        vp9Tab->vp9SharpenCheck->setChecked(true);
+                        vp9Tab->vp9SharpenStrengthSlider->setValue(5);
+                        vp9Tab->vp9TileColumnsBox->setCurrentText("8");
+                        vp9Tab->vp9AQStrengthSlider->setValue(9);
+                        break;
                 }
-                int crf = (p == 1) ? 50 : (p == 2 ? 42 : (p == 3 ? 34 : (p == 4 ? 26 : 20)));
-                vp9Tab->vp9CRFSlider->setValue(crf);
             }
 
             updateLockState();
