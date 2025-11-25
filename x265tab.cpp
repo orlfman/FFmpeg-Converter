@@ -189,6 +189,67 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
+    // Deblock sliders (Doom9 rec: -2:-2 default)
+    deblockGroup = new QGroupBox("Deblock Filter");
+    QVBoxLayout *deblockLayout = new QVBoxLayout(deblockGroup);
+    QHBoxLayout *alphaLayout = new QHBoxLayout();
+    deblockAlphaLabel = new QLabel("Alpha:");
+    deblockAlphaLabel->setToolTip("Luma deblock strength (-6 to 0).");
+    deblockAlphaSlider = new QSlider(Qt::Horizontal);
+    deblockAlphaSlider->setRange(-6, 0);
+    deblockAlphaSlider->setValue(-2);
+    QLabel *alphaVal = new QLabel("-2");
+    alphaLayout->addWidget(deblockAlphaLabel);
+    alphaLayout->addWidget(deblockAlphaSlider);
+    alphaLayout->addWidget(alphaVal);
+    alphaLayout->addStretch();
+    QObject::connect(deblockAlphaSlider, &QSlider::valueChanged, [alphaVal](int v){ alphaVal->setText(QString::number(v)); });
+    deblockLayout->addLayout(alphaLayout);
+
+    QHBoxLayout *betaLayout = new QHBoxLayout();
+    deblockBetaLabel = new QLabel("Beta:");
+    deblockBetaLabel->setToolTip("Chroma deblock strength (-6 to 0).");
+    deblockBetaSlider = new QSlider(Qt::Horizontal);
+    deblockBetaSlider->setRange(-6, 0);
+    deblockBetaSlider->setValue(-2);
+    QLabel *betaVal = new QLabel("-2");
+    betaLayout->addWidget(deblockBetaLabel);
+    betaLayout->addWidget(deblockBetaSlider);
+    betaLayout->addWidget(betaVal);
+    betaLayout->addStretch();
+    QObject::connect(deblockBetaSlider, &QSlider::valueChanged, [betaVal](int v){ betaVal->setText(QString::number(v)); });
+    deblockLayout->addLayout(betaLayout);
+    advancedLayout->addWidget(deblockGroup);
+
+    // PMode (parallel mode for multi-core)
+    QHBoxLayout *pmodeLayout = new QHBoxLayout();
+    pmodeCheck = new QCheckBox("PMode (Parallel Motion Estimation)");
+    pmodeCheck->setToolTip("Speeds up high-core CPUs; minimal quality impact.");
+    pmodeCheck->setChecked(false);
+    pmodeLayout->addWidget(pmodeCheck);
+    pmodeLayout->addStretch();
+    advancedLayout->addLayout(pmodeLayout);
+
+    // Expanded Ref Frames
+    QHBoxLayout *refLayout = new QHBoxLayout();
+    QLabel *refLabel = new QLabel("Ref Frames:");
+    refLabel->setToolTip("More refs = better compression (slower).");
+    refFramesBox = new QComboBox();
+    refFramesBox->addItems({"1", "2", "3", "4", "5"});
+    refFramesBox->setCurrentIndex(3);  // Default 4
+    refLayout->addWidget(refLabel);
+    refLayout->addWidget(refFramesBox);
+    refLayout->addStretch();
+    advancedLayout->addLayout(refLayout);
+
+    // WeightP checkbox
+    QHBoxLayout *weightpLayout = new QHBoxLayout();
+    weightpCheck = new QCheckBox("Weighted Prediction (WeightP)");
+    weightpCheck->setToolTip("Improves P-frame efficiency ~10%.");
+    weightpCheck->setChecked(true);
+    weightpLayout->addWidget(weightpCheck);
+    weightpLayout->addStretch();
+    advancedLayout->addLayout(weightpLayout);
     // Limit references
     QHBoxLayout *limitRefsLayout = new QHBoxLayout();
     QLabel *limitRefsLabel = new QLabel("Limit Refs:");
@@ -626,6 +687,11 @@ void X265Tab::resetDefaults() {
     x265VorbisQualityBox->setCurrentIndex(0);
     enablePsyRdCheck->setChecked(false);
     enableCutreeCheck->setChecked(false);
+    deblockAlphaSlider->setValue(-2);
+    deblockBetaSlider->setValue(-2);
+    pmodeCheck->setChecked(false);
+    refFramesBox->setCurrentIndex(3);
+    weightpCheck->setChecked(true);
     // Refresh UI
     x265EnableRCModeCheck->toggled(false);
     x265AQModeBox->currentIndexChanged(0);

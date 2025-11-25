@@ -1528,6 +1528,10 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 args << "-level" << level;
             }
             QStringList x265Params;
+            x265Params << "deblock=" + QString::number(x265Tab->deblockAlphaSlider->value()) + ":" + QString::number(x265Tab->deblockBetaSlider->value());
+            if (x265Tab->pmodeCheck->isChecked()) x265Params << "pmode=1";
+            x265Params << "ref=" + x265Tab->refFramesBox->currentText();
+            if (x265Tab->weightpCheck->isChecked()) x265Params << "weightp=1";
             if (x265Tab->strongIntraCheck->isChecked()) {
                 x265Params << "strong-intra-smoothing=1";
             }
@@ -1593,7 +1597,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 }
             } else {
                 args << "-crf" << "23";
-                if (x265Tab->x265TwoPassCheck->isChecked()) {  // If manual two-pass with default
+                if (x265Tab->x265TwoPassCheck->isChecked()) {
                     x265Params << "vbv-maxrate=0" << "vbv-bufsize=0";
                 }
             }

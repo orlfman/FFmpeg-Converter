@@ -309,6 +309,11 @@ void Presets::connectPresets(
                 x265Tab->x265TuneBox->setCurrentText("film");
                 x265Tab->x265KeyIntBox->setCurrentText("240");
                 x265Tab->saoCheck->setChecked(true);
+                x265Tab->deblockAlphaSlider->setValue(-2);
+                x265Tab->deblockBetaSlider->setValue(-2);
+                x265Tab->pmodeCheck->setChecked(false);
+                x265Tab->refFramesBox->setCurrentIndex(3);
+                x265Tab->weightpCheck->setChecked(true);
                 x265Tab->x265AQModeBox->setCurrentText("Variance");
                 x265Tab->x265VbrModeBox->setCurrentText("Default");
 
