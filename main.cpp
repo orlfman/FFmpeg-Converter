@@ -871,11 +871,9 @@ auto selectDvd = [&]() {
 QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     QMenuBar *menuBar = window.menuBar();
     QMenu *fileMenu = menuBar->addMenu("&File");
-    // Sweet file browser with thumbnails
     auto *openAction = new QAction("&Open File...", &window);
     openAction->setShortcut(QKeySequence::Open);
     fileMenu->addAction(openAction);
-    // Recent files submenu that updates itself
     QMenu *recentMenu = fileMenu->addMenu("Recent Files");
     std::function<void()> updateRecentMenu = [&]() {
         recentMenu->clear();
@@ -911,7 +909,7 @@ QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     };
     updateRecentMenu();
     fileMenu->addSeparator();
-    // Settings dialog trigger
+    // Settings dialog
     auto *settingsAction = new QAction("&Settings...", &window);
     settingsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Comma));
     fileMenu->addAction(settingsAction);
@@ -958,11 +956,11 @@ QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     QObject::connect(exitAction, &QAction::triggered, &window, &QMainWindow::close);
     fileMenu->addAction(exitAction);
     QMenu *viewMenu = menuBar->addMenu("&View");
-    // Open input file in default viewer
+    // Open input file
     auto *viewInputAction = new QAction("📁 View Input File", &window);
     viewInputAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_I));
     viewMenu->addAction(viewInputAction);
-    // Open output file in default viewer
+    // Open output
     auto *viewOutputAction = new QAction("🎬 View Output File", &window);
     viewOutputAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
     viewMenu->addAction(viewOutputAction);
