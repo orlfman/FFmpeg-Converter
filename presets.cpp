@@ -156,6 +156,7 @@ void Presets::connectPresets(
                 av1Tab->av1NlmeansCheck->setChecked(false);
                 av1Tab->av1NlmeansSigmaSSlider->setValue(20);
                 av1Tab->av1NlmeansSigmaPSlider->setValue(10);
+                av1Tab->av1NlmeansPatchSlider->setValue(7);
                 switch (p) {
                     case 1: // Streaming
                         av1Tab->av1ContainerBox->setCurrentText("webm");
@@ -462,6 +463,7 @@ void Presets::connectPresets(
                 vp9Tab->vp9NlmeansCheck->setChecked(false);
                 vp9Tab->vp9NlmeansSigmaSSlider->setValue(20);
                 vp9Tab->vp9NlmeansSigmaPSlider->setValue(10);
+                vp9Tab->vp9NlmeansPatchSlider->setValue(7);
 
                 switch (p) {
                     case 1: // Streaming

@@ -51,6 +51,7 @@ public:
     QSlider *vp9NlmeansSigmaSSlider;
     QSlider *vp9NlmeansSigmaPSlider;
     QCheckBox *vp9NlmeansGpuCheck;
+    QSlider *vp9NlmeansPatchSlider;
     QSlider *vp9QMaxSlider;
     QCheckBox *vp9ArnrCheck;
     QSlider *vp9ArnrStrengthSlider;

@@ -226,15 +226,34 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9NlmeansSigmaPSlider, &QSlider::valueChanged, [pVal](int v){ pVal->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
-    // GPU Mode for NLMeans
+    // GPU Mode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
         vp9NlmeansGpuCheck = new QCheckBox("GPU Mode (KNLMeansCL)");
         vp9NlmeansGpuCheck->setToolTip("OpenCL-accelerated (AMD/Intel GPUs; fallback to CPU if unsupported).");
-        vp9NlmeansGpuCheck->setEnabled(false); // Only if NLMeans checked
+        vp9NlmeansGpuCheck->setEnabled(false);
         l->addWidget(vp9NlmeansGpuCheck);
         l->addStretch();
+        filtersLayout->addWidget(w);
+    }
+    // Patch Size for NLMeans
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *patchLbl = new QLabel("Patch Size:");
+        patchLbl->setToolTip("Comparison window (0-15, higher=better but slower).");
+        vp9NlmeansPatchSlider = new QSlider(Qt::Horizontal);
+        vp9NlmeansPatchSlider->setMaximumWidth(200);
+        vp9NlmeansPatchSlider->setRange(0, 15);
+        vp9NlmeansPatchSlider->setValue(7);
+        vp9NlmeansPatchSlider->setEnabled(false);
+        QLabel *patchVal = new QLabel("7");
+        l->addWidget(patchLbl);
+        l->addWidget(vp9NlmeansPatchSlider);
+        l->addWidget(patchVal);
+        l->addStretch();
+        QObject::connect(vp9NlmeansPatchSlider, &QSlider::valueChanged, [patchVal](int v){ patchVal->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
     // Grain options
@@ -551,6 +570,10 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         vp9NlmeansSigmaSSlider->setEnabled(on);
         vp9NlmeansSigmaPSlider->setEnabled(on);
         vp9NlmeansGpuCheck->setEnabled(on);
+        vp9NlmeansPatchSlider->setEnabled(on && vp9NlmeansGpuCheck->isChecked());
+    });
+    QObject::connect(vp9NlmeansGpuCheck, &QCheckBox::toggled, [this](bool on){
+        vp9NlmeansPatchSlider->setEnabled(vp9NlmeansCheck->isChecked() && on);
     });
     QObject::connect(vp9GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ vp9GrainSynthLevel->setEnabled(on); });
@@ -612,6 +635,7 @@ void Vp9Tab::resetDefaults() {
     vp9NlmeansSigmaSSlider->setValue(20);
     vp9NlmeansSigmaPSlider->setValue(10);
     vp9NlmeansGpuCheck->setChecked(false);
+    vp9NlmeansPatchSlider->setValue(7);
     vp9GrainSynthCheck->setChecked(false);
     vp9GrainSynthLevel->setValue(0);
     vp9TwoPassCheck->setChecked(false);

@@ -17,7 +17,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // Choosing the preset for speed vs quality
+    // Choosing the preset
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Preset:");
@@ -34,7 +34,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // Setting up rate control options
+    // rate control options
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1EnableRCModeCheck = new QCheckBox("Custom Rate Control");
@@ -52,7 +52,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // CRF settings, shows when CRF is picked
+    // CRF settings
     av1CRFConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1CRFConfigWidget);
@@ -72,7 +72,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1CRFConfigWidget);
         av1CRFConfigWidget->setVisible(false);
     }
-    // QP settings, similar to CRF
+    // QP settings
     av1QPConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1QPConfigWidget);
@@ -92,7 +92,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1QPConfigWidget);
         av1QPConfigWidget->setVisible(false);
     }
-    // VBR settings for bitrate targeting
+    // VBR settings
     av1VBRConfigWidget = new QWidget();
     {
         QHBoxLayout *l = new QHBoxLayout(av1VBRConfigWidget);
@@ -116,7 +116,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         av1Layout->addWidget(av1VBRConfigWidget);
         av1VBRConfigWidget->setVisible(false);
     }
-    // Tune for specific metrics
+    // Tune
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("AV1 Tune:");
@@ -129,7 +129,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // Encoding level for compatibility
+    // Encoding level
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Encoding Level:");
@@ -143,7 +143,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         av1Layout->addLayout(l);
     }
-    // Lookahead for better compression
+    // Lookahead
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget();
@@ -165,7 +165,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         av1Layout->addWidget(w);
     }
-    // Grouping video filters
+    // Video filters
     QGroupBox *filtersGroup = new QGroupBox("Video Filters");
     QVBoxLayout *filtersLayout = new QVBoxLayout(filtersGroup);
     av1Layout->addWidget(filtersGroup);
@@ -299,10 +299,29 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
         av1NlmeansGpuCheck = new QCheckBox("GPU Mode (KNLMeansCL)");
-        av1NlmeansGpuCheck->setToolTip("OpenCL-accelerated (AMD/Intel GPUs; fallback to CPU if unsupported).");
-        av1NlmeansGpuCheck->setEnabled(false); // Only if NLMeans checked
+        av1NlmeansGpuCheck->setToolTip("OpenCL accelerated (AMD/Intel GPUs; fallback to CPU if unsupported).");
+        av1NlmeansGpuCheck->setEnabled(false);
         l->addWidget(av1NlmeansGpuCheck);
         l->addStretch();
+        filtersLayout->addWidget(w);
+    }
+    // Patch Size for NLMeans
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *patchLbl = new QLabel("Patch Size:");
+        patchLbl->setToolTip("Comparison window (0-15, higher=better but slower).");
+        av1NlmeansPatchSlider = new QSlider(Qt::Horizontal);
+        av1NlmeansPatchSlider->setMaximumWidth(200);
+        av1NlmeansPatchSlider->setRange(0, 15);
+        av1NlmeansPatchSlider->setValue(7);
+        av1NlmeansPatchSlider->setEnabled(false);
+        QLabel *patchVal = new QLabel("7");
+        l->addWidget(patchLbl);
+        l->addWidget(av1NlmeansPatchSlider);
+        l->addWidget(patchVal);
+        l->addStretch();
+        QObject::connect(av1NlmeansPatchSlider, &QSlider::valueChanged, [patchVal](int v){ patchVal->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
     // Grain options group
@@ -377,7 +396,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Super-res mode
+    // Superres mode
     {
         QHBoxLayout *comboRow = new QHBoxLayout();
         QLabel *lbl = new QLabel("Super-Res Mode:");
@@ -409,7 +428,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QObject::connect(superResDenomSlider, &QSlider::valueChanged,
                          [val](int v){ val->setText(QString::number(v)); });
     }
-    // Fast decode levels
+    // Fast decode
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *fdLbl = new QLabel("Fast Decode:");
@@ -431,7 +450,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // Spatio-temporal prediction
+    // Spatio temporal prediction
     {
         QHBoxLayout *l = new QHBoxLayout();
         tplModelCheck = new QCheckBox("Spatio-Temporal Prediction");
@@ -500,7 +519,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          bool isComplexity = (index == 3);
                          av1AQStrengthSlider->setEnabled(!isComplexity);
                      });
-    // Two-pass encoding
+    // Two pass encoding
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1TwoPassCheck = new QCheckBox("Enable Two-Pass Encoding");
@@ -668,7 +687,6 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
             av1TwoPassCheck->setEnabled(m=="VBR");
         }
     });
-    // Enabling sliders when checkboxes are ticked
     QObject::connect(av1LookaheadCheck, &QCheckBox::toggled,
                      [this](bool on){ av1LookaheadSlider->setEnabled(on); });
     QObject::connect(av1UnsharpenCheck, &QCheckBox::toggled,
@@ -682,11 +700,11 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     QObject::connect(av1NlmeansCheck, &QCheckBox::toggled, [this](bool on){
         av1NlmeansSigmaSSlider->setEnabled(on);
         av1NlmeansSigmaPSlider->setEnabled(on);
-    });
-    QObject::connect(av1NlmeansCheck, &QCheckBox::toggled, [this](bool on){
-        av1NlmeansSigmaSSlider->setEnabled(on);
-        av1NlmeansSigmaPSlider->setEnabled(on);
         av1NlmeansGpuCheck->setEnabled(on);
+        av1NlmeansPatchSlider->setEnabled(on && av1NlmeansGpuCheck->isChecked());  // Patch only if GPU
+    });
+    QObject::connect(av1NlmeansGpuCheck, &QCheckBox::toggled, [this](bool on){
+        av1NlmeansPatchSlider->setEnabled(av1NlmeansCheck->isChecked() && on);
     });
     QObject::connect(av1GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ av1GrainSynthLevel->setEnabled(on); });
@@ -773,6 +791,7 @@ void Av1Tab::resetDefaults() {
     av1NlmeansSigmaSSlider->setValue(20);
     av1NlmeansSigmaPSlider->setValue(10);
     av1NlmeansGpuCheck->setChecked(false);
+    av1NlmeansPatchSlider->setValue(7);
     av1GrainSynthCheck->setChecked(false);
     av1GrainSynthLevel->setValue(0);
     nativeGrainCheck->setChecked(false);

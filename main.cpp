@@ -1264,6 +1264,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         if (av1Tab->av1NlmeansCheck->isChecked()) {
             int s = av1Tab->av1NlmeansSigmaSSlider->value();
             int p = av1Tab->av1NlmeansSigmaPSlider->value();
+            int patch = av1Tab->av1NlmeansPatchSlider->value();
             QString filterName = av1Tab->av1NlmeansGpuCheck->isChecked() ? "knlmeans" : "nlmeans";
             if (av1Tab->av1NlmeansGpuCheck->isChecked()) {
                 static bool gpuSupported = false;
@@ -1278,7 +1279,8 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                     }
                 }
             }
-            videoFilters << QString("%1=s=%2:p=%3").arg(filterName).arg(s).arg(p);
+            QString patchStr = (filterName == "knlmeans") ? ":patch=" + QString::number(patch) : "";
+            videoFilters << QString("%1=s=%2:p=%3%4").arg(filterName).arg(s).arg(p).arg(patchStr);
         }
     }
     else if (currentTab == 1) { // x265
@@ -1327,6 +1329,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         if (vp9Tab->vp9NlmeansCheck->isChecked()) {
             int s = vp9Tab->vp9NlmeansSigmaSSlider->value();
             int p = vp9Tab->vp9NlmeansSigmaPSlider->value();
+            int patch = vp9Tab->vp9NlmeansPatchSlider->value();
             QString filterName = vp9Tab->vp9NlmeansGpuCheck->isChecked() ? "knlmeans" : "nlmeans";
             if (vp9Tab->vp9NlmeansGpuCheck->isChecked()) {
                 static bool gpuSupported = false;
@@ -1341,7 +1344,8 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                     }
                 }
             }
-            videoFilters << QString("%1=s=%2:p=%3").arg(filterName).arg(s).arg(p);
+            QString patchStr = (filterName == "knlmeans") ? ":patch=" + QString::number(patch) : "";
+            videoFilters << QString("%1=s=%2:p=%3%4").arg(filterName).arg(s).arg(p).arg(patchStr);
         }
     }
 
