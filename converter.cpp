@@ -7,9 +7,11 @@
 #include <QRegularExpression>
 #include <QTime>
 #include <QMutexLocker>
+
 Converter::Converter(QObject *parent) : QObject(parent) {
     currentPass = 0;
 }
+
 void Converter::startConversion(const QString &inputFile, const QString &outputDir, const QString &baseName, const QStringList &args, bool twoPass, const QString &extension, const QString &codec, const QString &ffmpegPath, const QProcessEnvironment &env, bool overwrite) {
     file = inputFile;
     this->outputDir = outputDir;
@@ -34,14 +36,26 @@ void Converter::startConversion(const QString &inputFile, const QString &outputD
         emit logMessage("Output file " + originalOutputFile + " already exists, using " + finalOutputFile + " instead.");
     }
     emit logMessage("Starting conversion for: " + file + " -> " + finalOutputFile);
+
+    if (codec == "vp9" && args.contains("-crf") && args.contains("-b:v") && args.contains("0")) {
+        emit logMessage("VP9 CRF detected: Using single-pass mode (two-pass not supported for CRF).");
+        twoPass = false;
+    }
+
     currentPass = twoPass ? 1 : 0;
     if (twoPass) {
-        QString statsFile = QDir(outputDir).filePath(baseName + ".stats");
+        QString statsFile;
+        if (codec == "vp9") {
+            statsFile = QDir(outputDir).filePath(baseName);
+        } else {
+            statsFile = QDir(outputDir).filePath(baseName + ".stats");
+        }
         processFile(1, statsFile);
     } else {
         processFile(0, "");
     }
 }
+
 void Converter::processFile(int pass, const QString &statsFile) {
     QMutexLocker locker(&processesMutex);
     QStringList args;
@@ -76,7 +90,9 @@ void Converter::processFile(int pass, const QString &statsFile) {
             QString allParams = svtParamsList.join(":");
             args << "-svtav1-params" << allParams;
         } else if (codec == "vp9") {
-            args << "-pass" << QString::number(pass) << "-passlogfile" << statsFile;
+            QString passPrefix = QFileInfo(statsFile).baseName();
+            args << "-pass" << QString::number(pass) << "-passlogfile" << passPrefix;
+            emit logMessage("Using VP9 passlog prefix: " + passPrefix + " for pass " + QString::number(pass));
         } else if (codec == "x265") {
             QStringList x265ParamsList = {"pass=" + QString::number(pass), "stats=" + statsFile};
             if (pass == 1) {
@@ -125,6 +141,7 @@ void Converter::processFile(int pass, const QString &statsFile) {
         emit logMessage("🔄 Starting conversion for: " + file + " -> " + finalOutputFile);
     }
 }
+
 void Converter::cancel() {
     QMutexLocker locker(&processesMutex);
     emit logMessage("🛑 Cancel button clicked, stopping process...");
@@ -142,6 +159,7 @@ void Converter::cancel() {
     processes.clear();
     emit conversionFinished();
 }
+
 void Converter::readProcessOutput() {
     QProcess* process = qobject_cast<QProcess*>(sender());
     if (process) {
@@ -206,6 +224,7 @@ void Converter::readProcessOutput() {
         }
     }
 }
+
 void Converter::processFinished(QPointer<QProcess> processPtr, int exitCode, QProcess::ExitStatus exitStatus, int pass, const QString &statsFile) {
     QMutexLocker locker(&processesMutex);
     if (!processPtr) {
@@ -226,14 +245,23 @@ void Converter::processFinished(QPointer<QProcess> processPtr, int exitCode, QPr
     } else {
         if (pass == 1) {
             emit logMessage("🔄 First pass completed successfully for: " + file);
-            if (pass == 1) {
-                if (QFile::exists(statsFile)) {
-                    emit logMessage("✅ Stats file created: " + statsFile);
-                } else {
-                    emit logMessage("❌ Stats file missing after first pass: " + statsFile);
+            QString actualStats = statsFile;
+            if (codec == "vp9") {
+                actualStats = statsFile + "-0.log";
+                if (!QFile::exists(actualStats)) {
+                    emit logMessage("❌ VP9 stats file missing after first pass: " + actualStats);
                     emit conversionFinished();
                     return;
                 }
+                emit logMessage("✅ VP9 stats file created: " + actualStats);
+            } else {
+                // x265/AV1: Plain .stats
+                if (!QFile::exists(actualStats)) {
+                    emit logMessage("❌ Stats file missing after first pass: " + actualStats);
+                    emit conversionFinished();
+                    return;
+                }
+                emit logMessage("✅ Stats file created: " + actualStats);
             }
             emit logMessage("⏳ First pass done, scheduling second pass...");
             currentPass = 2;
@@ -253,11 +281,16 @@ void Converter::processFinished(QPointer<QProcess> processPtr, int exitCode, QPr
     emit logMessage("✅ Process cleanup complete");
     if (pass == 2 || pass == 0) {
         if (pass == 2) {
-            if (QFile::exists(statsFile)) {
-                if (QFile::remove(statsFile)) {
-                    emit logMessage("🗑️ Stats file removed: " + statsFile);
+            // Clean up stats (codec-specific)
+            QString cleanupFile = statsFile;
+            if (codec == "vp9") {
+                cleanupFile += "-0.log";
+            }
+            if (QFile::exists(cleanupFile)) {
+                if (QFile::remove(cleanupFile)) {
+                    emit logMessage("🗑️ Stats file removed: " + cleanupFile);
                 } else {
-                    emit logMessage("⚠️ Failed to remove stats file: " + statsFile);
+                    emit logMessage("⚠️ Failed to remove stats file: " + cleanupFile);
                 }
             }
         }
@@ -265,6 +298,7 @@ void Converter::processFinished(QPointer<QProcess> processPtr, int exitCode, QPr
         emit conversionFinished();
     }
 }
+
 double Converter::getDuration(const QString &inputFile) {
     QFileInfo fileInfo(inputFile);
     if (!fileInfo.exists() || !fileInfo.isReadable()) {
@@ -306,6 +340,7 @@ double Converter::getDuration(const QString &inputFile) {
     emit logMessage("Duration retrieved: " + QString::number(dur) + " seconds");
     return dur;
 }
+
 QString Converter::getUniqueOutputFile(const QString& outputDir, const QString& baseName, const QString& extension) {
     QString path = QDir(outputDir).filePath(baseName + extension);
     if (overwriteFlag) {
@@ -324,6 +359,7 @@ QString Converter::getUniqueOutputFile(const QString& outputDir, const QString& 
         }
     }
 }
+
 QString Converter::getFinalOutputFile() const {
     return finalOutputFile;
 }

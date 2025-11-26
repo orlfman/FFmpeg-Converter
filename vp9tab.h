@@ -47,6 +47,11 @@ public:
     QComboBox *vp9VorbisQualityBox;
     QCheckBox *enableRowMtCheck;
     QCheckBox *screenContentCheck;
+    QSlider *vp9QMaxSlider;
+    QCheckBox *vp9ArnrCheck;
+    QSlider *vp9ArnrStrengthSlider;
+    QSlider *vp9ArnrMaxFramesSlider;
+    QCheckBox *vp9TplCheck;
 private:
     QWidget *vp9CRFConfigWidget;
     QWidget *vp9BitrateConfigWidget;

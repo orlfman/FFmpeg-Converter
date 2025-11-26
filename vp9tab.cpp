@@ -65,8 +65,19 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addWidget(lbl);
         l->addWidget(vp9BitrateSlider);
         l->addWidget(val);
+        QLabel *qmaxLbl = new QLabel("QMax:");
+        qmaxLbl->setToolTip("Max Quantizer for low-bitrate (higher=more compression). Range 0-63.");
+        vp9QMaxSlider = new QSlider(Qt::Horizontal);
+        vp9QMaxSlider->setMaximumWidth(200);
+        vp9QMaxSlider->setRange(0, 63);
+        vp9QMaxSlider->setValue(52);
+        QLabel *qmaxVal = new QLabel("52");
+        l->addWidget(qmaxLbl);
+        l->addWidget(vp9QMaxSlider);
+        l->addWidget(qmaxVal);
         l->addStretch();
         QObject::connect(vp9BitrateSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
+        QObject::connect(vp9QMaxSlider, &QSlider::valueChanged, [qmaxVal](int v){ qmaxVal->setText(QString::number(v)); });
         vp9Layout->addWidget(vp9BitrateConfigWidget);
         vp9BitrateConfigWidget->setVisible(false);
     }
@@ -236,6 +247,60 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         QObject::connect(vp9AQStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         advancedLayout->addWidget(w);
+    }
+    // ARNR
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        vp9ArnrCheck = new QCheckBox("Enable ARNR");
+        vp9ArnrCheck->setToolTip("Reduces noise in reference frames for cleaner low-bitrate.");
+        l->addWidget(vp9ArnrCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *arnrStrLbl = new QLabel("ARNR Strength:");
+        arnrStrLbl->setToolTip("Noise reduction intensity (0-6).");
+        vp9ArnrStrengthSlider = new QSlider(Qt::Horizontal);
+        vp9ArnrStrengthSlider->setMaximumWidth(150);
+        vp9ArnrStrengthSlider->setRange(0, 6);
+        vp9ArnrStrengthSlider->setValue(3);
+        vp9ArnrStrengthSlider->setEnabled(false);
+        QLabel *arnrStrVal = new QLabel("3");
+        l->addWidget(arnrStrLbl);
+        l->addWidget(vp9ArnrStrengthSlider);
+        l->addWidget(arnrStrVal);
+        l->addStretch();
+        QObject::connect(vp9ArnrStrengthSlider, &QSlider::valueChanged, [arnrStrVal](int v){ arnrStrVal->setText(QString::number(v)); });
+        advancedLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *arnrMaxLbl = new QLabel("ARNR Max Frames:");
+        arnrMaxLbl->setToolTip("Frames to filter (0-15).");
+        vp9ArnrMaxFramesSlider = new QSlider(Qt::Horizontal);
+        vp9ArnrMaxFramesSlider->setMaximumWidth(150);
+        vp9ArnrMaxFramesSlider->setRange(0, 15);
+        vp9ArnrMaxFramesSlider->setValue(7);
+        vp9ArnrMaxFramesSlider->setEnabled(false);
+        QLabel *arnrMaxVal = new QLabel("7");
+        l->addWidget(arnrMaxLbl);
+        l->addWidget(vp9ArnrMaxFramesSlider);
+        l->addWidget(arnrMaxVal);
+        l->addStretch();
+        QObject::connect(vp9ArnrMaxFramesSlider, &QSlider::valueChanged, [arnrMaxVal](int v){ arnrMaxVal->setText(QString::number(v)); });
+        advancedLayout->addWidget(w);
+    }
+    // TPL
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        vp9TplCheck = new QCheckBox("Enable TPL");
+        vp9TplCheck->setToolTip("Template Matching for better motion prediction (slower).");
+        l->addWidget(vp9TplCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
     }
     // Keyframe interval
     {
@@ -432,6 +497,18 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QString m = vp9AQModeBox->currentText();
         vp9AQStrengthSlider->setEnabled(m == "Variance" || m == "Complexity");
     });
+    // Enabling ARNR
+    QObject::connect(vp9ArnrCheck, &QCheckBox::toggled, [this](bool on){
+        vp9ArnrStrengthSlider->setEnabled(on);
+        vp9ArnrMaxFramesSlider->setEnabled(on);
+    });
+    // Showing QMax
+    QObject::connect(vp9RCModeBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
+        if (vp9EnableRCModeCheck->isChecked()) {
+            QString m = vp9RCModeBox->currentText();
+            bool showQMax = (m == "ABR" || m == "CBR");
+        }
+    });
     // Showing audio options based on codec
     QObject::connect(vp9AudioCodecBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](){
         QString c = vp9AudioCodecBox->currentText();
@@ -474,6 +551,11 @@ void Vp9Tab::resetDefaults() {
     vp9TwoPassCheck->setChecked(false);
     vp9AQModeBox->setCurrentIndex(0);
     vp9AQStrengthSlider->setValue(6);
+    vp9QMaxSlider->setValue(52);
+    vp9ArnrCheck->setChecked(false);
+    vp9ArnrStrengthSlider->setValue(3);
+    vp9ArnrMaxFramesSlider->setValue(7);
+    vp9TplCheck->setChecked(false);
     vp9KeyIntBox->setCurrentIndex(4);
     vp9CpuUsedBox->setCurrentIndex(4);
     vp9ThreadsBox->setCurrentIndex(0);

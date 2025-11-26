@@ -451,6 +451,11 @@ void Presets::connectPresets(
                 vp9Tab->vp9DeadlineBox->setCurrentText("good");
                 vp9Tab->vp9SharpenCheck->setChecked(false);
                 vp9Tab->vp9AQStrengthSlider->setValue(4);
+                vp9Tab->vp9QMaxSlider->setValue(52);
+                vp9Tab->vp9ArnrCheck->setChecked(false);
+                vp9Tab->vp9ArnrStrengthSlider->setValue(3);
+                vp9Tab->vp9ArnrMaxFramesSlider->setValue(7);
+                vp9Tab->vp9TplCheck->setChecked(false);
 
                 switch (p) {
                     case 1: // Streaming
@@ -465,6 +470,8 @@ void Presets::connectPresets(
                         eightBitCheck->setChecked(true);
                         eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
                         vp9Tab->vp9DeadlineBox->setCurrentText("realtime");
+                        vp9Tab->vp9QMaxSlider->setValue(63); // Max compression for tiny files
+                        vp9Tab->vp9ArnrCheck->setChecked(false);
                         break;
                     case 2: // Medium
                         vp9Tab->vp9CpuUsedBox->setCurrentText("4");
@@ -475,6 +482,10 @@ void Presets::connectPresets(
                         eightBitCheck->setChecked(true);
                         eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
                         vp9Tab->vp9AQStrengthSlider->setValue(5);
+                        vp9Tab->vp9QMaxSlider->setValue(55);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(3);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(7);
                         break;
                     case 3: // High
                         vp9Tab->vp9CpuUsedBox->setCurrentText("3");
@@ -485,6 +496,10 @@ void Presets::connectPresets(
                         eightBitCheck->setChecked(true);
                         eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
                         vp9Tab->vp9AQStrengthSlider->setValue(6);
+                        vp9Tab->vp9QMaxSlider->setValue(52);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(4);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(9);
                         break;
                     case 4: // Quality
                         vp9Tab->vp9CpuUsedBox->setCurrentText("2");
@@ -492,6 +507,11 @@ void Presets::connectPresets(
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("224 kbps");
                         vp9Tab->vp9LookaheadSlider->setValue(25);
                         vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        vp9Tab->vp9QMaxSlider->setValue(48);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(5);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(12);
+                        vp9Tab->vp9TplCheck->setChecked(true);
                         tenBitCheck->setChecked(true);
                         colorFormatBox->setCurrentText("10-bit 4:2:0");
                         vp9Tab->vp9DeadlineBox->setCurrentText("best");
@@ -508,6 +528,11 @@ void Presets::connectPresets(
                         vp9Tab->vp9SharpenCheck->setChecked(true);
                         vp9Tab->vp9SharpenStrengthSlider->setValue(3);
                         vp9Tab->vp9AQStrengthSlider->setValue(8);
+                        vp9Tab->vp9QMaxSlider->setValue(45);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(6);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
+                        vp9Tab->vp9TplCheck->setChecked(true);
                         break;
                     case 6: // Ultra
                         vp9Tab->vp9CpuUsedBox->setCurrentText("0");
@@ -521,6 +546,11 @@ void Presets::connectPresets(
                         vp9Tab->vp9SharpenStrengthSlider->setValue(5);
                         vp9Tab->vp9TileColumnsBox->setCurrentText("8");
                         vp9Tab->vp9AQStrengthSlider->setValue(9);
+                        vp9Tab->vp9QMaxSlider->setValue(40);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(6);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
+                        vp9Tab->vp9TplCheck->setChecked(true);
                         break;
                 }
             }

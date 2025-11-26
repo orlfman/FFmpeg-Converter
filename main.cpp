@@ -1614,7 +1614,17 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 int aqMode = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Complexity") ? 2 : 0;
                 args << "-aq-mode" << QString::number(aqMode);
             }
-            args << "-arnr-strength" << QString::number(vp9Tab->vp9AQStrengthSlider->value());
+            // ARNR
+            if (vp9Tab->vp9ArnrCheck->isChecked()) {
+                args << "-arnr-strength" << QString::number(vp9Tab->vp9ArnrStrengthSlider->value());
+                args << "-arnr-maxframes" << QString::number(vp9Tab->vp9ArnrMaxFramesSlider->value());
+            } else {
+                args << "-arnr-strength" << QString::number(vp9Tab->vp9AQStrengthSlider->value());
+            }
+            // TPL
+            if (vp9Tab->vp9TplCheck->isChecked()) {
+                args << "-auto-alt-ref" << "1";
+            }
             if (vp9Tab->enableRowMtCheck->isChecked()) {
                 args << "-row-mt" << "1";
             }
@@ -1635,6 +1645,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 args << "-row-mt" << "1";
                 args << "-tile-rows" << QString::number(log2Rows);
             }
+            args << "-qmax" << QString::number(vp9Tab->vp9QMaxSlider->value());
             if (vp9Tab->vp9EnableRCModeCheck->isChecked()) {
                 QString mode = vp9Tab->vp9RCModeBox->currentText();
                 if (mode == "CRF") {
