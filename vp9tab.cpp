@@ -180,6 +180,63 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(vp9NoiseReductionSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
+    // NLMeans Denoise filter
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        vp9NlmeansCheck = new QCheckBox("NLMeans Denoise");
+        vp9NlmeansCheck->setToolTip("Strong non-local means denoiser for heavy grain/noise.");
+        l->addWidget(vp9NlmeansCheck);
+        l->addStretch();
+        filtersLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *sLbl = new QLabel("Sigma S:");
+        sLbl->setToolTip("Spatial strength (0-100, higher=more denoising).");
+        vp9NlmeansSigmaSSlider = new QSlider(Qt::Horizontal);
+        vp9NlmeansSigmaSSlider->setMaximumWidth(200);
+        vp9NlmeansSigmaSSlider->setRange(0, 100);
+        vp9NlmeansSigmaSSlider->setValue(20);
+        vp9NlmeansSigmaSSlider->setEnabled(false);
+        QLabel *sVal = new QLabel("20");
+        l->addWidget(sLbl);
+        l->addWidget(vp9NlmeansSigmaSSlider);
+        l->addWidget(sVal);
+        l->addStretch();
+        QObject::connect(vp9NlmeansSigmaSSlider, &QSlider::valueChanged, [sVal](int v){ sVal->setText(QString::number(v)); });
+        filtersLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *pLbl = new QLabel("Sigma P:");
+        pLbl->setToolTip("Temporal strength (0-100, higher=more across frames).");
+        vp9NlmeansSigmaPSlider = new QSlider(Qt::Horizontal);
+        vp9NlmeansSigmaPSlider->setMaximumWidth(200);
+        vp9NlmeansSigmaPSlider->setRange(0, 100);
+        vp9NlmeansSigmaPSlider->setValue(10);
+        vp9NlmeansSigmaPSlider->setEnabled(false);
+        QLabel *pVal = new QLabel("10");
+        l->addWidget(pLbl);
+        l->addWidget(vp9NlmeansSigmaPSlider);
+        l->addWidget(pVal);
+        l->addStretch();
+        QObject::connect(vp9NlmeansSigmaPSlider, &QSlider::valueChanged, [pVal](int v){ pVal->setText(QString::number(v)); });
+        filtersLayout->addWidget(w);
+    }
+    // GPU Mode for NLMeans
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        vp9NlmeansGpuCheck = new QCheckBox("GPU Mode (KNLMeansCL)");
+        vp9NlmeansGpuCheck->setToolTip("OpenCL-accelerated (AMD/Intel GPUs; fallback to CPU if unsupported).");
+        vp9NlmeansGpuCheck->setEnabled(false); // Only if NLMeans checked
+        l->addWidget(vp9NlmeansGpuCheck);
+        l->addStretch();
+        filtersLayout->addWidget(w);
+    }
     // Grain options
     QGroupBox *grainGroup = new QGroupBox("Grain Options");
     QVBoxLayout *grainLayout = new QVBoxLayout(grainGroup);
@@ -490,6 +547,11 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
                      [this](bool on){ vp9BlurStrengthSlider->setEnabled(on); });
     QObject::connect(vp9NoiseReductionCheck, &QCheckBox::toggled,
                      [this](bool on){ vp9NoiseReductionSlider->setEnabled(on); });
+    QObject::connect(vp9NlmeansCheck, &QCheckBox::toggled, [this](bool on){
+        vp9NlmeansSigmaSSlider->setEnabled(on);
+        vp9NlmeansSigmaPSlider->setEnabled(on);
+        vp9NlmeansGpuCheck->setEnabled(on);
+    });
     QObject::connect(vp9GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ vp9GrainSynthLevel->setEnabled(on); });
     // Enabling AQ strength
@@ -546,6 +608,10 @@ void Vp9Tab::resetDefaults() {
     vp9BlurStrengthSlider->setValue(1);
     vp9NoiseReductionCheck->setChecked(false);
     vp9NoiseReductionSlider->setValue(5);
+    vp9NlmeansCheck->setChecked(false);
+    vp9NlmeansSigmaSSlider->setValue(20);
+    vp9NlmeansSigmaPSlider->setValue(10);
+    vp9NlmeansGpuCheck->setChecked(false);
     vp9GrainSynthCheck->setChecked(false);
     vp9GrainSynthLevel->setValue(0);
     vp9TwoPassCheck->setChecked(false);

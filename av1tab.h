@@ -13,7 +13,6 @@ class Av1Tab : public QWidget {
     Q_OBJECT
 public:
     explicit Av1Tab(QWidget *parent = nullptr);
-    // These are public so main.cpp can access them easily
     QComboBox *av1ContainerBox;
     QComboBox *av1PresetBox;
     QCheckBox *av1EnableRCModeCheck;
@@ -52,7 +51,6 @@ public:
     QComboBox *av1Mp3VbrBox;
     QComboBox *av1FlacCompressionBox;
     QComboBox *av1VorbisQualityBox;
-    // Some AV1-specific features I fixed up
     QCheckBox *nativeGrainCheck;
     QSlider *grainStrengthSlider;
     QComboBox *grainDenoiseCombo;
@@ -61,10 +59,13 @@ public:
     QCheckBox *lowLatencyCheck;
     QCheckBox *tplModelCheck;
     QCheckBox *enableCdefCheck;
-    // A couple new things I added
     QCheckBox *enableTfCheck;
     QComboBox *fastDecodeBox;
     QComboBox *screenContentModeBox;
+    QCheckBox *av1NlmeansCheck;
+    QSlider *av1NlmeansSigmaSSlider;
+    QSlider *av1NlmeansSigmaPSlider;
+    QCheckBox *av1NlmeansGpuCheck;
 private:
     QWidget *av1CRFConfigWidget;
     QWidget *av1QPConfigWidget;
@@ -76,6 +77,6 @@ private:
     QLabel *av1VorbisQualityLabel;
 private slots:
     void updateAudioCodecOptions();
-    void resetDefaults(); // Handles resetting everything to defaults
+    void resetDefaults();
 };
 #endif // AV1TAB_H

@@ -47,6 +47,10 @@ public:
     QComboBox *vp9VorbisQualityBox;
     QCheckBox *enableRowMtCheck;
     QCheckBox *screenContentCheck;
+    QCheckBox *vp9NlmeansCheck;
+    QSlider *vp9NlmeansSigmaSSlider;
+    QSlider *vp9NlmeansSigmaPSlider;
+    QCheckBox *vp9NlmeansGpuCheck;
     QSlider *vp9QMaxSlider;
     QCheckBox *vp9ArnrCheck;
     QSlider *vp9ArnrStrengthSlider;

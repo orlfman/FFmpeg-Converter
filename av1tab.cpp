@@ -249,6 +249,62 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                          [val](int v){ val->setText(QString::number(v)); });
         filtersLayout->addWidget(w);
     }
+    // NLMeans Denoise filter
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        av1NlmeansCheck = new QCheckBox("NLMeans Denoise");
+        av1NlmeansCheck->setToolTip("Strong non-local means denoiser for heavy grain/noise.");
+        l->addWidget(av1NlmeansCheck);
+        l->addStretch();
+        filtersLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *sLbl = new QLabel("Sigma S:");
+        sLbl->setToolTip("Spatial strength (0-100, higher=more denoising).");
+        av1NlmeansSigmaSSlider = new QSlider(Qt::Horizontal);
+        av1NlmeansSigmaSSlider->setMaximumWidth(200);
+        av1NlmeansSigmaSSlider->setRange(0, 100);
+        av1NlmeansSigmaSSlider->setValue(20);
+        av1NlmeansSigmaSSlider->setEnabled(false);
+        QLabel *sVal = new QLabel("20");
+        l->addWidget(sLbl);
+        l->addWidget(av1NlmeansSigmaSSlider);
+        l->addWidget(sVal);
+        l->addStretch();
+        QObject::connect(av1NlmeansSigmaSSlider, &QSlider::valueChanged, [sVal](int v){ sVal->setText(QString::number(v)); });
+        filtersLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QLabel *pLbl = new QLabel("Sigma P:");
+        pLbl->setToolTip("Temporal strength (0-100, higher=more across frames).");
+        av1NlmeansSigmaPSlider = new QSlider(Qt::Horizontal);
+        av1NlmeansSigmaPSlider->setMaximumWidth(200);
+        av1NlmeansSigmaPSlider->setRange(0, 100);
+        av1NlmeansSigmaPSlider->setValue(10);
+        av1NlmeansSigmaPSlider->setEnabled(false);
+        QLabel *pVal = new QLabel("10");
+        l->addWidget(pLbl);
+        l->addWidget(av1NlmeansSigmaPSlider);
+        l->addWidget(pVal);
+        l->addStretch();
+        QObject::connect(av1NlmeansSigmaPSlider, &QSlider::valueChanged, [pVal](int v){ pVal->setText(QString::number(v)); });
+        filtersLayout->addWidget(w);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        av1NlmeansGpuCheck = new QCheckBox("GPU Mode (KNLMeansCL)");
+        av1NlmeansGpuCheck->setToolTip("OpenCL-accelerated (AMD/Intel GPUs; fallback to CPU if unsupported).");
+        av1NlmeansGpuCheck->setEnabled(false); // Only if NLMeans checked
+        l->addWidget(av1NlmeansGpuCheck);
+        l->addStretch();
+        filtersLayout->addWidget(w);
+    }
     // Grain options group
     QGroupBox *grainGroup = new QGroupBox("Grain Options");
     QVBoxLayout *grainLayout = new QVBoxLayout(grainGroup);
@@ -623,6 +679,15 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
                      [this](bool on){ av1BlurStrengthSlider->setEnabled(on); });
     QObject::connect(av1NoiseReductionCheck, &QCheckBox::toggled,
                      [this](bool on){ av1NoiseReductionSlider->setEnabled(on); });
+    QObject::connect(av1NlmeansCheck, &QCheckBox::toggled, [this](bool on){
+        av1NlmeansSigmaSSlider->setEnabled(on);
+        av1NlmeansSigmaPSlider->setEnabled(on);
+    });
+    QObject::connect(av1NlmeansCheck, &QCheckBox::toggled, [this](bool on){
+        av1NlmeansSigmaSSlider->setEnabled(on);
+        av1NlmeansSigmaPSlider->setEnabled(on);
+        av1NlmeansGpuCheck->setEnabled(on);
+    });
     QObject::connect(av1GrainSynthCheck, &QCheckBox::toggled,
                      [this](bool on){ av1GrainSynthLevel->setEnabled(on); });
     QObject::connect(nativeGrainCheck, &QCheckBox::toggled,
@@ -704,6 +769,10 @@ void Av1Tab::resetDefaults() {
     av1BlurStrengthSlider->setValue(10);
     av1NoiseReductionCheck->setChecked(false);
     av1NoiseReductionSlider->setValue(5);
+    av1NlmeansCheck->setChecked(false);
+    av1NlmeansSigmaSSlider->setValue(20);
+    av1NlmeansSigmaPSlider->setValue(10);
+    av1NlmeansGpuCheck->setChecked(false);
     av1GrainSynthCheck->setChecked(false);
     av1GrainSynthLevel->setValue(0);
     nativeGrainCheck->setChecked(false);
