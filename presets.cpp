@@ -158,7 +158,45 @@ void Presets::connectPresets(
                 av1Tab->av1NlmeansSigmaPSlider->setValue(10);
                 av1Tab->av1NlmeansPatchSlider->setValue(7);
                 switch (p) {
-                    case 1: // Streaming
+                    case 1: // DVD
+                        av1Tab->av1ContainerBox->setCurrentText("mkv");
+                        av1Tab->av1AudioCheck->setChecked(true);
+                        av1Tab->av1AudioCodecBox->setCurrentText("opus");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1EnableRCModeCheck->setChecked(true);
+                        av1Tab->av1RCModeBox->setCurrentText("CRF");
+                        av1Tab->av1PresetBox->setCurrentText("8");
+                        av1Tab->av1CRFSlider->setValue(28);
+                        av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
+                        av1Tab->av1VbrModeBox->setCurrentText("Default");
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        av1Tab->tplModelCheck->setChecked(true);
+                        av1Tab->enableTfCheck->setChecked(false);
+                        av1Tab->enableCdefCheck->setChecked(true);
+                        av1Tab->av1LookaheadCheck->setChecked(true);
+                        av1Tab->av1LookaheadSlider->setValue(40);
+                        av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1SharpenCheck->setChecked(false);
+                        av1Tab->av1TwoPassCheck->setChecked(false);
+                        av1Tab->lowLatencyCheck->setChecked(false);
+                        av1Tab->screenContentModeBox->setCurrentIndex(0);
+                        av1Tab->superResModeBox->setCurrentIndex(0);
+                        av1Tab->nativeGrainCheck->setChecked(false);
+                        av1Tab->av1ThreadsBox->setCurrentText("Automatic");
+                        av1Tab->av1TileRowsBox->setCurrentText("Automatic");
+                        av1Tab->av1TileColumnsBox->setCurrentText("Automatic");
+                        av1Tab->av1LevelBox->setCurrentText("Auto");
+                        av1Tab->av1UnsharpenCheck->setChecked(false);
+                        av1Tab->av1BlurCheck->setChecked(false);
+                        av1Tab->av1NoiseReductionCheck->setChecked(false);
+                        av1Tab->av1GrainSynthCheck->setChecked(false);
+                        av1Tab->av1NlmeansCheck->setChecked(false);
+                        av1Tab->av1AQModeBox->setCurrentText("Automatic");
+                        break;
+                    case 2: // Streaming
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
@@ -181,8 +219,7 @@ void Presets::connectPresets(
                         av1Tab->fastDecodeBox->setCurrentIndex(2);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         break;
-
-                    case 2: // Medium
+                    case 3: // Medium
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
@@ -204,8 +241,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
-
-                    case 3: // High
+                    case 4: // High
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
@@ -227,8 +263,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
-
-                    case 4: // Quality
+                    case 5: // Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
@@ -251,8 +286,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
-
-                    case 5: // High Quality
+                    case 6: // High Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
@@ -276,8 +310,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenStrengthSlider->setValue(5);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
-
-                    case 6: // Ultra
+                    case 7: // Ultra
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");

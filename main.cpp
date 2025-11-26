@@ -480,7 +480,7 @@ int main(int argc, char *argv[]) {
     QHBoxLayout *presetLayout = new QHBoxLayout();
     QLabel *presetLabel = new QLabel("Quality Preset:");
     QComboBox *presetCombo = new QComboBox();
-    presetCombo->addItems({"Custom", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra"});
+    presetCombo->addItems({"Custom", "DVD", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra"});
     presetCombo->setCurrentIndex(0);
     presetCombo->setToolTip("One click presets for current codec");
     presetLayout->addWidget(presetLabel);
@@ -802,31 +802,73 @@ int main(int argc, char *argv[]) {
             QMetaObject::invokeMethod(infoBox, "setHtml", Qt::QueuedConnection, Q_ARG(QString, infoText));
         }));
     };
-    auto selectDvd = [&]() {
-        QString input;
-        bool isDvd = QMessageBox::question(nullptr, "Input Type", "Is this a physical DVD in your drive? (No for ISO file)",
-        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
-        if (isDvd) {
-        input = "dvd:///dev/sr0";
-        } else {
+auto selectDvd = [&]() {
+    QString input;
+    bool isDvd = QMessageBox::question(nullptr, "Input Type", "Is this a physical DVD in your drive? (No for ISO file)",
+                                       QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+    QString dumpPath = "/tmp/dvd_dump_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + ".vob";
+    if (isDvd) {
+        QProcess mpvProcess;
+        mpvProcess.start("mpv", QStringList() << "dvd://" << "--dvd-device=/dev/sr0" << "--stream-dump=" + dumpPath << "--no-video" << "--no-audio" << "--loop=inf");
+        if (!mpvProcess.waitForStarted(5000)) {
+            QMessageBox::warning(nullptr, "Error", "mpv failed to start. Install with 'sudo pacman -S mpv' and check /dev/sr0 permissions.");
+            return;
+        }
+        QTimer timer;
+        timer.setSingleShot(true);
+        timer.setInterval(600000);
+        QEventLoop loop;
+        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        timer.start();
+        loop.exec();
+        mpvProcess.kill();
+        mpvProcess.waitForFinished(5000);
+        if (!QFile::exists(dumpPath)) {
+            QMessageBox::warning(nullptr, "Error", "Dump failed. Check Console for mpv errors.");
+            return;
+        }
+        input = dumpPath;
+        logBox->append("📀 Dumped DVD with mpv to: " + dumpPath);
+    } else {
         QFileDialog dialog(nullptr);
         dialog.setFileMode(QFileDialog::ExistingFile);
         dialog.setNameFilter("DVD ISO (*.iso)");
         dialog.setWindowTitle("Select DVD ISO");
         if (dialog.exec()) {
-        input = "dvd://" + dialog.selectedFiles().first();
+            QString isoPath = dialog.selectedFiles().first();
+            QProcess mpvProcess;
+            mpvProcess.start("mpv", QStringList() << "dvd://" + isoPath << "--stream-dump=" + dumpPath << "--no-video" << "--no-audio" << "--loop=inf");
+            if (!mpvProcess.waitForStarted(5000)) {
+                QMessageBox::warning(nullptr, "Error", "mpv failed to start for ISO.");
+                return;
+            }
+            QTimer timer;
+            timer.setSingleShot(true);
+            timer.setInterval(600000);
+            QEventLoop loop;
+            QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+            timer.start();
+            loop.exec();
+            mpvProcess.kill();
+            mpvProcess.waitForFinished(5000);
+            if (!QFile::exists(dumpPath)) {
+                QMessageBox::warning(nullptr, "Error", "ISO dump failed.");
+                return;
+            }
+            input = dumpPath;
+            logBox->append("📀 Dumped ISO with mpv to: " + dumpPath);
         } else {
-        return;
-               }
-               }
-        if (!input.isEmpty()) {
+            return;
+        }
+    }
+    if (!input.isEmpty()) {
         selectedFilesBox->setText(input);
         outputNameBox->setText("DVD_Rip");
         updateInfo(input);
-        logBox->append("📀 DVD/ISO selected: " + input);
-        }
-    };
-    QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
+        logBox->append("📀 DVD/ISO dumped and ready for re-encode: " + input);
+    }
+};
+QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     QMenuBar *menuBar = window.menuBar();
     QMenu *fileMenu = menuBar->addMenu("&File");
     // Sweet file browser with thumbnails
