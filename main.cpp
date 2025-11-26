@@ -219,6 +219,8 @@ int main(int argc, char *argv[]) {
     selectedFilesBox->setReadOnly(true);
     selectFilesLayout->addWidget(selectFilesButton);
     selectFilesLayout->addWidget(selectedFilesBox);
+    QPushButton *dvdButton = new QPushButton("Open Disk");
+    selectFilesLayout->addWidget(dvdButton);
     mainLayout->addLayout(selectFilesLayout);
     // This part handles output naming, including pulling titles from metadata
     QHBoxLayout *outputNameLayout = new QHBoxLayout();
@@ -260,7 +262,7 @@ int main(int argc, char *argv[]) {
         int mode = outputNameModeBox->currentIndex();
         QString input = selectedFilesBox->text().trimmed();
         if (!input.isEmpty()) {
-            originalFilename = QFileInfo(input).baseName();
+            originalFilename = input.startsWith("dvd://") ? "DVD_Input" : QFileInfo(input).baseName();
         }
         QString name;
         if (mode == 0) {
@@ -617,14 +619,23 @@ int main(int argc, char *argv[]) {
             return;
         }
         static_cast<void>(QtConcurrent::run([inputFile, infoBox, logBox, &settings, tenBitCheck, eightBitCheck, colorFormatBox, eightBitColorFormatBox]() {
-            QFileInfo fileInfo(inputFile);
-            if (!fileInfo.exists()) {
-                QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file does not exist: " + inputFile));
-                return;
+            QString fileSizeStr = "N/A";
+            QString fileContainer = inputFile.startsWith("dvd://") ? "DVD" : QFileInfo(inputFile).suffix();
+            if (fileContainer.isEmpty()) {
+                fileContainer = "N/A";
             }
-            if (!fileInfo.isReadable()) {
-                QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file is not readable: " + inputFile));
-                return;
+            if (!inputFile.startsWith("dvd://")) {
+                QFileInfo fileInfo(inputFile);
+                if (!fileInfo.exists()) {
+                    QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file does not exist: " + inputFile));
+                    return;
+                }
+                if (!fileInfo.isReadable()) {
+                    QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file is not readable: " + inputFile));
+                    return;
+                }
+                qint64 fileSizeBytes = fileInfo.size();
+                fileSizeStr = (fileSizeBytes > 0) ? QString::number(fileSizeBytes / 1024.0 / 1024, 'f', 2) + " MB" : "N/A";
             }
             QProcess ffprobe;
             QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
@@ -668,14 +679,8 @@ int main(int argc, char *argv[]) {
                 return;
             }
             QString resolution = "N/A", videoCodec = "N/A", frameRate = "N/A", videoBitRate = "N/A";
-            QString audioCodec = "N/A", pixFmt = "N/A", durationStr = "N/A", fileContainer = "N/A", title = "N/A";
+            QString audioCodec = "N/A", pixFmt = "N/A", durationStr = "N/A", title = "N/A";
             QString aspectRatio = "N/A", colorSpace = "N/A", pixelFormat = "N/A", audioSampleRate = "N/A";
-            qint64 fileSizeBytes = QFileInfo(inputFile).size();
-            QString fileSizeStr = (fileSizeBytes > 0) ? QString::number(fileSizeBytes / 1024.0 / 1024, 'f', 2) + " MB" : "N/A";
-            fileContainer = QFileInfo(inputFile).suffix();
-            if (fileContainer.isEmpty()) {
-                fileContainer = "N/A";
-            }
             QStringList lines = output.split("\n", Qt::SkipEmptyParts);
             QList<QMap<QString, QString>> streams;
             QMap<QString, QString> formatMap;
@@ -750,7 +755,6 @@ int main(int argc, char *argv[]) {
                 if (pixelFormat.contains("10")) pixFmt = "10-bit";
                 else if (pixelFormat.contains("12")) pixFmt = "12-bit";
                 else pixFmt = "8-bit";
-                // Automatically set the 8/10-bit checkboxes based on the input video
                 bool isTenBit = (pixFmt == "10-bit");
                 QMetaObject::invokeMethod(tenBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, isTenBit));
                 QMetaObject::invokeMethod(eightBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, !isTenBit));
@@ -779,7 +783,7 @@ int main(int argc, char *argv[]) {
             }
             title = formatMap.value("TAG:title", "N/A");
             if (title == "N/A" || title.isEmpty()) {
-                title = QFileInfo(inputFile).completeBaseName();
+                title = inputFile.startsWith("dvd://") ? "DVD Rip" : QFileInfo(inputFile).completeBaseName();
             }
             QString infoText = "<b>Video Title:</b> " + title + "<br>"
             + "<b>Resolution:</b> " + resolution + "<br>"
@@ -798,7 +802,31 @@ int main(int argc, char *argv[]) {
             QMetaObject::invokeMethod(infoBox, "setHtml", Qt::QueuedConnection, Q_ARG(QString, infoText));
         }));
     };
-    // Setting up the menu bar, all good for Qt6
+    auto selectDvd = [&]() {
+        QString input;
+        bool isDvd = QMessageBox::question(nullptr, "Input Type", "Is this a physical DVD in your drive? (No for ISO file)",
+        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+        if (isDvd) {
+        input = "dvd:///dev/sr0";
+        } else {
+        QFileDialog dialog(nullptr);
+        dialog.setFileMode(QFileDialog::ExistingFile);
+        dialog.setNameFilter("DVD ISO (*.iso)");
+        dialog.setWindowTitle("Select DVD ISO");
+        if (dialog.exec()) {
+        input = "dvd://" + dialog.selectedFiles().first();
+        } else {
+        return;
+               }
+               }
+        if (!input.isEmpty()) {
+        selectedFilesBox->setText(input);
+        outputNameBox->setText("DVD_Rip");
+        updateInfo(input);
+        logBox->append("📀 DVD/ISO selected: " + input);
+        }
+    };
+    QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     QMenuBar *menuBar = window.menuBar();
     QMenu *fileMenu = menuBar->addMenu("&File");
     // Sweet file browser with thumbnails
@@ -1119,6 +1147,9 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         QString inputFile;
         if (codecTabs->currentWidget() != combineScroll) {
             inputFile = selectedFilesBox->text();
+            if (inputFile.startsWith("dvd://")) {
+                logBox->append("🔄 Ripping DVD title (longest track auto-selected). Use -map 0 for full disc if needed.");
+            }
             if (inputFile.isEmpty()) {
                 QMessageBox::warning(nullptr, "Error", "Please select an input file.");
                 return;
