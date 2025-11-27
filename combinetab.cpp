@@ -135,9 +135,7 @@ QString CombineTab::getFinalOutputFile() const
 
 CombineTab::StreamInfo CombineTab::probeFile(const QString& file, const QString& ffprobePath) {
     StreamInfo info;
-    if (!QFile::exists(file)) return info;  // Invalid file
-
-    // Video probe
+    if (!QFile::exists(file)) return info;
     QProcess vProbe;
     vProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-select_streams" << "v:0"
     << "-show_entries" << "stream=codec_name,width,height,r_frame_rate,pix_fmt,sample_aspect_ratio"
@@ -161,8 +159,6 @@ CombineTab::StreamInfo CombineTab::probeFile(const QString& file, const QString&
         info.pixFmt = vData[4];
         info.sar = vData.size() > 5 ? vData[5] : "1:1";
     }
-
-    // Audio probe
     QProcess aProbe;
     aProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-select_streams" << "a:0"
     << "-show_entries" << "stream=codec_name,sample_rate"
@@ -178,7 +174,6 @@ CombineTab::StreamInfo CombineTab::probeFile(const QString& file, const QString&
         info.audioCodec = "none";
     }
 
-    // Duration
     QProcess durProbe;
     durProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-show_entries" << "format=duration"
     << "-of" << "csv=p=0" << file);
@@ -205,7 +200,6 @@ bool CombineTab::checkAllFilesCompatible(const QList<StreamInfo>& streams, Strea
 
 void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
 {
-    // Get ffprobe path
     QSettings settings("FFmpegConverter", "Settings");
     QString ffmpegPath = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
     if (ffmpegPath.isEmpty()) ffmpegPath = "/usr/bin/ffmpeg";
@@ -214,8 +208,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
         ffmpegPath = ffmpegPath.replace("ffprobe", "ffmpeg", Qt::CaseInsensitive);
     }
     QString ffprobePath = ffmpegPath.replace("ffmpeg", "ffprobe", Qt::CaseInsensitive);
-
-    // Validate ffmpegPath is actually FFmpeg
     QProcess testProcess;
     testProcess.start(ffmpegPath, QStringList() << "-version");
     if (testProcess.waitForFinished(2000)) {
@@ -223,26 +215,24 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
         if (!versionOutput.startsWith("ffmpeg version")) {
             emit logMessage("⚠️ Invalid FFmpeg path detected in Combine: " + ffmpegPath + " (not FFmpeg) - resetting to /usr/bin/ffmpeg");
             ffmpegPath = "/usr/bin/ffmpeg";
-            ffprobePath = "/usr/bin/ffprobe"; // Update ffprobe too
+            ffprobePath = "/usr/bin/ffprobe";
         }
     } else {
         emit logMessage("⚠️ Could not validate FFmpeg path: " + ffmpegPath + " - resetting to /usr/bin/ffmpeg");
         ffmpegPath = "/usr/bin/ffmpeg";
         ffprobePath = "/usr/bin/ffprobe";
     }
-
-    // Probe all files
     QList<StreamInfo> streams;
-    totalDuration = 0.0; // Reset for progress
+    totalDuration = 0.0;
     int fileCount = 0;
-    QList<QString> sortedFiles; // Track order for filter mode
+    QList<QString> sortedFiles;
     QList<int> sortedKeys = orderMap.keys();
     std::sort(sortedKeys.begin(), sortedKeys.end());
     for (int key : sortedKeys) {
         QString file = orderMap.value(key);
-        sortedFiles.append(file); // Preserve order
+        sortedFiles.append(file);
         StreamInfo info = probeFile(file, ffprobePath);
-        if (info.width > 0 && info.duration > 0) { // Valid video
+        if (info.width > 0 && info.duration > 0) {
             streams.append(info);
             totalDuration += info.duration;
             fileCount++;
@@ -255,8 +245,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
             emit logMessage(QString("⚠️ Skipped invalid %1").arg(QFileInfo(file).fileName()));
         }
     }
-
-    // Post-probe: Re-validate files exist (in case deleted/moved during wait)
     QList<QString> validSortedFiles;
     QList<StreamInfo> validStreams;
     double validTotalDuration = 0.0;
@@ -283,7 +271,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
     emit logMessage(QString("✅ All %1 files verified exist").arg(validCount));
     emit logMessage(QString("Total: %1 files, ~%2s duration").arg(validCount).arg(totalDuration, 0, 'f', 1));
 
-    // Check compatibility
     StreamInfo common;
     bool compatible = checkAllFilesCompatible(streams, common);
     bool forceReencode = reencodeCheck->isChecked();
@@ -300,9 +287,8 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
         return;
     }
     QStringList args;
-    args << "-y" << "-loglevel" << "warning";  // Suppress verbose noise
+    args << "-y" << "-loglevel" << "warning";
     if (!useFilter) {
-        // Fast demuxer mode
         concatTempFile = new QTemporaryFile(QDir::tempPath() + "/ffmpeg_converter_temp_XXXXXX.txt", this);
         if (!concatTempFile->open()) {
             QMessageBox::critical(this, "Error", "Cannot create temporary concat list");
@@ -317,7 +303,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
         concatTempFile->close();
         args << "-f" << "concat" << "-safe" << "0" << "-i" << concatTempFile->fileName() << "-c" << "copy" << finalOutputFile;
     } else {
-        // Robust filter mode: Re-encode with scaling, silence, PTS offsets
         QString targetCodec = targetCodecCombo->currentText();
         QString vEncoder;
         QStringList vParams;
@@ -325,20 +310,17 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
             vEncoder = "libsvtav1"; vParams << "-preset" << "8" << "-crf" << "30" << "-threads" << "0";
         } else if (targetCodec == "VP9") {
             vEncoder = "libvpx-vp9"; vParams << "-crf" << "31" << "-b:v" << "0" << "-threads" << "0";
-        } else { // x265
+        } else {
             vEncoder = "libx265"; vParams << "-preset" << "medium" << "-crf" << "23" << "-threads" << "0";
         }
-        // Find min res for scaling (pad if aspect differs)
         int minW = streams[0].width, minH = streams[0].height;
         for (const auto& s : streams) {
             minW = std::min(minW, s.width);
             minH = std::min(minH, s.height);
         }
-        // Round to even for AV1/VP9
         minW = (minW / 2) * 2;
         minH = (minH / 2) * 2;
         emit logMessage(QString("📏 Scaling all to common res: %1x%2").arg(minW).arg(minH));
-        // Final check: Ensure all files still exist before encoding (race condition guard)
         for (const QString& file : sortedFiles) {
             if (!QFile::exists(file)) {
                 emit logMessage(QString("⚠️ File missing at encode time: %1 - aborting concat").arg(file));
@@ -348,22 +330,17 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
             }
         }
         emit logMessage("✅ All files confirmed ready for encode");
-
-        // First, add all file inputs
         for (const QString& file : sortedFiles) {
             args << "-i" << file;
-            emit logMessage(QString("📁 Adding input: %1").arg(file));  // Debug: confirm clean path
+            emit logMessage(QString("📁 Adding input: %1").arg(file));
         }
-        // Then, add silence inputs for no-audio files (indices N to M)
         QStringList aFilters;
-        int silenceIdx = streams.size(); // Start after files
+        int silenceIdx = streams.size();
         for (int i = 0; i < streams.size(); ++i) {
             const auto& s = streams[i];
             QString inV = QString("[%1:v]").arg(i);
-            // Video filter for all
             aFilters << QString("%1 scale=%2:%3:force_original_aspect_ratio=decrease,pad=%2:%3:(ow-iw)/2:(oh-ih)/2,setsar=1:1,setpts=PTS-STARTPTS,fps=30 [v%4];")
             .arg(inV).arg(minW).arg(minH).arg(i);
-            // Audio filter
             if (!s.hasAudio) {
                 QString silence = QString("anullsrc=channel_layout=stereo:sample_rate=48000:duration=%1").arg(s.duration, 0, 'g', 6);
                 args << "-f" << "lavfi" << "-i" << silence;
@@ -374,7 +351,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
                 aFilters << QString("%1 aresample=48000,asetpts=PTS-STARTPTS [a%2];").arg(inA).arg(i);
             }
         }
-        // Concat chains
         QString vChain;
         for (int i = 0; i < streams.size(); ++i) vChain += QString("[v%1]").arg(i);
         vChain += QString("concat=n=%1:v=1:a=0 [v_out];").arg(streams.size());
@@ -383,7 +359,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
             aChain += QString("[a%1]").arg(i);
         }
         aChain += QString("concat=n=%1:v=0:a=1 [a_out]").arg(streams.size());
-        // Full filter
         QString filterComplex = aFilters.join("") + vChain + aChain;
         args << "-filter_complex" << filterComplex
         << "-map" << "[v_out]" << "-map" << "[a_out]"
@@ -392,7 +367,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
         args << "-c:a" << "libopus" << "-b:a" << "128k"
         << finalOutputFile;
     }
-    // Start process
     concatProcess = new QProcess(this);
     emit logMessage(QString("🔍 Final FFmpeg path for combine: %1").arg(ffmpegPath));
     emit logMessage(QString("🚀 Command: %1 %2").arg(ffmpegPath).arg(args.join(" ")));
@@ -411,7 +385,6 @@ void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
                 concatProcess = nullptr;
                 emit conversionFinished();
             });
-    // Connect to slots (no params)
     connect(concatProcess, &QProcess::readyReadStandardOutput, this, &CombineTab::onStdoutReady);
     connect(concatProcess, &QProcess::readyReadStandardError, this, &CombineTab::onStderrReady);
     concatProcess->start(ffmpegPath, args);
@@ -422,7 +395,6 @@ void CombineTab::onStdoutReady() {
     QByteArray data = concatProcess->readAllStandardOutput();
     QString out = QString(data).trimmed();
     if (!out.isEmpty()) emit logMessage(out);
-    // Parse progress
     QRegularExpression timeRe("time=(\\d{2}:\\d{2}:\\d{2}\\.\\d{2})");
     QRegularExpressionMatch match = timeRe.match(out);
     if (match.hasMatch() && totalDuration > 0) {
