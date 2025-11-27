@@ -54,6 +54,7 @@
 #include <QRandomGenerator>
 #include <QUuid>
 #include <QObject>
+
 class SettingsDialog : public QDialog {
     Q_OBJECT
 public:
@@ -115,12 +116,12 @@ private slots:
         QSettings settings("FFmpegConverter", "Settings");
         QString lastBrowseDir = settings.value("lastSettingsBrowseDir",
                                                QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).toString();
-                                               dialog.setDirectory(lastBrowseDir);
-                                               if (dialog.exec()) {
-                                                   QString selectedDir = dialog.selectedFiles().first();
-                                                   defaultOutputDirLineEdit->setText(selectedDir);
-                                                   settings.setValue("lastSettingsBrowseDir", QFileInfo(selectedDir).absolutePath());
-                                               }
+        dialog.setDirectory(lastBrowseDir);
+        if (dialog.exec()) {
+            QString selectedDir = dialog.selectedFiles().first();
+            defaultOutputDirLineEdit->setText(selectedDir);
+            settings.setValue("lastSettingsBrowseDir", QFileInfo(selectedDir).absolutePath());
+        }
     }
     void browseFFmpegPath() {
         QFileDialog dialog(this);
@@ -172,8 +173,8 @@ private:
         svtAv1PathLineEdit->setText(savedSvtAv1);
         QString savedDir = settings.value("defaultOutputDir",
                                           QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)).toString();
-                                          defaultOutputDirLineEdit->setText(savedDir);
-                                          notifyOnFinishCheck->setChecked(settings.value("notifyOnFinish", true).toBool());
+        defaultOutputDirLineEdit->setText(savedDir);
+        notifyOnFinishCheck->setChecked(settings.value("notifyOnFinish", true).toBool());
     }
     QComboBox *defaultCodecComboBox = nullptr;
     QPushButton *ffmpegPathButton = nullptr;
@@ -184,6 +185,7 @@ private:
     QLineEdit *defaultOutputDirLineEdit = nullptr;
     QCheckBox *notifyOnFinishCheck = nullptr;
 };
+
 // Function to show a notification when the conversion finishes
 void showConversionNotification(const QString& outputFile, QWidget* parent) {
     QSettings settings("FFmpegConverter", "Settings");
@@ -219,8 +221,6 @@ int main(int argc, char *argv[]) {
     selectedFilesBox->setReadOnly(true);
     selectFilesLayout->addWidget(selectFilesButton);
     selectFilesLayout->addWidget(selectedFilesBox);
-    QPushButton *dvdButton = new QPushButton("Open Disk");
-    selectFilesLayout->addWidget(dvdButton);
     mainLayout->addLayout(selectFilesLayout);
     // This part handles output naming, including pulling titles from metadata
     QHBoxLayout *outputNameLayout = new QHBoxLayout();
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
         int mode = outputNameModeBox->currentIndex();
         QString input = selectedFilesBox->text().trimmed();
         if (!input.isEmpty()) {
-            originalFilename = input.startsWith("dvd://") ? "DVD_Input" : QFileInfo(input).baseName();
+            originalFilename = QFileInfo(input).baseName();
         }
         QString name;
         if (mode == 0) {
@@ -487,13 +487,13 @@ int main(int argc, char *argv[]) {
     presetLayout->addWidget(presetCombo);
     QCheckBox *videoSpeedCheck = new QCheckBox();
     videoSpeedCheck->setToolTip("Enable video speed change");
-    QLabel *videoSpeedLabel = new QLabel("   Video Speed:");
+    QLabel *videoSpeedLabel = new QLabel(" Video Speed:");
     QComboBox *videoSpeedCombo = new QComboBox();
     videoSpeedCombo->setToolTip("Percentage change (positive = faster, negative = slower, 0% = normal)");
     videoSpeedCombo->setEnabled(false);
     QCheckBox *audioSpeedCheck = new QCheckBox();
     audioSpeedCheck->setToolTip("Enable audio speed change (pitch preserved)");
-    QLabel *audioSpeedLabel = new QLabel("   Audio Speed:");
+    QLabel *audioSpeedLabel = new QLabel(" Audio Speed:");
     QComboBox *audioSpeedCombo = new QComboBox();
     audioSpeedCombo->setToolTip("Percentage change (positive = faster, negative = slower, 0% = normal)");
     audioSpeedCombo->setEnabled(false);
@@ -509,7 +509,7 @@ int main(int argc, char *argv[]) {
         videoSpeedCombo->setEnabled(checked);
         if (!checked) videoSpeedCombo->setCurrentText("0%");
     });
-        QObject::connect(audioSpeedCheck, &QCheckBox::toggled, [audioSpeedCombo](bool checked) {
+    QObject::connect(audioSpeedCheck, &QCheckBox::toggled, [audioSpeedCombo](bool checked) {
         audioSpeedCombo->setEnabled(checked);
         if (!checked) audioSpeedCombo->setCurrentText("0%");
     });
@@ -620,23 +620,21 @@ int main(int argc, char *argv[]) {
         }
         static_cast<void>(QtConcurrent::run([inputFile, infoBox, logBox, &settings, tenBitCheck, eightBitCheck, colorFormatBox, eightBitColorFormatBox]() {
             QString fileSizeStr = "N/A";
-            QString fileContainer = inputFile.startsWith("dvd://") ? "DVD" : QFileInfo(inputFile).suffix();
+            QString fileContainer = QFileInfo(inputFile).suffix();
             if (fileContainer.isEmpty()) {
                 fileContainer = "N/A";
             }
-            if (!inputFile.startsWith("dvd://")) {
-                QFileInfo fileInfo(inputFile);
-                if (!fileInfo.exists()) {
-                    QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file does not exist: " + inputFile));
-                    return;
-                }
-                if (!fileInfo.isReadable()) {
-                    QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file is not readable: " + inputFile));
-                    return;
-                }
-                qint64 fileSizeBytes = fileInfo.size();
-                fileSizeStr = (fileSizeBytes > 0) ? QString::number(fileSizeBytes / 1024.0 / 1024, 'f', 2) + " MB" : "N/A";
+            QFileInfo fileInfo(inputFile);
+            if (!fileInfo.exists()) {
+                QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file does not exist: " + inputFile));
+                return;
             }
+            if (!fileInfo.isReadable()) {
+                QMetaObject::invokeMethod(infoBox, "setText", Qt::QueuedConnection, Q_ARG(QString, "Input file is not readable: " + inputFile));
+                return;
+            }
+            qint64 fileSizeBytes = fileInfo.size();
+            fileSizeStr = (fileSizeBytes > 0) ? QString::number(fileSizeBytes / 1024.0 / 1024, 'f', 2) + " MB" : "N/A";
             QProcess ffprobe;
             QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
             QString svtAv1Path = settings.value("svtAv1Path", "").toString();
@@ -783,7 +781,7 @@ int main(int argc, char *argv[]) {
             }
             title = formatMap.value("TAG:title", "N/A");
             if (title == "N/A" || title.isEmpty()) {
-                title = inputFile.startsWith("dvd://") ? "DVD Rip" : QFileInfo(inputFile).completeBaseName();
+                title = QFileInfo(inputFile).completeBaseName();
             }
             QString infoText = "<b>Video Title:</b> " + title + "<br>"
             + "<b>Resolution:</b> " + resolution + "<br>"
@@ -802,73 +800,6 @@ int main(int argc, char *argv[]) {
             QMetaObject::invokeMethod(infoBox, "setHtml", Qt::QueuedConnection, Q_ARG(QString, infoText));
         }));
     };
-auto selectDvd = [&]() {
-    QString input;
-    bool isDvd = QMessageBox::question(nullptr, "Input Type", "Is this a physical DVD in your drive? (No for ISO file)",
-                                       QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
-    QString dumpPath = "/tmp/dvd_dump_" + QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + ".vob";
-    if (isDvd) {
-        QProcess mpvProcess;
-        mpvProcess.start("mpv", QStringList() << "dvd://" << "--dvd-device=/dev/sr0" << "--stream-dump=" + dumpPath << "--no-video" << "--no-audio" << "--loop=inf");
-        if (!mpvProcess.waitForStarted(5000)) {
-            QMessageBox::warning(nullptr, "Error", "mpv failed to start. Install with 'sudo pacman -S mpv' and check /dev/sr0 permissions.");
-            return;
-        }
-        QTimer timer;
-        timer.setSingleShot(true);
-        timer.setInterval(600000);
-        QEventLoop loop;
-        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start();
-        loop.exec();
-        mpvProcess.kill();
-        mpvProcess.waitForFinished(5000);
-        if (!QFile::exists(dumpPath)) {
-            QMessageBox::warning(nullptr, "Error", "Dump failed. Check Console for mpv errors.");
-            return;
-        }
-        input = dumpPath;
-        logBox->append("📀 Dumped DVD with mpv to: " + dumpPath);
-    } else {
-        QFileDialog dialog(nullptr);
-        dialog.setFileMode(QFileDialog::ExistingFile);
-        dialog.setNameFilter("DVD ISO (*.iso)");
-        dialog.setWindowTitle("Select DVD ISO");
-        if (dialog.exec()) {
-            QString isoPath = dialog.selectedFiles().first();
-            QProcess mpvProcess;
-            mpvProcess.start("mpv", QStringList() << "dvd://" + isoPath << "--stream-dump=" + dumpPath << "--no-video" << "--no-audio" << "--loop=inf");
-            if (!mpvProcess.waitForStarted(5000)) {
-                QMessageBox::warning(nullptr, "Error", "mpv failed to start for ISO.");
-                return;
-            }
-            QTimer timer;
-            timer.setSingleShot(true);
-            timer.setInterval(600000);
-            QEventLoop loop;
-            QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-            timer.start();
-            loop.exec();
-            mpvProcess.kill();
-            mpvProcess.waitForFinished(5000);
-            if (!QFile::exists(dumpPath)) {
-                QMessageBox::warning(nullptr, "Error", "ISO dump failed.");
-                return;
-            }
-            input = dumpPath;
-            logBox->append("📀 Dumped ISO with mpv to: " + dumpPath);
-        } else {
-            return;
-        }
-    }
-    if (!input.isEmpty()) {
-        selectedFilesBox->setText(input);
-        outputNameBox->setText("DVD_Rip");
-        updateInfo(input);
-        logBox->append("📀 DVD/ISO dumped and ready for re-encode: " + input);
-    }
-};
-QObject::connect(dvdButton, &QPushButton::clicked, selectDvd);
     QMenuBar *menuBar = window.menuBar();
     QMenu *fileMenu = menuBar->addMenu("&File");
     auto *openAction = new QAction("&Open File...", &window);
@@ -1183,13 +1114,9 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             }
         }
         logBox->append("=== CONVERSION STARTED ===");
-
         QString inputFile;
         if (codecTabs->currentWidget() != combineScroll) {
             inputFile = selectedFilesBox->text();
-            if (inputFile.startsWith("dvd://")) {
-                logBox->append("🔄 Ripping DVD title (longest track auto-selected). Use -map 0 for full disc if needed.");
-            }
             if (inputFile.isEmpty()) {
                 QMessageBox::warning(nullptr, "Error", "Please select an input file.");
                 return;
@@ -1197,7 +1124,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         } else {
             inputFile = "(Multiple files from Combine Videos tab)";
         }
-
         logBox->append("📁 Input: " + inputFile);
         logBox->append("🎛️ Scale: " + QString::number(scaleWidthSpin->value(), 'f', 2) + "x × " + QString::number(scaleHeightSpin->value(), 'f', 2) + "x");
         if (!qFuzzyCompare(scaleWidthSpin->value(), 1.0) || !qFuzzyCompare(scaleHeightSpin->value(), 1.0)) {
@@ -1242,7 +1168,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         QString extension = ".mkv";
         bool twoPass = false;
         QString codecStr = "copy";
-
         if (codecTabs->currentWidget() != combineScroll) {
             if (currentTab == 0) {
                 extension = "." + av1Tab->av1ContainerBox->currentText();
@@ -1286,7 +1211,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         if (removeChaptersCheck->isChecked()) args << "-map_chapters" << "-1";
     QStringList videoFilters;
     QStringList audioFilters;
-
     QString rotationFilter;
     QString rotation = rotationBox->currentText();
     if (rotation == "90° Clockwise") rotationFilter = "transpose=1";
@@ -1295,22 +1219,18 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     else if (rotation == "Horizontal Flip") rotationFilter = "hflip";
     else if (rotation == "Vertical Flip") rotationFilter = "vflip";
     if (!rotationFilter.isEmpty()) videoFilters << rotationFilter;
-
     if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
         QString cropValue = cropValueBox->text();
         if (cropValue.startsWith("crop=")) cropValue = cropValue.mid(5);
         videoFilters << "crop=" + cropValue;
     }
-
     if (deinterlaceCheck->isChecked()) videoFilters << "yadif";
-    if (deblockCheck->isChecked())     videoFilters << "deblock";
-    if (denoiseCheck->isChecked())     videoFilters << "hqdn3d=4:3:6:4.5";
+    if (deblockCheck->isChecked()) videoFilters << "deblock";
+    if (denoiseCheck->isChecked()) videoFilters << "hqdn3d=4:3:6:4.5";
     if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
-
     if (toneMapCheck->isChecked()) {
         videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
     }
-
     if (currentTab == 0) { // AV1
         if (av1Tab->av1UnsharpenCheck->isChecked()) {
             double s = av1Tab->av1UnsharpenStrengthSlider->value() / 10.0;
@@ -1419,30 +1339,25 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             videoFilters << QString("%1=s=%2:p=%3%4").arg(filterName).arg(s).arg(p).arg(patchStr);
         }
     }
-
     double sw = scaleWidthSpin->value();
     double sh = scaleHeightSpin->value();
     QString filterName = scaleFilterBox->currentText();
     if (!qFuzzyCompare(sw, 1.0) || !qFuzzyCompare(sh, 1.0)) {
         QString w = qFuzzyCompare(sw, 1.0) ? "iw" : QString("trunc(iw*%1/2)*2").arg(sw);
         QString h = qFuzzyCompare(sh, 1.0) ? "ih" : QString("trunc(ih*%1/2)*2").arg(sh);
-
         if (filterName == "spline16" || filterName == "spline36") {
             videoFilters << QString("zscale=w=%1:h=%2:filter=%3").arg(w, h, filterName);
         } else {
             videoFilters << QString("scale=w=%1:h=%2:flags=%3").arg(w, h, filterName.toLower());
         }
-
         if (scaleRangeBox->currentText() != "input") {
             videoFilters << QString("zscale=range=%1").arg(scaleRangeBox->currentText().toLower());
         }
     }
-
     if (frameRateBox->currentText() != "Original") {
         QString fpsValue = (frameRateBox->currentText() == "Custom") ? customFrameRateBox->text() : frameRateBox->currentText();
         videoFilters << "fps=" + fpsValue;
     }
-
     QString pixFmt;
     if (tenBitCheck->isChecked()) {
         QString f = colorFormatBox->currentText();
@@ -1452,7 +1367,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         pixFmt = f == "8-bit 4:2:0" ? "yuv420p" : f == "8-bit 4:2:2" ? "yuv422p" : "yuv444p";
     }
     videoFilters << "format=" + pixFmt;
-
     if (normalizeAudioCheck->isChecked()) {
         audioFilters << "loudnorm=I=-23:TP=-1.5:LRA=11";
     }
@@ -1460,13 +1374,10 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         if (str == "0%") return 0.0;
         return str.chopped(1).toDouble();
     };
-
     double videoPercent = videoSpeedCheck->isChecked() ? getPercentChange(videoSpeedCombo->currentText()) : 0.0;
     double audioPercent = audioSpeedCheck->isChecked() ? getPercentChange(audioSpeedCombo->currentText()) : 0.0;
-
     double videoMultiplier = 1.0 + videoPercent / 100.0;
     double audioMultiplier = 1.0 + audioPercent / 100.0;
-
     if (videoPercent <= -100.0) {
         videoMultiplier = 0.001;
         logBox->append("⚠️ -100% video speed → using extremely slow (0.001×)");
@@ -1475,13 +1386,11 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
         audioMultiplier = 0.001;
         logBox->append("⚠️ -100% audio speed → using extremely slow (0.001×)");
     }
-
     if (!qFuzzyCompare(videoMultiplier, 1.0)) {
         double ptsFactor = 1.0 / videoMultiplier;
         videoFilters << QString("setpts=%1*PTS").arg(ptsFactor, 0, 'g', 12);
         logBox->append(QString("✓ Video speed: %1×").arg(videoMultiplier, 0, 'g', 4));
     }
-
     if (!qFuzzyCompare(audioMultiplier, 1.0)) {
         auto buildAtempoChain = [](double m) -> QString {
             if (qFuzzyCompare(m, 1.0)) return "";
@@ -1503,14 +1412,12 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             }
             return p.join(",");
         };
-
         QString chain = buildAtempoChain(audioMultiplier);
         if (!chain.isEmpty()) {
             audioFilters.prepend(chain);
             logBox->append(QString("✓ Audio speed: %1× → chain: %2").arg(audioMultiplier, 0, 'g', 4).arg(chain));
         }
     }
-
     if (!videoFilters.isEmpty()) {
         QString chain = videoFilters.join(",");
         logBox->append("🛠️ Video filters: " + chain);
@@ -1518,7 +1425,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     } else {
         logBox->append("🛠️ Video filters: None");
     }
-
     if (!audioFilters.isEmpty()) {
         QString chain = audioFilters.join(",");
         logBox->append("🔊 Audio filter: " + chain);
@@ -1531,13 +1437,12 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             QString tune = av1Tab->av1TuneBox->currentText();
             if (tune != "Auto") {
                 int tuneVal;
-                if (tune == "Subjective SSIM (VQ)")      tuneVal = 0;
-                else if (tune == "PSNR")                 tuneVal = 1;
-                else if (tune == "SSIM")                 tuneVal = 2;
-                else if (tune == "VMAF")                 tuneVal = 6;
-                else if (tune == "VMAF Neg")             tuneVal = 7;
-                else                                     tuneVal = 0;  // fallback
-
+                if (tune == "Subjective SSIM (VQ)") tuneVal = 0;
+                else if (tune == "PSNR") tuneVal = 1;
+                else if (tune == "SSIM") tuneVal = 2;
+                else if (tune == "VMAF") tuneVal = 6;
+                else if (tune == "VMAF Neg") tuneVal = 7;
+                else tuneVal = 0; // fallback
                 svtParams << "tune=" + QString::number(tuneVal);
             }
             if (av1Tab->nativeGrainCheck->isChecked()) {
@@ -1908,17 +1813,14 @@ QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, co
     QObject::connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);
     QObject::connect(converter, &Converter::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, &window, converter, infoBox, selectedFilesBox, combineTab]() {
         logBox->append("All conversions done, preparing to update GUI...");
-
         QString normalOutput = converter->getFinalOutputFile();
         QString combineOutput = combineTab->getFinalOutputFile();
-
         if (!normalOutput.isEmpty()) {
             showConversionNotification(normalOutput, &window);
         }
         else if (!combineOutput.isEmpty() && QFile::exists(combineOutput)) {
             showConversionNotification(combineOutput, &window);
         }
-
         QTimer::singleShot(100, [convertButton, cancelButton, conversionProgress, logBox]() {
             logBox->append("Updating buttons and progress bar now...");
             convertButton->setEnabled(true);
@@ -1926,7 +1828,6 @@ QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, co
             conversionProgress->setVisible(false);
             logBox->append("GUI updated successfully!");
         });
-
         QString outputFile = normalOutput;
         QString inputInfo = infoBox->toHtml();
         QString outputInfo = "";
