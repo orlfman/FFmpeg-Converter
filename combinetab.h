@@ -1,6 +1,5 @@
 #ifndef COMBINETAB_H
 #define COMBINETAB_H
-
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -29,6 +28,7 @@ public:
 signals:
     void logMessage(const QString &msg);
     void conversionFinished();
+    void progressUpdated(int value);
 
 private slots:
     void selectInputDirectory();
@@ -37,9 +37,22 @@ private slots:
     void smartUpdateExtension();
     void updateCodecOptions();
     void onReencodeToggled(bool checked);
+    void onStdoutReady();
+    void onStderrReady();
 
 private:
-    bool checkAllFilesCompatible(const QMap<int, QString> &orderMap, QString &videoCodec, QString &audioCodec);
+    struct StreamInfo {
+        QString videoCodec, audioCodec;
+        int width = 0, height = 0;
+        QString fps;
+        QString pixFmt;
+        QString sar;
+        double duration = 0.0;
+        bool hasAudio = false;
+        int audioSampleRate = 0;
+    };
+    StreamInfo probeFile(const QString& file, const QString& ffprobePath);
+    bool checkAllFilesCompatible(const QList<StreamInfo>& streams, StreamInfo& common);
     void createConcatListFile(const QMap<int, QString> &orderMap);
 
     QTemporaryFile *concatTempFile = nullptr;
@@ -55,6 +68,6 @@ private:
     QLineEdit *searchBox = nullptr;
     QStringList videoExtensions = {"*.mp4", "*.mkv", "*.webm", "*.avi", "*.mov", "*.wmv", "*.flv", "*.m4v", "*.ts", "*.m2ts", "*.mpg", "*.mpeg"};
     QString finalOutputFile;
+    double totalDuration = 0.0;
 };
-
 #endif // COMBINETAB_H

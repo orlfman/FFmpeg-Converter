@@ -9,11 +9,11 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <algorithm>
+#include <cmath>
 
 CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-
     QHBoxLayout *inputLayout = new QHBoxLayout();
     QPushButton *inputBtn = new QPushButton("Select Folder");
     inputDirEdit = new QLineEdit();
@@ -21,7 +21,6 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     inputLayout->addWidget(inputBtn);
     inputLayout->addWidget(inputDirEdit);
     mainLayout->addLayout(inputLayout);
-
     QHBoxLayout *outputLayout = new QHBoxLayout();
     QPushButton *outputBtn = new QPushButton("Output Folder");
     outputDirEdit = new QLineEdit();
@@ -30,13 +29,11 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     containerCombo = new QComboBox();
     containerCombo->addItems({"mkv", "webm", "mp4"});
     containerCombo->setCurrentIndex(0);
-
     outputLayout->addWidget(outputBtn);
     outputLayout->addWidget(outputDirEdit);
     outputLayout->addWidget(outputNameEdit);
     outputLayout->addWidget(containerCombo);
     mainLayout->addLayout(outputLayout);
-
     QHBoxLayout *reencodeLayout = new QHBoxLayout();
     reencodeCheck = new QCheckBox("Re-encode");
     reencodeCheck->setToolTip(
@@ -48,13 +45,11 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     reencodeCheck->setChecked(true);
     codecLabel = new QLabel("Target Codec:");
     targetCodecCombo = new QComboBox();
-
     reencodeLayout->addWidget(reencodeCheck);
     reencodeLayout->addWidget(codecLabel);
     reencodeLayout->addWidget(targetCodecCombo);
     reencodeLayout->addStretch();
     mainLayout->addLayout(reencodeLayout);
-
     QHBoxLayout *searchLayout = new QHBoxLayout();
     QLabel *searchLabel = new QLabel("Search:");
     searchBox = new QLineEdit();
@@ -62,7 +57,6 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     searchLayout->addWidget(searchLabel);
     searchLayout->addWidget(searchBox);
     mainLayout->addLayout(searchLayout);
-
     table = new QTableWidget(0, 2);
     table->setHorizontalHeaderLabels({"Order (0=skip)", "Filename"});
     table->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
@@ -70,29 +64,23 @@ CombineTab::CombineTab(QWidget *parent) : QWidget(parent)
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     mainLayout->addWidget(table);
-
     connect(searchBox, &QLineEdit::textChanged, this, [this](const QString &text) {
         QString filter = text.toLower().trimmed();
-
         for (int row = 0; row < table->rowCount(); ++row) {
             QTableWidgetItem *item = table->item(row, 1);
             if (!item) continue;
-
             QString filename = item->text().toLower();
             bool matches = filename.contains(filter);
             table->setRowHidden(row, !matches);
         }
     });
-
     connect(inputBtn, &QPushButton::clicked, this, &CombineTab::selectInputDirectory);
     connect(outputBtn, &QPushButton::clicked, this, &CombineTab::selectOutputDirectory);
     connect(inputBtn, &QPushButton::clicked, this, &CombineTab::populateTable);
-
     connect(containerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CombineTab::smartUpdateExtension);
     connect(containerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &CombineTab::updateCodecOptions);
     connect(outputNameEdit, &QLineEdit::textChanged, this, &CombineTab::smartUpdateExtension);
     connect(reencodeCheck, &QCheckBox::toggled, this, &CombineTab::onReencodeToggled);
-
     updateCodecOptions();
     setLayout(mainLayout);
     onReencodeToggled(reencodeCheck->isChecked());
@@ -108,7 +96,6 @@ void CombineTab::updateCodecOptions()
 {
     QString container = containerCombo->currentText();
     targetCodecCombo->clear();
-
     if (container == "webm") {
         targetCodecCombo->addItems({"VP9", "AV1"});
     } else if (container == "mp4") {
@@ -124,11 +111,9 @@ void CombineTab::smartUpdateExtension()
     QString currentText = outputNameEdit->text();
     QString desiredExt = containerCombo->currentText();
     QString currentExt = QFileInfo(currentText).suffix().toLower();
-
     if (currentText.isEmpty() || currentExt.isEmpty() || currentExt != desiredExt) {
         QString baseName = QFileInfo(currentText).completeBaseName();
         if (baseName.isEmpty()) baseName = "combined_video";
-
         QString newText = baseName + "." + desiredExt;
         if (newText != currentText) {
             outputNameEdit->blockSignals(true);
@@ -143,121 +128,316 @@ QString CombineTab::getFinalOutputFile() const
 {
     if (outputDirEdit->text().isEmpty() || outputNameEdit->text().isEmpty())
         return QString();
-
     QString base = QFileInfo(outputNameEdit->text()).completeBaseName();
     QString ext = containerCombo->currentText();
     return QDir(outputDirEdit->text()).filePath(base + "." + ext);
 }
 
-bool CombineTab::checkAllFilesCompatible(const QMap<int, QString> &orderMap, QString &videoCodec, QString &audioCodec)
-{
-    QSettings settings("FFmpegConverter", "Settings");
-    QString ffmpegPath = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
-    if (ffmpegPath.isEmpty()) ffmpegPath = "/usr/bin/ffmpeg";
-    QString ffprobePath = ffmpegPath.replace("ffmpeg", "ffprobe", Qt::CaseInsensitive);
+CombineTab::StreamInfo CombineTab::probeFile(const QString& file, const QString& ffprobePath) {
+    StreamInfo info;
+    if (!QFile::exists(file)) return info;  // Invalid file
 
-    bool first = true;
-    for (const QString &file : orderMap.values()) {
-        QProcess probe;
-        probe.start(ffprobePath, QStringList() << "-v" << "error" << "-select_streams" << "v:0" << "-show_entries" << "stream=codec_name" << "-of" << "default=noprint_wrappers=1:nokey=1" << file);
-        probe.waitForFinished(8000);
-        QString vCodec = probe.readAllStandardOutput().trimmed();
-
-        probe.start(ffprobePath, QStringList() << "-v" << "error" << "-select_streams" << "a:0" << "-show_entries" << "stream=codec_name" << "-of" << "default=noprint_wrappers=1:nokey=1" << file);
-        probe.waitForFinished(8000);
-        QString aCodec = probe.readAllStandardOutput().trimmed();
-        if (aCodec.isEmpty()) aCodec = "none";
-
-        if (first) {
-            videoCodec = vCodec;
-            audioCodec = aCodec;
-            first = false;
-        } else {
-            if (vCodec != videoCodec || aCodec != audioCodec)
-                return false;
+    // Video probe
+    QProcess vProbe;
+    vProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-select_streams" << "v:0"
+    << "-show_entries" << "stream=codec_name,width,height,r_frame_rate,pix_fmt,sample_aspect_ratio"
+    << "-of" << "csv=p=0" << file);
+    vProbe.waitForFinished(5000);
+    QString vOut = QString(vProbe.readAllStandardOutput()).trimmed();
+    QStringList vData = vOut.split(",");
+    if (vData.size() >= 5) {
+        info.videoCodec = vData[0];
+        info.width = vData[1].toInt();
+        info.height = vData[2].toInt();
+        info.fps = vData[3];
+        if (info.fps.contains("/")) {
+            QStringList parts = info.fps.split("/");
+            if (parts.size() == 2) {
+                double num = parts[0].toDouble();
+                double den = parts[1].toDouble();
+                if (den != 0) info.fps = QString::number(num / den, 'f', 1);
+            }
         }
+        info.pixFmt = vData[4];
+        info.sar = vData.size() > 5 ? vData[5] : "1:1";
+    }
+
+    // Audio probe
+    QProcess aProbe;
+    aProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-select_streams" << "a:0"
+    << "-show_entries" << "stream=codec_name,sample_rate"
+    << "-of" << "csv=p=0" << file);
+    aProbe.waitForFinished(5000);
+    QString aOut = QString(aProbe.readAllStandardOutput()).trimmed();
+    QStringList aData = aOut.split(",");
+    if (aData.size() >= 2) {
+        info.audioCodec = aData[0];
+        info.audioSampleRate = aData[1].toInt();
+        info.hasAudio = !info.audioCodec.isEmpty();
+    } else {
+        info.audioCodec = "none";
+    }
+
+    // Duration
+    QProcess durProbe;
+    durProbe.start(ffprobePath, QStringList() << "-v" << "quiet" << "-show_entries" << "format=duration"
+    << "-of" << "csv=p=0" << file);
+    durProbe.waitForFinished(5000);
+    info.duration = QString(durProbe.readAllStandardOutput()).trimmed().toDouble();
+
+    return info;
+}
+
+bool CombineTab::checkAllFilesCompatible(const QList<StreamInfo>& streams, StreamInfo& common) {
+    if (streams.isEmpty()) return false;
+    common = streams[0];
+    for (const auto& s : streams) {
+        if (s.videoCodec != common.videoCodec ||
+            s.width != common.width || s.height != common.height ||
+            s.fps != common.fps || s.pixFmt != common.pixFmt ||
+            s.sar != common.sar || s.hasAudio != common.hasAudio ||
+            (s.hasAudio && s.audioSampleRate != common.audioSampleRate)) {
+            return false;
+            }
     }
     return true;
 }
 
 void CombineTab::createConcatListFile(const QMap<int, QString> &orderMap)
 {
-    concatTempFile = new QTemporaryFile(QDir::tempPath() + "/ffmpeg_converter_temp_XXXXXX.txt", this);
-    if (!concatTempFile->open()) {
-        QMessageBox::critical(this, "Error", "Cannot create temporary concat list");
-        emit logMessage("ERROR: Could not create temporary file");
-        emit conversionFinished();
-        return;
-    }
-
-    QTextStream stream(concatTempFile);
-    for (int key : orderMap.keys()) {
-        stream << "file '" << QDir::toNativeSeparators(orderMap.value(key)) << "'\n";
-    }
-    stream.flush();
-    concatTempFile->close();
-
-    finalOutputFile = getFinalOutputFile();
-
+    // Get ffprobe path
     QSettings settings("FFmpegConverter", "Settings");
     QString ffmpegPath = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
     if (ffmpegPath.isEmpty()) ffmpegPath = "/usr/bin/ffmpeg";
-
-    QStringList args;
-    args << "-f" << "concat" << "-safe" << "0" << "-i" << concatTempFile->fileName();
-
-    bool needReencode = false;
-    QString commonV, commonA;
-
-    if (reencodeCheck->isChecked()) {
-        if (!checkAllFilesCompatible(orderMap, commonV, commonA)) {
-            needReencode = true;
-            emit logMessage("Incompatible files detected → re-encoding to " + targetCodecCombo->currentText());
-        } else {
-            emit logMessage("All files compatible (" + commonV + " + " + (commonA == "none" ? "no audio" : commonA) + ") → fast stream copy");
-        }
+    if (ffmpegPath.contains("ffprobe", Qt::CaseInsensitive)) {
+        emit logMessage("⚠️ FFmpeg path is set to ffprobe—auto-fixing to ffmpeg");
+        ffmpegPath = ffmpegPath.replace("ffprobe", "ffmpeg", Qt::CaseInsensitive);
     }
+    QString ffprobePath = ffmpegPath.replace("ffmpeg", "ffprobe", Qt::CaseInsensitive);
 
-    if (needReencode) {
-        QString selected = targetCodecCombo->currentText();
-        if (selected == "AV1") {
-            args << "-c:v" << "libsvtav1" << "-preset" << "8" << "-crf" << "30";
-        } else if (selected == "VP9") {
-            args << "-c:v" << "libvpx-vp9" << "-crf" << "31" << "-b:v" << "0";
-        } else {
-            args << "-c:v" << "libx265" << "-preset" << "medium" << "-crf" << "23";
+    // Validate ffmpegPath is actually FFmpeg
+    QProcess testProcess;
+    testProcess.start(ffmpegPath, QStringList() << "-version");
+    if (testProcess.waitForFinished(2000)) {
+        QString versionOutput = testProcess.readAllStandardOutput().trimmed();
+        if (!versionOutput.startsWith("ffmpeg version")) {
+            emit logMessage("⚠️ Invalid FFmpeg path detected in Combine: " + ffmpegPath + " (not FFmpeg) - resetting to /usr/bin/ffmpeg");
+            ffmpegPath = "/usr/bin/ffmpeg";
+            ffprobePath = "/usr/bin/ffprobe"; // Update ffprobe too
         }
-        args << "-c:a" << "libopus" << "-b:a" << "128k";
     } else {
-        args << "-c" << "copy";
+        emit logMessage("⚠️ Could not validate FFmpeg path: " + ffmpegPath + " - resetting to /usr/bin/ffmpeg");
+        ffmpegPath = "/usr/bin/ffmpeg";
+        ffprobePath = "/usr/bin/ffprobe";
     }
 
-    args << "-y" << finalOutputFile;
+    // Probe all files
+    QList<StreamInfo> streams;
+    totalDuration = 0.0; // Reset for progress
+    int fileCount = 0;
+    QList<QString> sortedFiles; // Track order for filter mode
+    QList<int> sortedKeys = orderMap.keys();
+    std::sort(sortedKeys.begin(), sortedKeys.end());
+    for (int key : sortedKeys) {
+        QString file = orderMap.value(key);
+        sortedFiles.append(file); // Preserve order
+        StreamInfo info = probeFile(file, ffprobePath);
+        if (info.width > 0 && info.duration > 0) { // Valid video
+            streams.append(info);
+            totalDuration += info.duration;
+            fileCount++;
+            emit logMessage(QString("Probed %1: %2x%3 @ %4 fps, dur %5s, audio: %6")
+            .arg(QFileInfo(file).fileName())
+            .arg(info.width).arg(info.height).arg(info.fps)
+            .arg(info.duration, 0, 'f', 2)
+            .arg(info.hasAudio ? "yes" : "no"));
+        } else {
+            emit logMessage(QString("⚠️ Skipped invalid %1").arg(QFileInfo(file).fileName()));
+        }
+    }
 
-    QProcess *proc = new QProcess(this);
-    emit logMessage("Starting combine...");
-    emit logMessage("Command: " + ffmpegPath + " " + args.join(" "));
+    // Post-probe: Re-validate files exist (in case deleted/moved during wait)
+    QList<QString> validSortedFiles;
+    QList<StreamInfo> validStreams;
+    double validTotalDuration = 0.0;
+    int validCount = 0;
+    for (int idx = 0; idx < sortedFiles.size(); ++idx) {
+        QString file = sortedFiles[idx];
+        if (QFile::exists(file)) {
+            validSortedFiles.append(file);
+            validStreams.append(streams[idx]);
+            validTotalDuration += streams[idx].duration;
+            validCount++;
+        } else {
+            emit logMessage(QString("⚠️ Missing file after probe: %1 - skipping").arg(file));
+        }
+    }
+    sortedFiles = validSortedFiles;
+    streams = validStreams;
+    totalDuration = validTotalDuration;
+    if (streams.isEmpty()) {
+        QMessageBox::warning(this, "Error", "No valid videos found! (All files missing or invalid)");
+        emit conversionFinished();
+        return;
+    }
+    emit logMessage(QString("✅ All %1 files verified exist").arg(validCount));
+    emit logMessage(QString("Total: %1 files, ~%2s duration").arg(validCount).arg(totalDuration, 0, 'f', 1));
 
-    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, proc](int exitCode, QProcess::ExitStatus) {
+    // Check compatibility
+    StreamInfo common;
+    bool compatible = checkAllFilesCompatible(streams, common);
+    bool forceReencode = reencodeCheck->isChecked();
+    bool useFilter = !compatible || forceReencode;
+    if (useFilter) {
+        emit logMessage("🔄 Incompatible streams detected → Using concat filter + re-encode");
+    } else {
+        emit logMessage("✅ All streams identical → Fast stream copy (demuxer)");
+    }
+    finalOutputFile = getFinalOutputFile();
+    if (finalOutputFile.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Output path invalid!");
+        emit conversionFinished();
+        return;
+    }
+    QStringList args;
+    args << "-y" << "-loglevel" << "warning";  // Suppress verbose noise
+    if (!useFilter) {
+        // Fast demuxer mode
+        concatTempFile = new QTemporaryFile(QDir::tempPath() + "/ffmpeg_converter_temp_XXXXXX.txt", this);
+        if (!concatTempFile->open()) {
+            QMessageBox::critical(this, "Error", "Cannot create temporary concat list");
+            emit conversionFinished();
+            return;
+        }
+        QTextStream stream(concatTempFile);
+        for (const QString& file : sortedFiles) {
+            stream << "file '" << QDir::toNativeSeparators(file) << "'\n";
+        }
+        stream.flush();
+        concatTempFile->close();
+        args << "-f" << "concat" << "-safe" << "0" << "-i" << concatTempFile->fileName() << "-c" << "copy" << finalOutputFile;
+    } else {
+        // Robust filter mode: Re-encode with scaling, silence, PTS offsets
+        QString targetCodec = targetCodecCombo->currentText();
+        QString vEncoder;
+        QStringList vParams;
+        if (targetCodec == "AV1") {
+            vEncoder = "libsvtav1"; vParams << "-preset" << "8" << "-crf" << "30" << "-threads" << "0";
+        } else if (targetCodec == "VP9") {
+            vEncoder = "libvpx-vp9"; vParams << "-crf" << "31" << "-b:v" << "0" << "-threads" << "0";
+        } else { // x265
+            vEncoder = "libx265"; vParams << "-preset" << "medium" << "-crf" << "23" << "-threads" << "0";
+        }
+        // Find min res for scaling (pad if aspect differs)
+        int minW = streams[0].width, minH = streams[0].height;
+        for (const auto& s : streams) {
+            minW = std::min(minW, s.width);
+            minH = std::min(minH, s.height);
+        }
+        // Round to even for AV1/VP9
+        minW = (minW / 2) * 2;
+        minH = (minH / 2) * 2;
+        emit logMessage(QString("📏 Scaling all to common res: %1x%2").arg(minW).arg(minH));
+        // Final check: Ensure all files still exist before encoding (race condition guard)
+        for (const QString& file : sortedFiles) {
+            if (!QFile::exists(file)) {
+                emit logMessage(QString("⚠️ File missing at encode time: %1 - aborting concat").arg(file));
+                QMessageBox::warning(this, "Error", QString("File vanished during processing: %1\nPlease check if deleted/moved.").arg(file));
+                emit conversionFinished();
+                return;
+            }
+        }
+        emit logMessage("✅ All files confirmed ready for encode");
+
+        // First, add all file inputs
+        for (const QString& file : sortedFiles) {
+            args << "-i" << file;
+            emit logMessage(QString("📁 Adding input: %1").arg(file));  // Debug: confirm clean path
+        }
+        // Then, add silence inputs for no-audio files (indices N to M)
+        QStringList aFilters;
+        int silenceIdx = streams.size(); // Start after files
+        for (int i = 0; i < streams.size(); ++i) {
+            const auto& s = streams[i];
+            QString inV = QString("[%1:v]").arg(i);
+            // Video filter for all
+            aFilters << QString("%1 scale=%2:%3:force_original_aspect_ratio=decrease,pad=%2:%3:(ow-iw)/2:(oh-ih)/2,setsar=1:1,setpts=PTS-STARTPTS,fps=30 [v%4];")
+            .arg(inV).arg(minW).arg(minH).arg(i);
+            // Audio filter
+            if (!s.hasAudio) {
+                QString silence = QString("anullsrc=channel_layout=stereo:sample_rate=48000:duration=%1").arg(s.duration, 0, 'g', 6);
+                args << "-f" << "lavfi" << "-i" << silence;
+                aFilters << QString("[%1:a] asetpts=PTS-STARTPTS [a%2];").arg(silenceIdx).arg(i);
+                silenceIdx++;
+            } else {
+                QString inA = QString("[%1:a]").arg(i);
+                aFilters << QString("%1 aresample=48000,asetpts=PTS-STARTPTS [a%2];").arg(inA).arg(i);
+            }
+        }
+        // Concat chains
+        QString vChain;
+        for (int i = 0; i < streams.size(); ++i) vChain += QString("[v%1]").arg(i);
+        vChain += QString("concat=n=%1:v=1:a=0 [v_out];").arg(streams.size());
+        QString aChain = "[a0]";
+        for (int i = 1; i < streams.size(); ++i) {
+            aChain += QString("[a%1]").arg(i);
+        }
+        aChain += QString("concat=n=%1:v=0:a=1 [a_out]").arg(streams.size());
+        // Full filter
+        QString filterComplex = aFilters.join("") + vChain + aChain;
+        args << "-filter_complex" << filterComplex
+        << "-map" << "[v_out]" << "-map" << "[a_out]"
+        << "-c:v" << vEncoder;
+        args.append(vParams);
+        args << "-c:a" << "libopus" << "-b:a" << "128k"
+        << finalOutputFile;
+    }
+    // Start process
+    concatProcess = new QProcess(this);
+    emit logMessage(QString("🔍 Final FFmpeg path for combine: %1").arg(ffmpegPath));
+    emit logMessage(QString("🚀 Command: %1 %2").arg(ffmpegPath).arg(args.join(" ")));
+    connect(concatProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [this](int exitCode, QProcess::ExitStatus) {
                 if (exitCode == 0) {
-                    emit logMessage("Combine finished: " + finalOutputFile);
+                    emit logMessage("✅ Combine finished: " + finalOutputFile);
                 } else {
-                    emit logMessage("Combine failed (code " + QString::number(exitCode) + ")");
+                    emit logMessage("❌ Combine failed (code " + QString::number(exitCode) + ")");
                 }
-                proc->deleteLater();
+                if (concatTempFile) {
+                    concatTempFile->deleteLater();
+                    concatTempFile = nullptr;
+                }
+                concatProcess->deleteLater();
                 concatProcess = nullptr;
                 emit conversionFinished();
             });
+    // Connect to slots (no params)
+    connect(concatProcess, &QProcess::readyReadStandardOutput, this, &CombineTab::onStdoutReady);
+    connect(concatProcess, &QProcess::readyReadStandardError, this, &CombineTab::onStderrReady);
+    concatProcess->start(ffmpegPath, args);
+}
 
-    connect(proc, &QProcess::readyReadStandardOutput, this, [this, proc]() {
-        emit logMessage(proc->readAllStandardOutput().trimmed());
-    });
-    connect(proc, &QProcess::readyReadStandardError, this, [this, proc]() {
-        emit logMessage(proc->readAllStandardError().trimmed());
-    });
+void CombineTab::onStdoutReady() {
+    if (!concatProcess) return;
+    QByteArray data = concatProcess->readAllStandardOutput();
+    QString out = QString(data).trimmed();
+    if (!out.isEmpty()) emit logMessage(out);
+    // Parse progress
+    QRegularExpression timeRe("time=(\\d{2}:\\d{2}:\\d{2}\\.\\d{2})");
+    QRegularExpressionMatch match = timeRe.match(out);
+    if (match.hasMatch() && totalDuration > 0) {
+        QTime t = QTime::fromString(match.captured(1), "hh:mm:ss.zz");
+        double secs = t.hour() * 3600.0 + t.minute() * 60.0 + t.second() + t.msec() / 1000.0;
+        int progress = static_cast<int>((secs / totalDuration) * 100.0);
+        emit progressUpdated(std::min(progress, 100));
+    }
+}
 
-    proc->start(ffmpegPath, args);
+void CombineTab::onStderrReady() {
+    if (!concatProcess) return;
+    QByteArray data = concatProcess->readAllStandardError();
+    QString err = QString(data).trimmed();
+    if (!err.isEmpty()) emit logMessage(err);
 }
 
 void CombineTab::selectInputDirectory()
@@ -282,12 +462,10 @@ void CombineTab::populateTable()
     table->setRowCount(0);
     QString dir = inputDirEdit->text();
     if (dir.isEmpty()) return;
-
     QDir qdir(dir);
     qdir.setNameFilters(videoExtensions);
     qdir.setFilter(QDir::Files);
     QFileInfoList files = qdir.entryInfoList();
-
     table->setRowCount(files.size());
     for (int i = 0; i < files.size(); ++i) {
         const QFileInfo &fi = files.at(i);
@@ -296,7 +474,6 @@ void CombineTab::populateTable()
         spin->setValue(0);
         spin->setSpecialValueText(" ");
         table->setCellWidget(i, 0, spin);
-
         QTableWidgetItem *item = new QTableWidgetItem(fi.fileName());
         item->setData(Qt::UserRole, fi.absoluteFilePath());
         table->setItem(i, 1, item);
@@ -313,7 +490,6 @@ void CombineTab::startConcatenation()
         QMessageBox::warning(this, "Error", "Enter output filename");
         return;
     }
-
     QMap<int, QString> orderMap;
     for (int row = 0; row < table->rowCount(); ++row) {
         QSpinBox *spin = qobject_cast<QSpinBox*>(table->cellWidget(row, 0));
@@ -322,17 +498,14 @@ void CombineTab::startConcatenation()
             orderMap[spin->value()] = item->data(Qt::UserRole).toString();
         }
     }
-
     if (orderMap.isEmpty()) {
         QMessageBox::warning(this, "Error", "No videos selected (use order > 0)");
         return;
     }
-
     QList<int> keys = orderMap.keys();
     std::sort(keys.begin(), keys.end());
     QMap<int, QString> sorted;
     for (int k : keys) sorted[k] = orderMap[k];
-
     createConcatListFile(sorted);
 }
 
@@ -342,6 +515,10 @@ void CombineTab::cancelConcatenation()
         concatProcess->kill();
         concatProcess->waitForFinished(3000);
         emit logMessage("🛑 Concatenation cancelled by user");
+    }
+    if (concatTempFile) {
+        concatTempFile->deleteLater();
+        concatTempFile = nullptr;
     }
     concatProcess = nullptr;
 }

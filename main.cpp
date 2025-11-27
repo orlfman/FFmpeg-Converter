@@ -139,10 +139,20 @@ private slots:
                 QMessageBox::warning(this, "Error", "Invalid FFmpeg executable selected.");
                 return;
             }
+            QString versionOutput = testProcess.readAllStandardOutput().trimmed();
+            if (!versionOutput.startsWith("ffmpeg version")) {
+                QMessageBox::warning(this, "Error", QString("This is not FFmpeg! Output starts with: \"%1\"").arg(versionOutput.left(20)));
+                return;
+            }
             QString ffprobePath = selectedPath.replace("ffmpeg", "ffprobe");
             testProcess.start(ffprobePath, QStringList() << "-version");
             if (!testProcess.waitForFinished(5000) || testProcess.exitCode() != 0) {
                 QMessageBox::warning(this, "Error", "FFprobe not found or invalid at: " + ffprobePath);
+                return;
+            }
+            QString ffprobeVersionOutput = testProcess.readAllStandardOutput().trimmed();
+            if (!ffprobeVersionOutput.startsWith("ffprobe version")) {
+                QMessageBox::warning(this, "Error", QString("This is not ffprobe! Output starts with: \"%1\"").arg(ffprobeVersionOutput.left(20)));
                 return;
             }
             ffmpegPathLineEdit->setText(selectedPath);
@@ -169,6 +179,10 @@ private:
         defaultCodecComboBox->setCurrentIndex(savedTab);
         QString savedFFmpeg = settings.value("ffmpegPath", "/usr/bin/ffmpeg").toString();
         ffmpegPathLineEdit->setText(savedFFmpeg);
+        if (savedFFmpeg.contains("ffprobe", Qt::CaseInsensitive) || !QFile::exists(savedFFmpeg)) {
+            ffmpegPathLineEdit->setText("/usr/bin/ffmpeg");
+            settings.setValue("ffmpegPath", "/usr/bin/ffmpeg");
+        }
         QString savedSvtAv1 = settings.value("svtAv1Path", "").toString();
         svtAv1PathLineEdit->setText(savedSvtAv1);
         QString savedDir = settings.value("defaultOutputDir",
@@ -596,6 +610,7 @@ int main(int argc, char *argv[]) {
     conversionProgress->setRange(0, 100);
     mainLayout->addWidget(conversionProgress);
     QObject::connect(combineTab, &CombineTab::logMessage, logBox, &QTextEdit::append);
+    QObject::connect(combineTab, &CombineTab::progressUpdated, conversionProgress, &QProgressBar::setValue);
     QObject::connect(combineTab, &CombineTab::conversionFinished, [convertButton, cancelButton, conversionProgress, logBox, combineTab]() {
         convertButton->setEnabled(true);
         cancelButton->setEnabled(false);
