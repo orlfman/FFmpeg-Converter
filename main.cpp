@@ -1204,24 +1204,6 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             }
         }
         QStringList args;
-        if (seekCheck->isChecked()) {
-            bool okHH, okMM, okSS;
-            int hh = seekHH->text().toInt(&okHH);
-            int mm = seekMM->text().toInt(&okMM);
-            int ss = seekSS->text().toInt(&okSS);
-            if (okHH && okMM && okSS) {
-                args << "-ss" << QString("%1:%2:%3").arg(hh, 2, 10, QChar('0')).arg(mm, 2, 10, QChar('0')).arg(ss, 2, 10, QChar('0'));
-            }
-        }
-        if (timeCheck->isChecked()) {
-            bool okHH, okMM, okSS;
-            int hh = timeHH->text().toInt(&okHH);
-            int mm = timeMM->text().toInt(&okMM);
-            int ss = timeSS->text().toInt(&okSS);
-            if (okHH && okMM && okSS) {
-                args << "-t" << QString("%1:%2:%3").arg(hh, 2, 10, QChar('0')).arg(mm, 2, 10, QChar('0')).arg(ss, 2, 10, QChar('0'));
-            }
-        }
         if (preserveMetadataCheck->isChecked()) args << "-map_metadata" << "0";
         if (removeChaptersCheck->isChecked()) args << "-map_chapters" << "-1";
     QStringList videoFilters;
@@ -1392,6 +1374,22 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
     double videoPercent = videoSpeedCheck->isChecked() ? getPercentChange(videoSpeedCombo->currentText()) : 0.0;
     double audioPercent = audioSpeedCheck->isChecked() ? getPercentChange(audioSpeedCombo->currentText()) : 0.0;
     double videoMultiplier = 1.0 + videoPercent / 100.0;
+    QString seekTimeStr = "";
+    if (seekCheck->isChecked()) {
+        int hh = seekHH->text().toInt();
+        int mm = seekMM->text().toInt();
+        int ss = seekSS->text().toInt();
+        seekTimeStr = QString("%1:%2:%3").arg(hh, 2, 10, QChar('0')).arg(mm, 2, 10, QChar('0')).arg(ss, 2, 10, QChar('0'));
+        logBox->append(QString("Seek: %1 (original timeline)").arg(seekTimeStr));
+    }
+    QString outputTimeStr = "";
+    if (timeCheck->isChecked()) {
+        int hh = timeHH->text().toInt();
+        int mm = timeMM->text().toInt();
+        int ss = timeSS->text().toInt();
+        outputTimeStr = QString("%1:%2:%3").arg(hh, 2, 10, QChar('0')).arg(mm, 2, 10, QChar('0')).arg(ss, 2, 10, QChar('0'));
+        logBox->append(QString("Output duration: %1 (adjusted for speed)").arg(outputTimeStr));
+    }
     double audioMultiplier = 1.0 + audioPercent / 100.0;
     if (videoPercent <= -100.0) {
         videoMultiplier = 0.001;
@@ -1814,7 +1812,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             conversionProgress->setValue(0);
             return;
         } else {
-            converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked());
+            converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked(), seekTimeStr, outputTimeStr, videoMultiplier);
         }
     });
 QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress]() {

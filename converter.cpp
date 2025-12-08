@@ -12,7 +12,19 @@ Converter::Converter(QObject *parent) : QObject(parent) {
     currentPass = 0;
 }
 
-void Converter::startConversion(const QString &inputFile, const QString &outputDir, const QString &baseName, const QStringList &args, bool twoPass, const QString &extension, const QString &codec, const QString &ffmpegPath, const QProcessEnvironment &env, bool overwrite) {
+double Converter::parseTimeToSeconds(const QString& timeStr) {
+    if (timeStr.isEmpty()) return 0.0;
+    QStringList parts = timeStr.split(':', Qt::SkipEmptyParts);
+    if (parts.size() != 3) return 0.0;
+    bool ok1, ok2, ok3;
+    double h = parts[0].toDouble(&ok1);
+    double m = parts[1].toDouble(&ok2);
+    double s = parts[2].toDouble(&ok3);
+    if (!ok1 || !ok2 || !ok3 || h < 0 || m < 0 || m >= 60 || s < 0 || s >= 60) return 0.0;
+    return h * 3600 + m * 60 + s;
+}
+
+void Converter::startConversion(const QString &inputFile, const QString &outputDir, const QString &baseName, const QStringList &args, bool twoPass, const QString &extension, const QString &codec, const QString &ffmpegPath, const QProcessEnvironment &env, bool overwrite, const QString& seekTimeStr, const QString& outputDurationStr, double videoSpeedMult) {
     file = inputFile;
     this->outputDir = outputDir;
     this->baseName = baseName;
@@ -21,12 +33,29 @@ void Converter::startConversion(const QString &inputFile, const QString &outputD
     this->ffmpegPath = ffmpegPath;
     processEnv = env;
     this->overwriteFlag = overwrite;
+    this->seekTimeStr = seekTimeStr;
+    this->outputDurationStr = outputDurationStr;
+    this->videoSpeedMultiplier = videoSpeedMult;
     duration = getDuration(inputFile);
     if (duration <= 0) {
         emit logMessage("Could not determine duration for: " + inputFile);
         emit conversionFinished();
         return;
     }
+    double seekSecs = parseTimeToSeconds(seekTimeStr);
+    double availAfterSeek = duration - seekSecs;
+    double procInputSecs = availAfterSeek;
+    if (!outputDurationStr.isEmpty()) {
+        double desOut = parseTimeToSeconds(outputDurationStr);
+        procInputSecs = desOut * videoSpeedMult;
+        if (procInputSecs > availAfterSeek) procInputSecs = availAfterSeek;
+    }
+    expectedOutputDuration = procInputSecs / videoSpeedMult;
+    emit logMessage(QString("Expected output duration: %1 seconds (speed %2x, seek %3s, time limit %4s)")
+    .arg(expectedOutputDuration, 0, 'f', 1)
+    .arg(videoSpeedMult, 0, 'g', 4)
+    .arg(seekSecs, 0, 'f', 1)
+    .arg(outputDurationStr.isEmpty() ? "none" : outputDurationStr));
     emit logMessage("Using time-based progress for: " + inputFile + ", duration: " + QString::number(duration) + " seconds");
     QString originalOutputFile = QDir(outputDir).filePath(baseName + extension);
     finalOutputFile = getUniqueOutputFile(outputDir, baseName, extension);
@@ -36,12 +65,10 @@ void Converter::startConversion(const QString &inputFile, const QString &outputD
         emit logMessage("Output file " + originalOutputFile + " already exists, using " + finalOutputFile + " instead.");
     }
     emit logMessage("Starting conversion for: " + file + " -> " + finalOutputFile);
-
     if (codec == "vp9" && args.contains("-crf") && args.contains("-b:v") && args.contains("0")) {
         emit logMessage("VP9 CRF detected: Using single-pass mode (two-pass not supported for CRF).");
         twoPass = false;
     }
-
     currentPass = twoPass ? 1 : 0;
     if (twoPass) {
         QString statsFile;
@@ -59,7 +86,13 @@ void Converter::startConversion(const QString &inputFile, const QString &outputD
 void Converter::processFile(int pass, const QString &statsFile) {
     QMutexLocker locker(&processesMutex);
     QStringList args;
-    args << "-y" << "-i" << file;
+    QStringList preInputArgs;
+    if (!seekTimeStr.isEmpty()) {
+        preInputArgs << "-ss" << seekTimeStr;
+    }
+    args << "-y";
+    args << preInputArgs;
+    args << "-i" << file;
     for (int i = 0; i < ffmpegArgs.size(); ++i) {
         if (ffmpegArgs[i] == "-vf" && i + 1 < ffmpegArgs.size()) {
             args << "-vf" << ffmpegArgs[i + 1];
@@ -70,6 +103,9 @@ void Converter::processFile(int pass, const QString &statsFile) {
         } else {
             args << ffmpegArgs[i];
         }
+    }
+    if (!outputDurationStr.isEmpty()) {
+        args << "-t" << outputDurationStr;
     }
     args << "-loglevel" << "verbose";
     args << "-progress" << "pipe:2";
@@ -208,16 +244,16 @@ void Converter::readProcessOutput() {
         if (match.hasMatch()) {
             QString timeStr = match.captured(1);
             QTime time = QTime::fromString(timeStr, "hh:mm:ss.zz");
-            double currentTime = time.hour() * 3600 + time.minute() * 60 + time.second() + time.msec() / 1000.0;
-            if (duration > 0) {
-                double progressFraction = currentTime / duration;
+            double currentTime = time.hour() * 3600.0 + time.minute() * 60.0 + time.second() + time.msec() / 1000.0;
+            if (expectedOutputDuration > 0.0) {
+                double fraction = currentTime / expectedOutputDuration;
                 int progress;
                 if (currentPass == 1) {
-                    progress = static_cast<int>(progressFraction * 50);
+                    progress = static_cast<int>(fraction * 50.0);
                 } else if (currentPass == 2) {
-                    progress = 50 + static_cast<int>(progressFraction * 50);
+                    progress = 50 + static_cast<int>(fraction * 50.0);
                 } else {
-                    progress = static_cast<int>(progressFraction * 100);
+                    progress = static_cast<int>(fraction * 100.0);
                 }
                 emit progressUpdated(progress);
             }

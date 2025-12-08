@@ -13,7 +13,7 @@ public:
     // Basic constructor, takes a parent if needed
     explicit Converter(QObject *parent = nullptr);
     // Kicks off the conversion with all the necessary params
-    void startConversion(const QString &inputFile, const QString &outputDir, const QString &baseName, const QStringList &args, bool twoPass, const QString &extension, const QString &codec, const QString &ffmpegPath, const QProcessEnvironment &env = QProcessEnvironment::systemEnvironment(), bool overwrite = false);
+    void startConversion(const QString &inputFile, const QString &outputDir, const QString &baseName, const QStringList &args, bool twoPass, const QString &extension, const QString &codec, const QString &ffmpegPath, const QProcessEnvironment &env = QProcessEnvironment::systemEnvironment(), bool overwrite = false, const QString& seekTimeStr = "", const QString& outputDurationStr = "", double videoSpeedMult = 1.0);
     // Gets the path to the final output file after conversion
     QString getFinalOutputFile() const;
 public slots:
@@ -38,6 +38,8 @@ private:
     double getDuration(const QString &inputFile);
     // Finds a unique filename for the output if needed
     QString getUniqueOutputFile(const QString& outputDir, const QString& baseName, const QString& extension);
+    // Helper to parse HH:MM:SS to seconds
+    double parseTimeToSeconds(const QString& timeStr);
     // List of running processes
     QList<QPointer<QProcess>> processes;
     // Mutex for thread safety with processes
@@ -64,5 +66,12 @@ private:
     QProcessEnvironment processEnv;
     // Flag for overwriting files
     bool overwriteFlag;
+    // Expected output duration (adjusted for speed/seek/time)
+    double expectedOutputDuration = 0.0;
+    // Video speed multiplier
+    double videoSpeedMultiplier = 1.0;
+    // Seek and duration strings
+    QString seekTimeStr;
+    QString outputDurationStr;
 };
 #endif // CONVERTER_H
