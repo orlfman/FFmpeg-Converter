@@ -2,7 +2,7 @@
 #include <QToolTip>
 Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *vp9Layout = new QVBoxLayout(this);
-    // Picking the container
+    // Container
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Container:");
