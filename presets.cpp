@@ -1,6 +1,5 @@
 #include "presets.h"
 #include <QObject>
-
 void Presets::connectPresets(
     QComboBox* presetCombo,
     QTabWidget* codecTabs,
@@ -14,7 +13,7 @@ void Presets::connectPresets(
 {
     QList<QWidget*> av1Widgets = {
         av1Tab->av1ContainerBox,
-        av1Tab->av1AudioCheck,
+        // av1Tab->av1AudioCheck,  // Removed: Allow toggling audio in presets
         av1Tab->av1AudioCodecBox,
         av1Tab->av1AudioSampleRateBox,
         av1Tab->av1AudioBitrateBox,
@@ -59,7 +58,6 @@ void Presets::connectPresets(
         av1Tab->av1AQModeBox,
         av1Tab->av1AQStrengthSlider
     };
-
     QList<QWidget*> x265Widgets = {
         x265Tab->x265ContainerBox,
         x265Tab->x265PresetBox,
@@ -96,8 +94,9 @@ void Presets::connectPresets(
         x265Tab->x265NoiseReductionSlider,
         x265Tab->x265GrainSynthCheck,
         x265Tab->x265GrainSynthLevel
+        // Note: x265AudioCheck removed here too (it's set below in the lists but commented for clarity)
     };
-
+    x265Widgets.removeOne(x265Tab->x265AudioCheck);  // Explicitly remove if it sneaks in
     QList<QWidget*> vp9Widgets = {
         vp9Tab->vp9ContainerBox,
         vp9Tab->vp9CpuUsedBox,
@@ -127,31 +126,26 @@ void Presets::connectPresets(
         vp9Tab->vp9NoiseReductionSlider,
         vp9Tab->vp9GrainSynthCheck,
         vp9Tab->vp9GrainSynthLevel
+        // Note: vp9AudioCheck removed here too
     };
-
+    vp9Widgets.removeOne(vp9Tab->vp9AudioCheck);  // Explicitly remove if it sneaks in
     QList<QWidget*> globalWidgets = { eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox };
-
     auto updateLockState = [presetCombo, codecTabs, av1Widgets, x265Widgets, vp9Widgets, globalWidgets]() {
         bool isPresetActive = (presetCombo->currentIndex() != 0);
-
         for (QWidget* w : globalWidgets) w->setEnabled(true);
         int tab = codecTabs->currentIndex();
-        for (QWidget* w : av1Widgets)   w->setEnabled(!isPresetActive || tab != 0);
-        for (QWidget* w : x265Widgets)  w->setEnabled(!isPresetActive || tab != 1);
-        for (QWidget* w : vp9Widgets)   w->setEnabled(!isPresetActive || tab != 2);
+        for (QWidget* w : av1Widgets) w->setEnabled(!isPresetActive || tab != 0);
+        for (QWidget* w : x265Widgets) w->setEnabled(!isPresetActive || tab != 1);
+        for (QWidget* w : vp9Widgets) w->setEnabled(!isPresetActive || tab != 2);
     };
-
         updateLockState();
-
         auto applyPreset = [presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, updateLockState]() {
             int p = presetCombo->currentIndex();
             if (p == 0) {
                 updateLockState();
                 return;
             }
-
             int currentTab = codecTabs->currentIndex();
-
             if (currentTab == 0) { // AV1
                 av1Tab->av1NlmeansCheck->setChecked(false);
                 av1Tab->av1NlmeansSigmaSSlider->setValue(20);
@@ -353,7 +347,6 @@ void Presets::connectPresets(
                 x265Tab->weightpCheck->setChecked(true);
                 x265Tab->x265AQModeBox->setCurrentText("Variance");
                 x265Tab->x265VbrModeBox->setCurrentText("Default");
-
                 switch (p) {
                     case 1: // Streaming
                         x265Tab->x265PresetBox->setCurrentText("veryfast");
@@ -497,7 +490,6 @@ void Presets::connectPresets(
                 vp9Tab->vp9NlmeansSigmaSSlider->setValue(20);
                 vp9Tab->vp9NlmeansSigmaPSlider->setValue(10);
                 vp9Tab->vp9NlmeansPatchSlider->setValue(7);
-
                 switch (p) {
                     case 1: // Streaming
                         vp9Tab->vp9CpuUsedBox->setCurrentText("5");
@@ -595,16 +587,12 @@ void Presets::connectPresets(
                         break;
                 }
             }
-
             updateLockState();
         };
-
         QObject::connect(presetCombo, &QComboBox::currentIndexChanged, applyPreset);
-
         QObject::connect(codecTabs, &QTabWidget::currentChanged, [presetCombo, updateLockState](int) {
             presetCombo->setCurrentIndex(0);
             updateLockState();
         });
-
         updateLockState();
 }
