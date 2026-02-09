@@ -49,9 +49,9 @@ private:
     QPushButton *upButton;
     QPushButton *downButton;
     QPushButton *clearButton;
-    QComboBox *speedCombo;  // <-- NEW: playback speed combo
+    QComboBox *speedCombo;
 
-    QList<QPair<qint64, qint64>> segments; // startMs, endMs
+    QList<QPair<qint64, qint64>> segments;
 
     QString formatTime(qint64 ms);
     qint64 parseTime(const QString &str);

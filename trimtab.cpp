@@ -41,7 +41,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     durationLabel = new QLabel("/ 00:00:00.000");
     controls->addWidget(durationLabel);
 
-    // NEW: Playback speed control
+    // Playback speed control
     QLabel *speedLabel = new QLabel("Speed:");
     controls->addWidget(speedLabel);
     speedCombo = new QComboBox();
@@ -109,7 +109,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     connect(player, &QMediaPlayer::positionChanged, this, &TrimTab::updateCurrentTime);
     connect(positionSlider, &QSlider::valueChanged, player, &QMediaPlayer::setPosition);
 
-    // NEW: Speed control connection
+    // Speed control connection
     connect(speedCombo, &QComboBox::currentTextChanged, this, [this](const QString &text) {
         QString numStr = text.chopped(1); // remove 'x'
     bool ok;
@@ -133,7 +133,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
             return;
         }
         addSegment(start, end);
-        startTimeEdit->setText(formatTime(end)); // convenient for next segment
+        startTimeEdit->setText(formatTime(end));
     });
     connect(removeButton, &QPushButton::clicked, this, [this]() {
         int row = segmentsTable->currentRow();
@@ -181,11 +181,11 @@ void TrimTab::setInputFile(const QString &file)
         endTimeEdit->clear();
         segments.clear();
         updateTable();
-        speedCombo->setCurrentText("1.0x"); // reset speed
+        speedCombo->setCurrentText("1.0x");
         return;
     }
     player->setSource(QUrl::fromLocalFile(file));
-    player->setPlaybackRate(1.0); // explicitly force native speed on load
+    player->setPlaybackRate(1.0);
     player->pause();
     playPauseButton->setText("Play");
     startTimeEdit->setText("00:00:00.000");

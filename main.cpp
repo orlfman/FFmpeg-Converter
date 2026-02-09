@@ -201,7 +201,7 @@ private:
     QCheckBox *notifyOnFinishCheck = nullptr;
 };
 
-// Function to show a notification when the conversion finishes
+// Show a notification when the conversion finishes
 void showConversionNotification(const QString& outputFile, QWidget* parent) {
     QSettings settings("FFmpegConverter", "Settings");
     if (!settings.value("notifyOnFinish", true).toBool()) return;
@@ -220,7 +220,7 @@ void showConversionNotification(const QString& outputFile, QWidget* parent) {
 }
 #include "main.moc"
 int main(int argc, char *argv[]) {
-    Q_UNUSED(argc); // Just suppressing those unused parameter warnings
+    Q_UNUSED(argc); // Just suppressing those warnings
     Q_UNUSED(argv);
     QApplication app(argc, argv);
     QMainWindow window;
@@ -1821,7 +1821,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             return;
         }
         else if (codecTabs->currentWidget() == trimScroll) {
-            // ==================== TRIM MODE ====================
+            // Trim tab stuff
             logBox->clear();
             logBox->append("=== TRIM & CONCAT CONVERSION STARTED ===");
 
@@ -2025,7 +2025,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 }
             }
 
-            // Scaling, frame rate, pixel format, audio normalize, speed — unchanged from your skeleton
+            // Scaling, frame rate, pixel format, audio normalize, speed
             double sw = scaleWidthSpin->value();
             double sh = scaleHeightSpin->value();
             QString filterName = scaleFilterBox->currentText();
@@ -2134,7 +2134,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             if (hasAudio) args << "-map" << "[" + aLabel + "]";
             else args << "-an";
 
-            // ==================== Codec-specific encoding parameters ====================
+            // Codec specific encoding stuff
             if (codecIndex == 0) { // AV1
                 args << "-c:v" << "libsvtav1";
                 args << "-preset" << av1Tab->av1PresetBox->currentText();
@@ -2383,7 +2383,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
                 }
             }
 
-            // ==================== Audio encoding (if enabled) ====================
+            // Audio encoding, if enabled
             QComboBox *audioCodecBox = nullptr;
             QComboBox *audioSampleRateBox = nullptr;
             QComboBox *audioBitrateBox = nullptr;
@@ -2473,11 +2473,11 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             logBox->append(fullCommand);
             logBox->append("────────────────────────────────────────────────────────────────────────────────");
 
-            // Progress estimate (not 100% accurate because of complex filter, but conversion is correct)
+            // Progress estimate. Not 100% accurate because of complex filter(s), but conversion is correct
             double expectedOutputDuration = totalSegSec / videoMultiplier;
             logBox->append(QString("Expected output duration: %1 seconds").arg(expectedOutputDuration, 0, 'f', 1));
 
-            // Start conversion (two-pass forcibly disabled in trim mode)
+            // Start conversion. two pass forcibly disabled in trim mode
             convertButton->setEnabled(false);
             cancelButton->setEnabled(true);
             conversionProgress->setVisible(true);
@@ -2486,7 +2486,7 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             converter->startConversion(inputFile, outputDir, baseName, args, false, extension,
                                        codecLower, ffmpegPath, env, overwriteCheck->isChecked(),
                                        "", "", videoMultiplier);
-            // ==================== END TRIM MODE ====================
+            // end trim stuff
         } else {
             // Normal single-file conversion (unchanged)
             converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked(), seekTimeStr, outputTimeStr, videoMultiplier);
