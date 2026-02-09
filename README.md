@@ -1,5 +1,7 @@
 # FFmpeg Converter
 
+![FFmpeg Converter Screenshot](https://raw.githubusercontent.com/orlfman/FFmpeg-Converter/main/Screenshot_20251118_212834.webp)
+
 My own pet project. FFmpeg-Converter a simple Qt6 frontend for FFmpeg. Currently supports encoding with AV1, x265, and VP9. Slowly but surely adding more features and refinement.
 
 ### Feature List
