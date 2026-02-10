@@ -28,6 +28,7 @@ public:
 
 public slots:
     void setInputFile(const QString &file);
+    void stopPreviewPlayer();
 
 private:
     QComboBox *codecCombo;

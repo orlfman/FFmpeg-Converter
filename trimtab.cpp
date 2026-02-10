@@ -6,6 +6,7 @@
 #include <QHeaderView>
 #include <QFileInfo>
 #include <QTableWidgetItem>
+#include <algorithm>
 
 TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
 {
@@ -132,7 +133,33 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
             QMessageBox::warning(this, "Invalid Segment", "Start must be before end and within video length.");
             return;
         }
-        addSegment(start, end);
+
+        // Test adding the new segment
+        QList<QPair<qint64, qint64>> temp = segments;
+        temp.append({start, end});
+
+        // Sort by start time
+        std::sort(temp.begin(), temp.end(), [](const QPair<qint64, qint64>& a, const QPair<qint64, qint64>& b) {
+            return a.first < b.first;
+        });
+
+        // Check for any overlap
+        bool hasOverlap = false;
+        for (int i = 1; i < temp.size(); ++i) {
+            if (temp[i].first < temp[i - 1].second) {
+                hasOverlap = true;
+                break;
+            }
+        }
+
+        if (hasOverlap) {
+            QMessageBox::warning(this, "Invalid Segment", "This segment overlaps with an existing segment and cannot be added.");
+            return;
+        }
+
+        // No overlap → accept it
+        segments = temp;
+        updateTable();
         startTimeEdit->setText(formatTime(end));
     });
     connect(removeButton, &QPushButton::clicked, this, [this]() {
@@ -234,12 +261,6 @@ void TrimTab::updateCurrentTime(qint64 pos)
     }
 }
 
-void TrimTab::addSegment(qint64 start, qint64 end)
-{
-    segments.append({start, end});
-    updateTable();
-}
-
 void TrimTab::updateTable()
 {
     segmentsTable->setRowCount(segments.size());
@@ -254,4 +275,10 @@ void TrimTab::updateTable()
 void TrimTab::setDefaultCodec(int index)
 {
     codecCombo->setCurrentIndex(index);
+}
+
+void TrimTab::stopPreviewPlayer()
+{
+    player->stop();
+    player->setSource(QUrl());
 }

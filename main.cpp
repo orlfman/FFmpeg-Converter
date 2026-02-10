@@ -1826,6 +1826,8 @@ QObject::connect(convertButton, &QPushButton::clicked, [converter, convertButton
             logBox->append("=== TRIM & CONCAT CONVERSION STARTED ===");
 
             QString inputFile = selectedFilesBox->text().trimmed();
+            trimTab->stopPreviewPlayer();
+            logBox->append("Stopped video preview player to release input file handle.");
             if (inputFile.isEmpty()) {
                 QMessageBox::warning(nullptr, "Error", "Please select an input file.");
                 return;
