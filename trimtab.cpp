@@ -209,8 +209,10 @@ void TrimTab::setInputFile(const QString &file)
         segments.clear();
         updateTable();
         speedCombo->setCurrentText("1.0x");
+        currentInputFile.clear();
         return;
     }
+    currentInputFile = file;
     player->setSource(QUrl::fromLocalFile(file));
     player->setPlaybackRate(1.0);
     player->pause();
@@ -281,4 +283,22 @@ void TrimTab::stopPreviewPlayer()
 {
     player->stop();
     player->setSource(QUrl());
+}
+
+void TrimTab::restartPreviewPlayer()
+{
+    if (currentInputFile.isEmpty()) return;
+    player->stop();
+    player->setSource(QUrl::fromLocalFile(currentInputFile));
+    QString speedText = speedCombo->currentText();
+    bool ok;
+    double rate = speedText.chopped(1).toDouble(&ok);
+    if (ok && rate > 0.0) {
+        player->setPlaybackRate(rate);
+    } else {
+        player->setPlaybackRate(1.0);
+        speedCombo->setCurrentText("1.0x");
+    }
+    player->pause();
+    playPauseButton->setText("Play");
 }

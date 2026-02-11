@@ -2425,7 +2425,7 @@ int main(int argc, char *argv[]) {
                             concatProc->setProcessEnvironment(env);
                             concatProc->start(ffmpegPath, concatArgs);
                             QObject::connect(concatProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                                             [concatProc, logBox, finalFile, tempDir, convertButton, cancelButton, conversionProgress](int, QProcess::ExitStatus) {
+                                             [concatProc, logBox, finalFile, tempDir, convertButton, cancelButton, conversionProgress, trimTab](int, QProcess::ExitStatus) {
                                                  if (concatProc->exitCode() == 0) {
                                                      logBox->append("✅ Trim conversion complete: " + finalFile);
                                                      showConversionNotification(finalFile, nullptr);
@@ -2434,6 +2434,7 @@ int main(int argc, char *argv[]) {
                                                  }
                                                  QDir(tempDir).removeRecursively();
                                                  logBox->append("Cleaned up temporary files.");
+                                                 trimTab->restartPreviewPlayer();
                                                  convertButton->setEnabled(true);
                                                  cancelButton->setEnabled(false);
                                                  conversionProgress->setVisible(false);
@@ -2480,12 +2481,13 @@ int main(int argc, char *argv[]) {
                     converter->startConversion(inputFile, outputDir, baseName, args, twoPass, extension, codecStr, ffmpegPath, env, overwriteCheck->isChecked(), seekTimeStr, outputTimeStr, videoMultiplier);
                 }
             });
-            QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress]() {
+            QObject::connect(cancelButton, &QPushButton::clicked, [converter, combineTab, convertButton, cancelButton, conversionProgress, trimTab]() {
                 converter->cancel();
                 combineTab->cancelConcatenation();
                 convertButton->setEnabled(true);
                 cancelButton->setEnabled(false);
                 conversionProgress->setVisible(false);
+                trimTab->restartPreviewPlayer();
             });
             QObject::connect(converter, &Converter::logMessage, logBox, &QTextEdit::append);
             QObject::connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);

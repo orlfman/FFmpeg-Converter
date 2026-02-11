@@ -29,6 +29,7 @@ public:
 public slots:
     void setInputFile(const QString &file);
     void stopPreviewPlayer();
+    void restartPreviewPlayer();
 
 private:
     QComboBox *codecCombo;
@@ -51,6 +52,7 @@ private:
     QPushButton *downButton;
     QPushButton *clearButton;
     QComboBox *speedCombo;
+    QString currentInputFile;
 
     QList<QPair<qint64, qint64>> segments;
 
