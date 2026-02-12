@@ -17,6 +17,13 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     codecCombo = new QComboBox();
     codecCombo->addItems({"AV1", "x265", "VP9"});
     codecLay->addWidget(codecCombo);
+    losslessCheck = new QCheckBox("Lossless Trim (No Re-encode)");
+    losslessCheck->setToolTip("Check this for fast, lossless trimming using stream copy.\n"
+    "No quality loss, but cuts are keyframe-accurate only.\n"
+    "All encoding settings, filters, scaling and speed changes will be ignored.");
+    codecLay->addWidget(losslessCheck);
+
+    connect(losslessCheck, &QCheckBox::toggled, codecCombo, &QComboBox::setDisabled);
     codecLay->addStretch();
     mainLayout->addLayout(codecLay);
     // Input file label
@@ -301,4 +308,8 @@ void TrimTab::restartPreviewPlayer()
     }
     player->pause();
     playPauseButton->setText("Play");
+}
+bool TrimTab::isLosslessTrim() const
+{
+    return losslessCheck->isChecked();
 }

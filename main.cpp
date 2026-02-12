@@ -1814,6 +1814,7 @@ int main(int argc, char *argv[]) {
                         return;
                     }
                     int codecIndex = trimTab->getCodecIndex();
+                    bool lossless = trimTab->isLosslessTrim();
                     QString codecLower = (codecIndex == 0 ? "av1" : (codecIndex == 1 ? "x265" : "vp9"));
                     if (codecIndex == 0 && av1Tab->av1EnableRCModeCheck->isChecked()) {
                         QString rcMode = av1Tab->av1RCModeBox->currentText();
@@ -1842,10 +1843,16 @@ int main(int argc, char *argv[]) {
                     }
                     QString outputDir = outputDirBox->text();
                     QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
-                    QString containerExt;
-                    if (codecIndex == 0) containerExt = "." + av1Tab->av1ContainerBox->currentText();
-                    else if (codecIndex == 1) containerExt = "." + x265Tab->x265ContainerBox->currentText();
-                    else containerExt = "." + vp9Tab->vp9ContainerBox->currentText();
+                    QString containerExt = ".mkv"; // Safe container for stream copy
+                    if (!lossless) {
+                        if (codecIndex == 0) {
+                            containerExt = "." + av1Tab->av1ContainerBox->currentText();
+                        } else if (codecIndex == 1) {
+                            containerExt = "." + x265Tab->x265ContainerBox->currentText();
+                        } else if (codecIndex == 2) {
+                            containerExt = "." + vp9Tab->vp9ContainerBox->currentText();
+                        }
+                    }
                     QString finalFile = QDir::cleanPath(outputDir + "/" + baseName + containerExt);
                     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
                     QString svtAv1Path = settings.value("svtAv1Path", "").toString();
@@ -2045,8 +2052,11 @@ int main(int argc, char *argv[]) {
                         QString chain = buildAtempoChain(audioMultiplier);
                         if (!chain.isEmpty()) audioFilters.prepend(chain);
                     }
-                    if (!videoFilters.isEmpty()) commonArgs << "-vf" << videoFilters.join(",");
-                    if (!audioFilters.isEmpty()) commonArgs << "-af" << audioFilters.join(",");
+                    if (!lossless) {
+                        if (!videoFilters.isEmpty()) commonArgs << "-vf" << videoFilters.join(",");
+                        if (!audioFilters.isEmpty()) commonArgs << "-af" << audioFilters.join(",");
+                    }
+                    if (!lossless) {
                     if (codecIndex == 0) {
                         commonArgs << "-c:v" << "libsvtav1";
                         commonArgs << "-preset" << av1Tab->av1PresetBox->currentText();
@@ -2292,6 +2302,8 @@ int main(int argc, char *argv[]) {
                             commonArgs << "-b:v" << "0";
                         }
                     }
+                } // end of if (!lossless) for codec parameters
+                if (!lossless) {
                     if (codecIndex == 0) {
                         if (av1Tab->av1AudioCheck->isChecked()) {
                             QString audioCodecStr = av1Tab->av1AudioCodecBox->currentText();
@@ -2374,6 +2386,7 @@ int main(int argc, char *argv[]) {
                             commonArgs << "-an";
                         }
                     }
+                } // end of if (!lossless) for audio options
                     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
                     "/ffmpeg_converter_trim_" + QUuid::createUuid().toString(QUuid::WithoutBraces);
                     QDir().mkpath(tempDir);
@@ -2446,6 +2459,19 @@ int main(int argc, char *argv[]) {
                         double thisDur = segDurations[state->currentSeg];
                         QString segBaseName = QString("seg_%1").arg(state->currentSeg + 1, 3, 10, QChar('0'));
                         QStringList segArgs = commonArgs;
+                        if (lossless) {
+                            segArgs.clear();
+                            segArgs << "-c" << "copy" << "-map" << "0" << "-avoid_negative_ts" << "make_zero";
+                            if (preserveMetadataCheck->isChecked()) {
+                                segArgs << "-map_metadata" << "0";
+                            }
+                            if (removeChaptersCheck->isChecked()) {
+                                segArgs << "-map_chapters" << "-1";
+                            }
+                            logBox->append("=== LOSSLESS TRIM MODE (STREAM COPY) ACTIVATED ===");
+                            logBox->append("Fast, zero quality loss. Cuts are keyframe-accurate only.");
+                            logBox->append("All filters, scaling, speed changes, and codec settings are ignored.");
+                        }
                         segArgs << "-ss" << QString::number(seg.first / 1000.0, 'f', 6);
                         segArgs << "-t" << QString::number(thisDur, 'f', 6);
                         logBox->append(QString("Encoding segment %1/%2 (%3 → %4)")

@@ -16,6 +16,7 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QAbstractItemView>
+#include <QCheckBox>
 
 class TrimTab : public QWidget
 {
@@ -25,6 +26,7 @@ public:
     QList<QPair<qint64, qint64>> getSegments() const { return segments; }
     int getCodecIndex() const;
     void setDefaultCodec(int index);
+    bool isLosslessTrim() const;
 
 public slots:
     void setInputFile(const QString &file);
@@ -53,13 +55,13 @@ private:
     QPushButton *clearButton;
     QComboBox *speedCombo;
     QString currentInputFile;
+    QCheckBox *losslessCheck;
 
     QList<QPair<qint64, qint64>> segments;
 
     QString formatTime(qint64 ms);
     qint64 parseTime(const QString &str);
     void updateCurrentTime(qint64 pos);
-    void addSegment(qint64 start, qint64 end);
     void updateTable();
 };
 
