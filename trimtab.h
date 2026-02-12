@@ -27,6 +27,7 @@ public:
     int getCodecIndex() const;
     void setDefaultCodec(int index);
     bool isLosslessTrim() const;
+    bool isIndividualSegments() const;
 
 public slots:
     void setInputFile(const QString &file);
@@ -56,6 +57,7 @@ private:
     QComboBox *speedCombo;
     QString currentInputFile;
     QCheckBox *losslessCheck;
+    QCheckBox *individualSegmentsCheck;
 
     QList<QPair<qint64, qint64>> segments;
 

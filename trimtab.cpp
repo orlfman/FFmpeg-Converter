@@ -17,13 +17,17 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     codecCombo = new QComboBox();
     codecCombo->addItems({"AV1", "x265", "VP9"});
     codecLay->addWidget(codecCombo);
-    losslessCheck = new QCheckBox("Lossless Trim (No Re-encode)");
+    losslessCheck = new QCheckBox("Lossless Trim");
     losslessCheck->setToolTip("Check this for fast, lossless trimming using stream copy.\n"
     "No quality loss, but cuts are keyframe-accurate only.\n"
     "All encoding settings, filters, scaling and speed changes will be ignored.");
     codecLay->addWidget(losslessCheck);
-
     connect(losslessCheck, &QCheckBox::toggled, codecCombo, &QComboBox::setDisabled);
+    individualSegmentsCheck = new QCheckBox("Segments Only");
+    individualSegmentsCheck->setToolTip("If checked, saves each trimmed segment as a separate file.\n"
+    "No final concatenated file will be created.\n"
+    "Useful if you only want the individual cuts.");
+    codecLay->addWidget(individualSegmentsCheck);
     codecLay->addStretch();
     mainLayout->addLayout(codecLay);
     // Input file label
@@ -312,4 +316,8 @@ void TrimTab::restartPreviewPlayer()
 bool TrimTab::isLosslessTrim() const
 {
     return losslessCheck->isChecked();
+}
+bool TrimTab::isIndividualSegments() const
+{
+    return individualSegmentsCheck->isChecked();
 }

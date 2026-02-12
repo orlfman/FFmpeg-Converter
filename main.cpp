@@ -1815,6 +1815,7 @@ int main(int argc, char *argv[]) {
                     }
                     int codecIndex = trimTab->getCodecIndex();
                     bool lossless = trimTab->isLosslessTrim();
+                    bool individual = trimTab->isIndividualSegments();
                     QString codecLower = (codecIndex == 0 ? "av1" : (codecIndex == 1 ? "x265" : "vp9"));
                     if (codecIndex == 0 && av1Tab->av1EnableRCModeCheck->isChecked()) {
                         QString rcMode = av1Tab->av1RCModeBox->currentText();
@@ -2423,36 +2424,80 @@ int main(int argc, char *argv[]) {
                     std::function<void()> encodeNextSegment;
                     encodeNextSegment = [=,&encodeNextSegment]() mutable {
                         if (state->currentSeg >= segList.size()) {
-                            QString listFile = tempDir + "/concat_list.txt";
-                            QFile f(listFile);
-                            if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                                QTextStream out(&f);
-                                for (const QString& tf : tempFiles) {
-                                    out << "file '" << QDir::toNativeSeparators(tf) << "'\n";
+                            if (individual) {
+                                logBox->append("=== SAVING INDIVIDUAL SEGMENTS (NO CONCATENATION) ===");
+                                QString firstSavedFile;
+                                for (int i = 0; i < tempFiles.size(); ++i) {
+                                    QString src = tempFiles[i];
+                                    QString partName = baseName + "_part" + QString("%1").arg(i + 1, 3, 10, QChar('0')) + containerExt;
+                                    QString dest = QDir::cleanPath(outputDir + "/" + partName);
+
+                                    // Handle overwrite / unique snowflake name
+                                    if (QFile::exists(dest)) {
+                                        if (overwriteCheck->isChecked()) {
+                                            QFile::remove(dest);
+                                        } else {
+                                            int num = 1;
+                                            QString newDest;
+                                            do {
+                                                newDest = QDir::cleanPath(outputDir + "/" + baseName + "_part" +
+                                                QString("%1").arg(i + 1, 3, 10, QChar('0')) +
+                                                "_" + QString::number(num) + containerExt);
+                                                num++;
+                                            } while (QFile::exists(newDest));
+                                            dest = newDest;
+                                        }
+                                    }
+
+                                    QFile::copy(src, dest);
+                                    QString savedName = QFileInfo(dest).fileName();
+                                    logBox->append("Saved segment: " + savedName);
+                                    if (i == 0) firstSavedFile = dest;
                                 }
+                                logBox->append("All individual segments saved to: " + outputDir);
+                                if (!firstSavedFile.isEmpty()) {
+                                    showConversionNotification(firstSavedFile, nullptr);
+                                }
+
+                                QDir(tempDir).removeRecursively();
+                                logBox->append("Cleaned up temporary files.");
+                                trimTab->restartPreviewPlayer();
+                                convertButton->setEnabled(true);
+                                cancelButton->setEnabled(false);
+                                conversionProgress->setVisible(false);
+                            } else {
+                                // Original concat path
+                                QString listFile = tempDir + "/concat_list.txt";
+                                QFile f(listFile);
+                                if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                                    QTextStream out(&f);
+                                    for (const QString& tf : tempFiles) {
+                                        out << "file '" << QDir::toNativeSeparators(tf) << "'\n";
+                                    }
+                                }
+                                QStringList concatArgs;
+                                concatArgs << "-f" << "concat" << "-safe" << "0" << "-i" << listFile << "-c" << "copy" << "-y" << finalFile;
+                                logBox->append("Starting final lossless concatenation...");
+                                QProcess* concatProc = new QProcess();
+                                concatProc->setProcessEnvironment(env);
+                                concatProc->start(ffmpegPath, concatArgs);
+                                QObject::connect(concatProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                                                 [concatProc, logBox, finalFile, tempDir, convertButton, cancelButton, conversionProgress, trimTab](int, QProcess::ExitStatus) {
+                                                     if (concatProc->exitCode() == 0) {
+                                                         logBox->append("✅ Trim conversion complete: " + finalFile);
+                                                         showConversionNotification(finalFile, nullptr);
+                                                     } else {
+                                                         logBox->append("❌ Concatenation failed: " + concatProc->readAllStandardError());
+                                                     }
+                                                     QDir(tempDir).removeRecursively();
+                                                     logBox->append("Cleaned up temporary files.");
+                                                     trimTab->restartPreviewPlayer();
+                                                     convertButton->setEnabled(true);
+                                                     cancelButton->setEnabled(false);
+                                                     conversionProgress->setVisible(false);
+                                                     concatProc->deleteLater();
+                                                 });
                             }
-                            QStringList concatArgs;
-                            concatArgs << "-f" << "concat" << "-safe" << "0" << "-i" << listFile << "-c" << "copy" << "-y" << finalFile;
-                            logBox->append("Starting final lossless concatenation...");
-                            QProcess* concatProc = new QProcess();
-                            concatProc->setProcessEnvironment(env);
-                            concatProc->start(ffmpegPath, concatArgs);
-                            QObject::connect(concatProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                                             [concatProc, logBox, finalFile, tempDir, convertButton, cancelButton, conversionProgress, trimTab](int, QProcess::ExitStatus) {
-                                                 if (concatProc->exitCode() == 0) {
-                                                     logBox->append("✅ Trim conversion complete: " + finalFile);
-                                                     showConversionNotification(finalFile, nullptr);
-                                                 } else {
-                                                     logBox->append("❌ Concatenation failed: " + concatProc->readAllStandardError());
-                                                 }
-                                                 QDir(tempDir).removeRecursively();
-                                                 logBox->append("Cleaned up temporary files.");
-                                                 trimTab->restartPreviewPlayer();
-                                                 convertButton->setEnabled(true);
-                                                 cancelButton->setEnabled(false);
-                                                 conversionProgress->setVisible(false);
-                                                 concatProc->deleteLater();
-                                             });
                             return;
                         }
                         const auto& seg = segList[state->currentSeg];
