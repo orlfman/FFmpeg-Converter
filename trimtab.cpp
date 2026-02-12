@@ -132,18 +132,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
         qint64 start = parseTime(startTimeEdit->text());
         qint64 end = parseTime(endTimeEdit->text());
         if (start < 0 || end < 0 || start >= end || end > player->duration()) {
-            QMessageBox::warning(this, "Invalid Segment", "Start must be before end and within video length.\nFormat: HH:MM:SS.cc");
-            return;
-        }
-        bool overlap = false;
-        for (const auto& seg : segments) {
-            if (std::max(start, seg.first) < std::min(end, seg.second)) {
-                overlap = true;
-                break;
-            }
-        }
-        if (overlap) {
-            QMessageBox::warning(this, "Invalid Segment", "This segment overlaps with an existing segment.");
+            QMessageBox::warning(this, "Invalid Segment", "Start must be before end and within video length.\nFormat: HH:MM:SS.MS");
             return;
         }
         segments.append({start, end});
@@ -334,25 +323,6 @@ void TrimTab::onSegmentEdited(QTableWidgetItem *item)
 
     if (newEnd > player->duration()) {
         QMessageBox::warning(this, "Invalid Segment", "End time exceeds video duration.");
-        item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
-        segmentsTable->blockSignals(false);
-        return;
-    }
-
-    // Check for overlaps
-    bool overlap = false;
-    for (int i = 0; i < segments.size(); ++i) {
-        if (i == row) continue;
-        qint64 os = segments[i].first;
-        qint64 oe = segments[i].second;
-        if (std::max(newStart, os) < std::min(newEnd, oe)) {
-            overlap = true;
-            break;
-        }
-    }
-
-    if (overlap) {
-        QMessageBox::warning(this, "Overlap", "This segment overlaps with another segment.");
         item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
         segmentsTable->blockSignals(false);
         return;
