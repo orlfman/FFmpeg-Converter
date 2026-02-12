@@ -1845,20 +1845,15 @@ int main(int argc, char *argv[]) {
                     QString outputDir = outputDirBox->text();
                     QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
                     QString originalExt = QFileInfo(inputFile).suffix().toLower();
-                    if (originalExt.isEmpty()) originalExt = "mkv";
+                    if (originalExt.isEmpty() || originalExt.isEmpty()) originalExt = "mkv";
 
                     QString containerExt;
                     if (lossless) {
                         containerExt = "." + originalExt;
                         logBox->append("🛡️ Lossless mode: Using original container extension: " + containerExt);
                     } else {
-                        if (codecIndex == 0) {
-                            containerExt = "." + av1Tab->av1ContainerBox->currentText();
-                        } else if (codecIndex == 1) {
-                            containerExt = "." + x265Tab->x265ContainerBox->currentText();
-                        } else if (codecIndex == 2) {
-                            containerExt = "." + vp9Tab->vp9ContainerBox->currentText();
-                        }
+                        containerExt = trimTab->getContainerExtension();
+                        logBox->append("📦 Re-encode mode: Using selected container: " + containerExt);
                     }
                     QString finalFile = QDir::cleanPath(outputDir + "/" + baseName + containerExt);
                     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();

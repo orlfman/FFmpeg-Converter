@@ -17,17 +17,30 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     codecCombo = new QComboBox();
     codecCombo->addItems({"AV1", "x265", "VP9"});
     codecLay->addWidget(codecCombo);
+    codecLay->addSpacing(20);
+    codecLay->addWidget(new QLabel("Container:"));
+    containerCombo = new QComboBox();
+    containerCombo->addItems({"MKV", "WebM"});
+    containerCombo->setCurrentText("MKV");
+    containerCombo->setToolTip("Container format for re-encoded output.\n"
+    "Ignored in Lossless mode (uses original container).");
+    codecLay->addWidget(containerCombo);
+    codecLay->addSpacing(20);
     losslessCheck = new QCheckBox("Lossless Trim");
     losslessCheck->setToolTip("Check this for fast, lossless trimming using stream copy.\n"
-    "No quality loss, but cuts are keyframe-accurate only.\n"
-    "All encoding settings, filters, scaling and speed changes will be ignored.");
+    "No quality loss.");
     codecLay->addWidget(losslessCheck);
-    connect(losslessCheck, &QCheckBox::toggled, codecCombo, &QComboBox::setDisabled);
     individualSegmentsCheck = new QCheckBox("Segments Only");
     individualSegmentsCheck->setToolTip("If checked, saves each trimmed segment as a separate file.\n"
-    "No final concatenated file will be created.\n"
+    "No final concat file will be created.\n"
     "Useful if you only want the individual cuts.");
     codecLay->addWidget(individualSegmentsCheck);
+    // Connections
+    connect(codecCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TrimTab::updateContainerOptions);
+    connect(losslessCheck, &QCheckBox::toggled, codecCombo, &QComboBox::setDisabled);
+    connect(losslessCheck, &QCheckBox::toggled, containerCombo, &QComboBox::setDisabled);
+    // Initial state
+    updateContainerOptions();
     codecLay->addStretch();
     mainLayout->addLayout(codecLay);
     // Input file label
@@ -320,4 +333,26 @@ bool TrimTab::isLosslessTrim() const
 bool TrimTab::isIndividualSegments() const
 {
     return individualSegmentsCheck->isChecked();
+}
+void TrimTab::updateContainerOptions()
+{
+    containerCombo->blockSignals(true);
+    containerCombo->clear();
+
+    int codec = codecCombo->currentIndex();
+    if (codec == 0 || codec == 2) { // av1 NUMBER ONE or vp9
+        containerCombo->addItems({"MKV", "WebM"});
+    } else if (codec == 1) { // x265
+        containerCombo->addItems({"MKV", "MP4"});
+    }
+    containerCombo->setCurrentText("MKV");
+    containerCombo->blockSignals(false);
+}
+
+QString TrimTab::getContainerExtension() const
+{
+    QString selected = containerCombo->currentText().toLower();
+    if (selected == "webm") return ".webm";
+    if (selected == "mp4") return ".mp4";
+    return ".mkv";
 }

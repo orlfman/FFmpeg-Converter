@@ -28,6 +28,8 @@ public:
     void setDefaultCodec(int index);
     bool isLosslessTrim() const;
     bool isIndividualSegments() const;
+    QString getContainerExtension() const;
+    void updateContainerOptions();
 
 public slots:
     void setInputFile(const QString &file);
@@ -58,6 +60,7 @@ private:
     QString currentInputFile;
     QCheckBox *losslessCheck;
     QCheckBox *individualSegmentsCheck;
+    QComboBox *containerCombo;
 
     QList<QPair<qint64, qint64>> segments;
 
