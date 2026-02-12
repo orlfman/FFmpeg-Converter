@@ -29,7 +29,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     // Input file label
     inputFileLabel = new QLabel("Input file: No file selected");
     mainLayout->addWidget(inputFileLabel);
-    // Video player
+    // Qt6 Video player
     videoWidget = new QVideoWidget();
     videoWidget->setMinimumSize(640, 360);
     videoWidget->setStyleSheet("background-color: black;");
@@ -119,7 +119,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
 
     // Speed control connection
     connect(speedCombo, &QComboBox::currentTextChanged, this, [this](const QString &text) {
-        QString numStr = text.chopped(1); // remove 'x'
+        QString numStr = text.chopped(1); // remove x
     bool ok;
     double rate = numStr.toDouble(&ok);
     if (ok && rate > 0.0) {
@@ -164,7 +164,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
             return;
         }
 
-        // No overlap → accept it
+        // No overlap TAKE IT
         segments = temp;
         updateTable();
         startTimeEdit->setText(formatTime(end));

@@ -1843,7 +1843,7 @@ int main(int argc, char *argv[]) {
                     }
                     QString outputDir = outputDirBox->text();
                     QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
-                    QString containerExt = ".mkv"; // Safe container for stream copy
+                    QString containerExt = ".mkv";
                     if (!lossless) {
                         if (codecIndex == 0) {
                             containerExt = "." + av1Tab->av1ContainerBox->currentText();
@@ -1919,7 +1919,7 @@ int main(int argc, char *argv[]) {
                                     probe.waitForFinished(2000);
                                     gpuSupported = probe.readAllStandardOutput().contains("knlmeans");
                                     if (!gpuSupported) {
-                                        logBox->append("⚠️ KNLMeansCL (GPU) not supported—falling back to CPU NLMeans. Install mesa-opencl-icd for GPU.");
+                                        logBox->append("⚠️ KNLMeansCL (GPU) not supported. Falling back to CPU NLMeans. Install mesa opencl icd (nvidia sux) for GPU.");
                                         filterName = "nlmeans";
                                     }
                                 }
@@ -2302,7 +2302,7 @@ int main(int argc, char *argv[]) {
                             commonArgs << "-b:v" << "0";
                         }
                     }
-                } // end of if (!lossless) for codec parameters
+                } // end of if !lossless for video
                 if (!lossless) {
                     if (codecIndex == 0) {
                         if (av1Tab->av1AudioCheck->isChecked()) {
@@ -2386,7 +2386,7 @@ int main(int argc, char *argv[]) {
                             commonArgs << "-an";
                         }
                     }
-                } // end of if (!lossless) for audio options
+                } // end of if !lossless for audio options
                     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
                     "/ffmpeg_converter_trim_" + QUuid::createUuid().toString(QUuid::WithoutBraces);
                     QDir().mkpath(tempDir);
@@ -2493,7 +2493,7 @@ int main(int argc, char *argv[]) {
                         if (state->currentSeg > 0) {
                             state->completedDur += segDurations[state->currentSeg - 1];
                         }
-                        QTimer::singleShot(10000, encodeNextSegment); // 2-second delay for full cleanup
+                        QTimer::singleShot(10000, encodeNextSegment); // 10 second delay for full cleanup
                     });
                     state->currentSeg = 0;
                     state->completedDur = 0.0;
