@@ -1844,8 +1844,14 @@ int main(int argc, char *argv[]) {
                     }
                     QString outputDir = outputDirBox->text();
                     QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
-                    QString containerExt = ".mkv";
-                    if (!lossless) {
+                    QString originalExt = QFileInfo(inputFile).suffix().toLower();
+                    if (originalExt.isEmpty()) originalExt = "mkv";
+
+                    QString containerExt;
+                    if (lossless) {
+                        containerExt = "." + originalExt;
+                        logBox->append("🛡️ Lossless mode: Using original container extension: " + containerExt);
+                    } else {
                         if (codecIndex == 0) {
                             containerExt = "." + av1Tab->av1ContainerBox->currentText();
                         } else if (codecIndex == 1) {
