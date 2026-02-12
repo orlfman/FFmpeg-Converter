@@ -24,12 +24,7 @@ class TrimTab : public QWidget
 public:
     explicit TrimTab(QWidget *parent = nullptr);
     QList<QPair<qint64, qint64>> getSegments() const { return segments; }
-    int getCodecIndex() const;
-    void setDefaultCodec(int index);
-    bool isLosslessTrim() const;
     bool isIndividualSegments() const;
-    QString getContainerExtension() const;
-    void updateContainerOptions();
 
 public slots:
     void setInputFile(const QString &file);
@@ -37,7 +32,6 @@ public slots:
     void restartPreviewPlayer();
 
 private:
-    QComboBox *codecCombo;
     QLabel *inputFileLabel;
     QVideoWidget *videoWidget;
     QMediaPlayer *player;
@@ -58,9 +52,7 @@ private:
     QPushButton *clearButton;
     QComboBox *speedCombo;
     QString currentInputFile;
-    QCheckBox *losslessCheck;
     QCheckBox *individualSegmentsCheck;
-    QComboBox *containerCombo;
 
     QList<QPair<qint64, qint64>> segments;
 
@@ -68,6 +60,9 @@ private:
     qint64 parseTime(const QString &str);
     void updateCurrentTime(qint64 pos);
     void updateTable();
+
+private slots:
+    void onSegmentEdited(QTableWidgetItem *item);
 };
 
 #endif // TRIMTAB_H

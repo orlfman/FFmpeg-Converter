@@ -12,37 +12,15 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
     // Codec selector
-    QHBoxLayout *codecLay = new QHBoxLayout();
-    codecLay->addWidget(new QLabel("Encoding Codec:"));
-    codecCombo = new QComboBox();
-    codecCombo->addItems({"AV1", "x265", "VP9"});
-    codecLay->addWidget(codecCombo);
-    codecLay->addSpacing(20);
-    codecLay->addWidget(new QLabel("Container:"));
-    containerCombo = new QComboBox();
-    containerCombo->addItems({"MKV", "WebM"});
-    containerCombo->setCurrentText("MKV");
-    containerCombo->setToolTip("Container format for re-encoded output.\n"
-    "Ignored in Lossless mode (uses original container).");
-    codecLay->addWidget(containerCombo);
-    codecLay->addSpacing(20);
-    losslessCheck = new QCheckBox("Lossless Trim");
-    losslessCheck->setToolTip("Check this for fast, lossless trimming using stream copy.\n"
-    "No quality loss.");
-    codecLay->addWidget(losslessCheck);
     individualSegmentsCheck = new QCheckBox("Segments Only");
     individualSegmentsCheck->setToolTip("If checked, saves each trimmed segment as a separate file.\n"
     "No final concat file will be created.\n"
     "Useful if you only want the individual cuts.");
-    codecLay->addWidget(individualSegmentsCheck);
-    // Connections
-    connect(codecCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &TrimTab::updateContainerOptions);
-    connect(losslessCheck, &QCheckBox::toggled, codecCombo, &QComboBox::setDisabled);
-    connect(losslessCheck, &QCheckBox::toggled, containerCombo, &QComboBox::setDisabled);
-    // Initial state
-    updateContainerOptions();
-    codecLay->addStretch();
-    mainLayout->addLayout(codecLay);
+    QHBoxLayout *optionsLayout = new QHBoxLayout();
+    optionsLayout->addWidget(new QLabel("Output:"));
+    optionsLayout->addWidget(individualSegmentsCheck);
+    optionsLayout->addStretch();
+    mainLayout->addLayout(optionsLayout);
     // Input file label
     inputFileLabel = new QLabel("Input file: No file selected");
     mainLayout->addWidget(inputFileLabel);
@@ -61,9 +39,9 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     controls->addWidget(playPauseButton);
     positionSlider = new QSlider(Qt::Horizontal);
     controls->addWidget(positionSlider);
-    currentTimeLabel = new QLabel("00:00:00.000");
+    currentTimeLabel = new QLabel("00:00:00.00");
     controls->addWidget(currentTimeLabel);
-    durationLabel = new QLabel("/ 00:00:00.000");
+    durationLabel = new QLabel("/ 00:00:00.00");
     controls->addWidget(durationLabel);
 
     // Playback speed control
@@ -80,7 +58,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     // Mark start/end and add segment
     QHBoxLayout *marks = new QHBoxLayout();
     marks->addWidget(new QLabel("Start time:"));
-    startTimeEdit = new QLineEdit("00:00:00.000");
+    startTimeEdit = new QLineEdit("00:00:00.00");
     marks->addWidget(startTimeEdit);
     setStartButton = new QPushButton("Mark Start");
     marks->addWidget(setStartButton);
@@ -99,7 +77,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     segmentsTable->setHorizontalHeaderLabels({"Start", "End", "Duration"});
     segmentsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     segmentsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    segmentsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    segmentsTable->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
     mainLayout->addWidget(segmentsTable);
     // Segment buttons
     QHBoxLayout *btns = new QHBoxLayout();
@@ -154,38 +132,26 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
         qint64 start = parseTime(startTimeEdit->text());
         qint64 end = parseTime(endTimeEdit->text());
         if (start < 0 || end < 0 || start >= end || end > player->duration()) {
-            QMessageBox::warning(this, "Invalid Segment", "Start must be before end and within video length.");
+            QMessageBox::warning(this, "Invalid Segment", "Start must be before end and within video length.\nFormat: HH:MM:SS.cc");
             return;
         }
-
-        // Test adding the new segment
-        QList<QPair<qint64, qint64>> temp = segments;
-        temp.append({start, end});
-
-        // Sort by start time
-        std::sort(temp.begin(), temp.end(), [](const QPair<qint64, qint64>& a, const QPair<qint64, qint64>& b) {
-            return a.first < b.first;
-        });
-
-        // Check for any overlap
-        bool hasOverlap = false;
-        for (int i = 1; i < temp.size(); ++i) {
-            if (temp[i].first < temp[i - 1].second) {
-                hasOverlap = true;
+        bool overlap = false;
+        for (const auto& seg : segments) {
+            if (std::max(start, seg.first) < std::min(end, seg.second)) {
+                overlap = true;
                 break;
             }
         }
-
-        if (hasOverlap) {
-            QMessageBox::warning(this, "Invalid Segment", "This segment overlaps with an existing segment and cannot be added.");
+        if (overlap) {
+            QMessageBox::warning(this, "Invalid Segment", "This segment overlaps with an existing segment.");
             return;
         }
-
-        // No overlap TAKE IT
-        segments = temp;
+        segments.append({start, end});
         updateTable();
         startTimeEdit->setText(formatTime(end));
     });
+    connect(segmentsTable, &QTableWidget::itemChanged, this, &TrimTab::onSegmentEdited);
+
     connect(removeButton, &QPushButton::clicked, this, [this]() {
         int row = segmentsTable->currentRow();
         if (row >= 0) {
@@ -215,19 +181,14 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     });
 }
 
-int TrimTab::getCodecIndex() const
-{
-    return codecCombo->currentIndex();
-}
-
 void TrimTab::setInputFile(const QString &file)
 {
     inputFileLabel->setText("Input file: " + (file.isEmpty() ? "No file selected" : QFileInfo(file).fileName()));
     player->stop();
     if (file.isEmpty()) {
         positionSlider->setRange(0, 0);
-        currentTimeLabel->setText("00:00:00.000");
-        durationLabel->setText("/ 00:00:00.000");
+        currentTimeLabel->setText("00:00:00.00");
+        durationLabel->setText("/ 00:00:00.00");
         startTimeEdit->clear();
         endTimeEdit->clear();
         segments.clear();
@@ -241,7 +202,7 @@ void TrimTab::setInputFile(const QString &file)
     player->setPlaybackRate(1.0);
     player->pause();
     playPauseButton->setText("Play");
-    startTimeEdit->setText("00:00:00.000");
+    startTimeEdit->setText("00:00:00.00");
     endTimeEdit->clear();
     segments.clear();
     updateTable();
@@ -250,30 +211,30 @@ void TrimTab::setInputFile(const QString &file)
 
 QString TrimTab::formatTime(qint64 ms)
 {
-    if (ms <= 0) return "00:00:00.000";
+    if (ms <= 0) return "00:00:00.00";
     qint64 secs = ms / 1000;
     int h = secs / 3600;
     int m = (secs % 3600) / 60;
     int s = secs % 60;
-    int mss = ms % 1000;
+    int cs = (ms % 1000) / 10;
     return QString("%1:%2:%3.%4")
     .arg(h, 2, 10, QChar('0'))
     .arg(m, 2, 10, QChar('0'))
     .arg(s, 2, 10, QChar('0'))
-    .arg(mss, 3, 10, QChar('0'));
+    .arg(cs, 2, 10, QChar('0'));
 }
 
 qint64 TrimTab::parseTime(const QString &str)
 {
-    QRegularExpression re(R"(^(\d+):(\d+):(\d+)\.(\d{3})$)");
+    QRegularExpression re(R"(^(\d+):(\d+):(\d+)\.(\d{2})$)");
     auto match = re.match(str.trimmed());
     if (match.hasMatch()) {
         int h = match.captured(1).toInt();
         int m = match.captured(2).toInt();
         int s = match.captured(3).toInt();
-        int ms = match.captured(4).toInt();
+        int cs = match.captured(4).toInt();
         if (m < 60 && s < 60) {
-            return ((qint64)h * 3600 + m * 60 + s) * 1000 + ms;
+            return ((qint64)h * 3600 + m * 60 + s) * 1000 + cs * 10;
         }
     }
     return -1;
@@ -289,18 +250,24 @@ void TrimTab::updateCurrentTime(qint64 pos)
 
 void TrimTab::updateTable()
 {
+    segmentsTable->blockSignals(true);
     segmentsTable->setRowCount(segments.size());
     for (int i = 0; i < segments.size(); ++i) {
         qint64 dur = segments[i].second - segments[i].first;
-        segmentsTable->setItem(i, 0, new QTableWidgetItem(formatTime(segments[i].first)));
-        segmentsTable->setItem(i, 1, new QTableWidgetItem(formatTime(segments[i].second)));
-        segmentsTable->setItem(i, 2, new QTableWidgetItem(formatTime(dur)));
-    }
-}
 
-void TrimTab::setDefaultCodec(int index)
-{
-    codecCombo->setCurrentIndex(index);
+        QTableWidgetItem *startItem = new QTableWidgetItem(formatTime(segments[i].first));
+        startItem->setFlags(startItem->flags() | Qt::ItemIsEditable);
+        segmentsTable->setItem(i, 0, startItem);
+
+        QTableWidgetItem *endItem = new QTableWidgetItem(formatTime(segments[i].second));
+        endItem->setFlags(endItem->flags() | Qt::ItemIsEditable);
+        segmentsTable->setItem(i, 1, endItem);
+
+        QTableWidgetItem *durItem = new QTableWidgetItem(formatTime(dur));
+        durItem->setFlags(durItem->flags() & ~Qt::ItemIsEditable);
+        segmentsTable->setItem(i, 2, durItem);
+    }
+    segmentsTable->blockSignals(false);
 }
 
 void TrimTab::stopPreviewPlayer()
@@ -326,33 +293,78 @@ void TrimTab::restartPreviewPlayer()
     player->pause();
     playPauseButton->setText("Play");
 }
-bool TrimTab::isLosslessTrim() const
-{
-    return losslessCheck->isChecked();
-}
 bool TrimTab::isIndividualSegments() const
 {
     return individualSegmentsCheck->isChecked();
 }
-void TrimTab::updateContainerOptions()
+void TrimTab::onSegmentEdited(QTableWidgetItem *item)
 {
-    containerCombo->blockSignals(true);
-    containerCombo->clear();
+    if (!item || segments.isEmpty()) return;
 
-    int codec = codecCombo->currentIndex();
-    if (codec == 0 || codec == 2) { // av1 NUMBER ONE or vp9
-        containerCombo->addItems({"MKV", "WebM"});
-    } else if (codec == 1) { // x265
-        containerCombo->addItems({"MKV", "MP4"});
+    int row = item->row();
+    int col = item->column();
+    if (col == 2) {
+        return;
     }
-    containerCombo->setCurrentText("MKV");
-    containerCombo->blockSignals(false);
-}
 
-QString TrimTab::getContainerExtension() const
-{
-    QString selected = containerCombo->currentText().toLower();
-    if (selected == "webm") return ".webm";
-    if (selected == "mp4") return ".mp4";
-    return ".mkv";
+    segmentsTable->blockSignals(true);
+
+    QString newText = item->text().trimmed();
+    qint64 newVal = parseTime(newText);
+
+    qint64 oldStart = segments[row].first;
+    qint64 oldEnd = segments[row].second;
+
+    if (newVal < 0) {
+        QMessageBox::warning(this, "Invalid Time", "Invalid format. Use HH:MM:SS.cc");
+        item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
+        segmentsTable->blockSignals(false);
+        return;
+    }
+
+    qint64 newStart = (col == 0 ? newVal : oldStart);
+    qint64 newEnd = (col == 1 ? newVal : oldEnd);
+
+    if (newStart >= newEnd) {
+        QMessageBox::warning(this, "Invalid Segment", "Start must be before End.");
+        item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
+        segmentsTable->blockSignals(false);
+        return;
+    }
+
+    if (newEnd > player->duration()) {
+        QMessageBox::warning(this, "Invalid Segment", "End time exceeds video duration.");
+        item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
+        segmentsTable->blockSignals(false);
+        return;
+    }
+
+    // Check for overlaps
+    bool overlap = false;
+    for (int i = 0; i < segments.size(); ++i) {
+        if (i == row) continue;
+        qint64 os = segments[i].first;
+        qint64 oe = segments[i].second;
+        if (std::max(newStart, os) < std::min(newEnd, oe)) {
+            overlap = true;
+            break;
+        }
+    }
+
+    if (overlap) {
+        QMessageBox::warning(this, "Overlap", "This segment overlaps with another segment.");
+        item->setText(col == 0 ? formatTime(oldStart) : formatTime(oldEnd));
+        segmentsTable->blockSignals(false);
+        return;
+    }
+
+    // Valid
+    segments[row] = {newStart, newEnd};
+
+    // Update duration
+    qint64 dur = newEnd - newStart;
+    QTableWidgetItem *durItem = segmentsTable->item(row, 2);
+    durItem->setText(formatTime(dur));
+
+    segmentsTable->blockSignals(false);
 }

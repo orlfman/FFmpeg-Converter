@@ -569,7 +569,6 @@ int main(int argc, char *argv[]) {
             QObject::connect(selectedFilesBox, &QLineEdit::textChanged, trimTab, &TrimTab::setInputFile);
             QSettings tabSettings("FFmpegConverter", "Settings");
             int defaultTab = tabSettings.value("defaultCodecTab", 0).toInt();
-            trimTab->setDefaultCodec(defaultTab);
             codecTabs->setCurrentIndex(defaultTab);
             Presets::connectPresets(presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox);
             auto forceCustom = [presetCombo]() { presetCombo->setCurrentIndex(0); };
@@ -1799,8 +1798,8 @@ int main(int argc, char *argv[]) {
                 }
                 else if (codecTabs->currentWidget() == trimScroll) {
                     logBox->clear();
-                    logBox->append("=== TRIM CONVERSION WITH CUSTOM ORDER STARTED ===");
-                    logBox->append("Preserving exact table order (Up/Down rearrangement fully respected). Using temporary files for maximum stability.");
+                    logBox->append("=== LOSSLESS TRIM STARTED (PURE STREAM COPY) ===");
+                    logBox->append("All filters, scaling, speed changes, and codec settings are ignored.");
                     QString inputFile = selectedFilesBox->text().trimmed();
                     trimTab->stopPreviewPlayer();
                     logBox->append("Stopped video preview player to release input file handle.");
@@ -1813,49 +1812,17 @@ int main(int argc, char *argv[]) {
                         QMessageBox::warning(nullptr, "Error", "Add at least one segment in the Trim tab.");
                         return;
                     }
-                    int codecIndex = trimTab->getCodecIndex();
-                    bool lossless = trimTab->isLosslessTrim();
                     bool individual = trimTab->isIndividualSegments();
-                    QString codecLower = (codecIndex == 0 ? "av1" : (codecIndex == 1 ? "x265" : "vp9"));
-                    if (codecIndex == 0 && av1Tab->av1EnableRCModeCheck->isChecked()) {
-                        QString rcMode = av1Tab->av1RCModeBox->currentText();
-                        int aqModeIndex = av1Tab->av1AQModeBox->currentIndex();
-                        if (rcMode == "VBR" && aqModeIndex == 1) {
-                            QMessageBox::warning(nullptr, "Invalid Configuration",
-                                                 "Adaptive Quantization cannot be disabled when using VBR rate control for AV1.");
-                            return;
-                        }
-                    } else if (codecIndex == 1 && x265Tab->x265EnableRCModeCheck->isChecked()) {
-                        QString rcMode = x265Tab->x265RCModeBox->currentText();
-                        int aqModeIndex = x265Tab->x265AQModeBox->currentIndex();
-                        if ((rcMode == "ABR" || rcMode == "CBR") && aqModeIndex == 1) {
-                            QMessageBox::warning(nullptr, "Invalid Configuration",
-                                                 "Adaptive Quantization cannot be disabled when using ABR or CBR rate control for x265.");
-                            return;
-                        }
-                    } else if (codecIndex == 2 && vp9Tab->vp9EnableRCModeCheck->isChecked()) {
-                        QString rcMode = vp9Tab->vp9RCModeBox->currentText();
-                        int aqModeIndex = vp9Tab->vp9AQModeBox->currentIndex();
-                        if ((rcMode == "ABR" || rcMode == "CBR") && aqModeIndex == 1) {
-                            QMessageBox::warning(nullptr, "Invalid Configuration",
-                                                 "Adaptive Quantization cannot be disabled when using ABR or CBR rate control for VP9.");
-                            return;
-                        }
-                    }
+
+                    QString originalExt = QFileInfo(inputFile).suffix().toLower();
+                    if (originalExt.isEmpty()) originalExt = "mkv";
+                    QString containerExt = "." + originalExt;
+                    logBox->append("🛡️ Lossless mode: Using original container extension: " + containerExt);
+
                     QString outputDir = outputDirBox->text();
                     QString baseName = outputNameBox->text().isEmpty() ? "Output" : outputNameBox->text();
-                    QString originalExt = QFileInfo(inputFile).suffix().toLower();
-                    if (originalExt.isEmpty() || originalExt.isEmpty()) originalExt = "mkv";
-
-                    QString containerExt;
-                    if (lossless) {
-                        containerExt = "." + originalExt;
-                        logBox->append("🛡️ Lossless mode: Using original container extension: " + containerExt);
-                    } else {
-                        containerExt = trimTab->getContainerExtension();
-                        logBox->append("📦 Re-encode mode: Using selected container: " + containerExt);
-                    }
                     QString finalFile = QDir::cleanPath(outputDir + "/" + baseName + containerExt);
+
                     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
                     QString svtAv1Path = settings.value("svtAv1Path", "").toString();
                     if (!svtAv1Path.isEmpty()) {
@@ -1863,532 +1830,7 @@ int main(int argc, char *argv[]) {
                         env.insert("LD_LIBRARY_PATH", existing.isEmpty() ? svtAv1Path : existing + ":" + svtAv1Path);
                         logBox->append("📚 Using custom SVT-AV1 library path: " + svtAv1Path);
                     }
-                    QStringList commonArgs;
-                    if (preserveMetadataCheck->isChecked()) commonArgs << "-map_metadata" << "0";
-                    if (removeChaptersCheck->isChecked()) commonArgs << "-map_chapters" << "-1";
-                    QStringList videoFilters;
-                    QStringList audioFilters;
-                    QString rotationFilter;
-                    QString rotation = rotationBox->currentText();
-                    if (rotation == "90° Clockwise") rotationFilter = "transpose=1";
-                    else if (rotation == "90° Counterclockwise") rotationFilter = "transpose=2";
-                    else if (rotation == "180°") rotationFilter = "transpose=1,transpose=1";
-                    else if (rotation == "Horizontal Flip") rotationFilter = "hflip";
-                    else if (rotation == "Vertical Flip") rotationFilter = "vflip";
-                    if (!rotationFilter.isEmpty()) videoFilters << rotationFilter;
-                    if (cropCheck->isChecked() && !cropValueBox->text().isEmpty() && cropValueBox->text() != "Not detected") {
-                        QString crop = cropValueBox->text().startsWith("crop=") ? cropValueBox->text().mid(5) : cropValueBox->text();
-                        videoFilters << "crop=" + crop;
-                    }
-                    if (deinterlaceCheck->isChecked()) videoFilters << "yadif";
-                    if (deblockCheck->isChecked()) videoFilters << "deblock";
-                    if (denoiseCheck->isChecked()) videoFilters << "hqdn3d=4:3:6:4.5";
-                    if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
-                    if (toneMapCheck->isChecked()) {
-                        videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
-                    }
-                    if (codecIndex == 0) {
-                        if (av1Tab->av1UnsharpenCheck->isChecked()) {
-                            double s = av1Tab->av1UnsharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
-                        }
-                        if (av1Tab->av1SharpenCheck->isChecked()) {
-                            double s = av1Tab->av1SharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
-                        }
-                        if (av1Tab->av1BlurCheck->isChecked()) {
-                            double s = av1Tab->av1BlurStrengthSlider->value() / 10.0;
-                            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
-                        }
-                        if (av1Tab->av1NoiseReductionCheck->isChecked()) {
-                            double s = av1Tab->av1NoiseReductionSlider->value();
-                            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
-                        }
-                        if (av1Tab->av1GrainSynthCheck->isChecked()) {
-                            int level = av1Tab->av1GrainSynthLevel->value();
-                            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
-                        }
-                        if (av1Tab->av1NlmeansCheck->isChecked()) {
-                            int s = av1Tab->av1NlmeansSigmaSSlider->value();
-                            int p = av1Tab->av1NlmeansSigmaPSlider->value();
-                            int patch = av1Tab->av1NlmeansPatchSlider->value();
-                            QString filterName = av1Tab->av1NlmeansGpuCheck->isChecked() ? "knlmeans" : "nlmeans";
-                            if (av1Tab->av1NlmeansGpuCheck->isChecked()) {
-                                static bool gpuSupported = false;
-                                if (!gpuSupported) {
-                                    QProcess probe;
-                                    probe.start("ffmpeg", QStringList() << "-filters" << "| grep knlmeans");
-                                    probe.waitForFinished(2000);
-                                    gpuSupported = probe.readAllStandardOutput().contains("knlmeans");
-                                    if (!gpuSupported) {
-                                        logBox->append("⚠️ KNLMeansCL (GPU) not supported. Falling back to CPU NLMeans. Install mesa opencl icd (nvidia sux) for GPU.");
-                                        filterName = "nlmeans";
-                                    }
-                                }
-                            }
-                            QString patchStr = (filterName == "knlmeans") ? ":patch=" + QString::number(patch) : "";
-                            videoFilters << QString("%1=s=%2:p=%3%4").arg(filterName).arg(s).arg(p).arg(patchStr);
-                        }
-                    } else if (codecIndex == 1) {
-                        if (x265Tab->x265UnsharpenCheck->isChecked()) {
-                            double s = x265Tab->x265UnsharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
-                        }
-                        if (x265Tab->x265SharpenCheck->isChecked()) {
-                            double s = x265Tab->x265SharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
-                        }
-                        if (x265Tab->x265BlurCheck->isChecked()) {
-                            double s = x265Tab->x265BlurStrengthSlider->value() / 10.0;
-                            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
-                        }
-                        if (x265Tab->x265NoiseReductionCheck->isChecked()) {
-                            double s = x265Tab->x265NoiseReductionSlider->value();
-                            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
-                        }
-                        if (x265Tab->x265GrainSynthCheck->isChecked()) {
-                            int level = x265Tab->x265GrainSynthLevel->value();
-                            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
-                        }
-                    } else if (codecIndex == 2) {
-                        if (vp9Tab->vp9UnsharpenCheck->isChecked()) {
-                            double s = vp9Tab->vp9UnsharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=5:5:%1:5:5:0.0").arg(s);
-                        }
-                        if (vp9Tab->vp9SharpenCheck->isChecked()) {
-                            double s = vp9Tab->vp9SharpenStrengthSlider->value() / 10.0;
-                            videoFilters << QString("unsharp=3:3:%1:3:3:0.0").arg(s);
-                        }
-                        if (vp9Tab->vp9BlurCheck->isChecked()) {
-                            double s = vp9Tab->vp9BlurStrengthSlider->value() / 10.0;
-                            videoFilters << QString("smartblur=%1:0.5:0").arg(s);
-                        }
-                        if (vp9Tab->vp9NoiseReductionCheck->isChecked()) {
-                            double s = vp9Tab->vp9NoiseReductionSlider->value();
-                            videoFilters << QString("hqdn3d=luma_spatial=%1:chroma_spatial=%1").arg(s);
-                        }
-                        if (vp9Tab->vp9GrainSynthCheck->isChecked()) {
-                            int level = vp9Tab->vp9GrainSynthLevel->value();
-                            videoFilters << QString("noise=alls=%1:allf=t").arg(level);
-                        }
-                        if (vp9Tab->vp9NlmeansCheck->isChecked()) {
-                            int s = vp9Tab->vp9NlmeansSigmaSSlider->value();
-                            int p = vp9Tab->vp9NlmeansSigmaPSlider->value();
-                            int patch = vp9Tab->vp9NlmeansPatchSlider->value();
-                            QString filterName = vp9Tab->vp9NlmeansGpuCheck->isChecked() ? "knlmeans" : "nlmeans";
-                            if (vp9Tab->vp9NlmeansGpuCheck->isChecked()) {
-                                static bool gpuSupported = false;
-                                if (!gpuSupported) {
-                                    QProcess probe;
-                                    probe.start("ffmpeg", QStringList() << "-filters" << "| grep knlmeans");
-                                    probe.waitForFinished(2000);
-                                    gpuSupported = probe.readAllStandardOutput().contains("knlmeans");
-                                    if (!gpuSupported) {
-                                        logBox->append("⚠️ KNLMeansCL (GPU) not supported—falling back to CPU NLMeans. Install mesa-opencl-icd for GPU.");
-                                        filterName = "nlmeans";
-                                    }
-                                }
-                            }
-                            QString patchStr = (filterName == "knlmeans") ? ":patch=" + QString::number(patch) : "";
-                            videoFilters << QString("%1=s=%2:p=%3%4").arg(filterName).arg(s).arg(p).arg(patchStr);
-                        }
-                    }
-                    double sw = scaleWidthSpin->value();
-                    double sh = scaleHeightSpin->value();
-                    QString filterName = scaleFilterBox->currentText();
-                    if (!qFuzzyCompare(sw, 1.0) || !qFuzzyCompare(sh, 1.0)) {
-                        QString w = qFuzzyCompare(sw, 1.0) ? "iw" : QString("trunc(iw*%1/2)*2").arg(sw);
-                        QString h = qFuzzyCompare(sh, 1.0) ? "ih" : QString("trunc(ih*%1/2)*2").arg(sh);
-                        if (filterName == "spline16" || filterName == "spline36") {
-                            videoFilters << QString("zscale=w=%1:h=%2:filter=%3").arg(w, h, filterName);
-                        } else {
-                            videoFilters << QString("scale=w=%1:h=%2:flags=%3").arg(w, h, filterName.toLower());
-                        }
-                        if (scaleRangeBox->currentText() != "input") {
-                            videoFilters << QString("zscale=range=%1").arg(scaleRangeBox->currentText().toLower());
-                        }
-                    }
-                    if (frameRateBox->currentText() != "Original") {
-                        QString fpsValue = (frameRateBox->currentText() == "Custom") ? customFrameRateBox->text() : frameRateBox->currentText();
-                        videoFilters << "fps=" + fpsValue;
-                    }
-                    QString pixFmt;
-                    if (tenBitCheck->isChecked()) {
-                        QString f = colorFormatBox->currentText();
-                        pixFmt = f == "10-bit 4:2:0" ? "yuv420p10le" : f == "10-bit 4:2:2" ? "yuv422p10le" : "yuv444p10le";
-                    } else {
-                        QString f = eightBitColorFormatBox->currentText();
-                        pixFmt = f == "8-bit 4:2:0" ? "yuv420p" : f == "8-bit 4:2:2" ? "yuv422p" : "yuv444p";
-                    }
-                    videoFilters << "format=" + pixFmt;
-                    if (normalizeAudioCheck->isChecked()) {
-                        audioFilters << "loudnorm=I=-23:TP=-1.5:LRA=11";
-                    }
-                    auto getPercentChange = [](const QString &str) -> double {
-                        if (str == "0%") return 0.0;
-                        return str.chopped(1).toDouble();
-                    };
-                    double videoPercent = videoSpeedCheck->isChecked() ? getPercentChange(videoSpeedCombo->currentText()) : 0.0;
-                    double audioPercent = audioSpeedCheck->isChecked() ? getPercentChange(audioSpeedCombo->currentText()) : 0.0;
-                    double videoMultiplier = 1.0 + videoPercent / 100.0;
-                    double audioMultiplier = 1.0 + audioPercent / 100.0;
-                    if (videoPercent <= -100.0) videoMultiplier = 0.001;
-                    if (audioPercent <= -100.0) audioMultiplier = 0.001;
-                    if (!qFuzzyCompare(videoMultiplier, 1.0)) {
-                        double ptsFactor = 1.0 / videoMultiplier;
-                        videoFilters << QString("setpts=%1*PTS").arg(ptsFactor, 0, 'g', 12);
-                    }
-                    if (!qFuzzyCompare(audioMultiplier, 1.0)) {
-                        auto buildAtempoChain = [](double m) -> QString {
-                            if (qFuzzyCompare(m, 1.0)) return "";
-                            QStringList p;
-                            double t = m;
-                            if (m > 1.0) {
-                                while (t > 2.0) { p << "atempo=2.0"; t /= 2.0; }
-                            } else if (m < 1.0) {
-                                while (t < 0.5) { p << "atempo=0.5"; t /= 0.5; }
-                            }
-                            if (!qFuzzyCompare(t, 1.0)) p << QString("atempo=%1").arg(t, 0, 'g', 12);
-                            return p.join(",");
-                        };
-                        QString chain = buildAtempoChain(audioMultiplier);
-                        if (!chain.isEmpty()) audioFilters.prepend(chain);
-                    }
-                    if (!lossless) {
-                        if (!videoFilters.isEmpty()) commonArgs << "-vf" << videoFilters.join(",");
-                        if (!audioFilters.isEmpty()) commonArgs << "-af" << audioFilters.join(",");
-                    }
-                    if (!lossless) {
-                    if (codecIndex == 0) {
-                        commonArgs << "-c:v" << "libsvtav1";
-                        commonArgs << "-preset" << av1Tab->av1PresetBox->currentText();
-                        QStringList svtParams;
-                        QString tune = av1Tab->av1TuneBox->currentText();
-                        if (tune != "Auto") {
-                            int tuneVal;
-                            if (tune == "Subjective SSIM (VQ)") tuneVal = 0;
-                            else if (tune == "PSNR") tuneVal = 1;
-                            else if (tune == "SSIM") tuneVal = 2;
-                            else if (tune == "VMAF") tuneVal = 6;
-                            else if (tune == "VMAF Neg") tuneVal = 7;
-                            else tuneVal = 0;
-                            svtParams << "tune=" + QString::number(tuneVal);
-                        }
-                        if (av1Tab->nativeGrainCheck->isChecked()) {
-                            int strength = av1Tab->grainStrengthSlider->value();
-                            if (strength > 0) svtParams << "film-grain=" + QString::number(strength);
-                            int denoise = av1Tab->grainDenoiseCombo->currentIndex();
-                            svtParams << "film-grain-denoise=" + QString::number(denoise);
-                        }
-                        int superResMode = av1Tab->superResModeBox->currentIndex();
-                        if (superResMode > 0) {
-                            svtParams << "superres-mode=" + QString::number(superResMode);
-                            int denom = av1Tab->superResDenomSlider->value();
-                            svtParams << "superres-denom=" + QString::number(denom);
-                        }
-                        int fdLevel = av1Tab->fastDecodeBox->currentIndex();
-                        if (fdLevel > 0) svtParams << "fast-decode=" + QString::number(fdLevel);
-                        if (av1Tab->lowLatencyCheck->isChecked()) {
-                            svtParams << "irefresh-type=1";
-                            svtParams << "lookahead=0";
-                        }
-                        if (av1Tab->tplModelCheck->isChecked()) {
-                            svtParams << "enable-tpl-la=1";
-                        }
-                        svtParams << "enable-cdef=" + QString(av1Tab->enableCdefCheck->isChecked() ? "1" : "0");
-                        if (av1Tab->av1LookaheadCheck->isChecked()) {
-                            svtParams << "lookahead=" + QString::number(av1Tab->av1LookaheadSlider->value());
-                        }
-                        QString aqModeStr = av1Tab->av1AQModeBox->currentText();
-                        if (aqModeStr != "Automatic") {
-                            int aqMode = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Complexity") ? 2 : 0;
-                            svtParams << "aq-mode=" + QString::number(aqMode);
-                            if (aqModeStr == "Variance") {
-                                svtParams << "enable-variance-boost=1";
-                                svtParams << "variance-boost-strength=" + QString::number(av1Tab->av1AQStrengthSlider->value());
-                            }
-                        }
-                        if (av1Tab->av1EnableRCModeCheck->isChecked()) {
-                            QString mode = av1Tab->av1RCModeBox->currentText();
-                            if (mode == "QP") {
-                                svtParams << "qp=" + QString::number(av1Tab->av1QPSlider->value());
-                            } else if (mode == "CRF") {
-                                svtParams << "crf=" + QString::number(av1Tab->av1CRFSlider->value());
-                            } else if (mode == "VBR") {
-                                commonArgs << "-b:v" << QString::number(av1Tab->av1VBRBitrateSlider->value()) + "k";
-                                if (av1Tab->av1VBRVBVCheck->isChecked()) {
-                                    int bitrate = av1Tab->av1VBRBitrateSlider->value();
-                                    commonArgs << "-maxrate" << QString::number(bitrate) + "k";
-                                    commonArgs << "-bufsize" << QString::number(2 * bitrate) + "k";
-                                }
-                            }
-                        } else {
-                            svtParams << "crf=35";
-                        }
-                        if (av1Tab->enableTfCheck->isChecked()) {
-                            svtParams << "enable-tf=1";
-                        }
-                        int scm = av1Tab->screenContentModeBox->currentIndex();
-                        svtParams << "scm=" + QString::number(scm);
-                        if (!svtParams.isEmpty()) {
-                            commonArgs << "-svtav1-params" << svtParams.join(":");
-                        }
-                        QString level = av1Tab->av1LevelBox->currentText();
-                        if (level != "Auto") {
-                            commonArgs << "-level" << level;
-                        }
-                        commonArgs << "-g" << av1Tab->av1KeyIntBox->currentText();
-                        QString threads = av1Tab->av1ThreadsBox->currentText();
-                        if (threads != "Automatic") {
-                            svtParams << "lp=" + threads;
-                            if (!svtParams.isEmpty()) {
-                                commonArgs << "-svtav1-params" << svtParams.join(":");
-                            }
-                        }
-                        QString tileRows = av1Tab->av1TileRowsBox->currentText();
-                        if (tileRows != "Automatic") {
-                            int log2Rows = (tileRows == "1") ? 0 : (tileRows == "2") ? 1 : (tileRows == "4") ? 2 : (tileRows == "8") ? 3 : 0;
-                            svtParams << "tile-rows=" + QString::number(log2Rows);
-                            if (!svtParams.isEmpty()) {
-                                commonArgs << "-svtav1-params" << svtParams.join(":");
-                            }
-                        }
-                        QString tileColumns = av1Tab->av1TileColumnsBox->currentText();
-                        if (tileColumns != "Automatic") {
-                            int log2Cols = (tileColumns == "1") ? 0 : (tileColumns == "2") ? 1 : (tileColumns == "4") ? 2 : (tileColumns == "8") ? 3 : 0;
-                            svtParams << "tile-columns=" + QString::number(log2Cols);
-                            if (!svtParams.isEmpty()) {
-                                commonArgs << "-svtav1-params" << svtParams.join(":");
-                            }
-                        }
-                    } else if (codecIndex == 1) {
-                        commonArgs << "-c:v" << "libx265";
-                        commonArgs << "-preset" << x265Tab->x265PresetBox->currentText();
-                        QString tune = x265Tab->x265TuneBox->currentText();
-                        if (tune != "Auto") {
-                            commonArgs << "-tune" << tune;
-                        }
-                        QString level = x265Tab->x265LevelBox->currentText();
-                        if (level != "auto") {
-                            commonArgs << "-level" << level;
-                        }
-                        QStringList x265Params;
-                        x265Params << "deblock=" + QString::number(x265Tab->deblockAlphaSlider->value()) + ":" + QString::number(x265Tab->deblockBetaSlider->value());
-                        if (x265Tab->pmodeCheck->isChecked()) x265Params << "pmode=1";
-                        x265Params << "ref=" + x265Tab->refFramesBox->currentText();
-                        if (x265Tab->weightpCheck->isChecked()) x265Params << "weightp=1";
-                        if (x265Tab->strongIntraCheck->isChecked()) {
-                            x265Params << "strong-intra-smoothing=1";
-                        }
-                        int rdoqLevel = x265Tab->rdoqLevelBox->currentIndex();
-                        if (rdoqLevel > 1) {
-                            x265Params << "rdoq-level=" + QString::number(rdoqLevel);
-                        }
-                        if (x265Tab->saoCheck->isChecked()) {
-                            x265Params << "sao=1";
-                        }
-                        int limitRefs = x265Tab->limitRefsBox->currentIndex();
-                        if (limitRefs > 0) {
-                            x265Params << "limit-refs=" + QString::number(limitRefs);
-                        }
-                        if (x265Tab->x265LookaheadCheck->isChecked()) {
-                            x265Params << "rc-lookahead=" + QString::number(x265Tab->x265LookaheadSlider->value());
-                        }
-                        QString aqModeStr = x265Tab->x265AQModeBox->currentText();
-                        if (aqModeStr != "Automatic") {
-                            int aqMode = (aqModeStr == "Disabled") ? 0 :
-                            (aqModeStr == "Variance") ? 1 :
-                            (aqModeStr == "Auto-Variance") ? 2 :
-                            (aqModeStr == "Auto-Variance Biased") ? 3 : 0;
-                            commonArgs << "-aq-mode" << QString::number(aqMode);
-                        }
-                        x265Params << "aq-strength=" + QString::number(x265Tab->x265AQStrengthSlider->value() / 10.0);
-                        if (x265Tab->enablePsyRdCheck->isChecked()) {
-                            x265Params << "psy-rd=1.0";
-                        }
-                        if (x265Tab->enableCutreeCheck->isChecked()) {
-                            x265Params << "cutree=1";
-                        }
-                        if (!x265Params.isEmpty()) {
-                            commonArgs << "-x265-params" << x265Params.join(":");
-                        }
-                        commonArgs << "-g" << x265Tab->x265KeyIntBox->currentText();
-                        QString threads = x265Tab->x265ThreadsBox->currentText();
-                        if (threads != "Automatic") {
-                            commonArgs << "-threads" << threads;
-                        }
-                        QString frameThreads = x265Tab->x265FrameThreadsBox->currentText();
-                        if (frameThreads != "Automatic") {
-                            commonArgs << "-frame-threads" << frameThreads;
-                        }
-                        if (x265Tab->x265EnableRCModeCheck->isChecked()) {
-                            QString mode = x265Tab->x265RCModeBox->currentText();
-                            if (mode == "QP") {
-                                commonArgs << "-qp" << QString::number(x265Tab->x265QPSlider->value());
-                            } else if (mode == "CRF") {
-                                commonArgs << "-crf" << QString::number(x265Tab->x265CRFSlider->value());
-                            } else if (mode == "ABR") {
-                                commonArgs << "-b:v" << QString::number(x265Tab->x265ABRBitrateSlider->value()) + "k";
-                                if (x265Tab->x265ABRVBVCheck->isChecked()) {
-                                    int bitrate = x265Tab->x265ABRBitrateSlider->value();
-                                    commonArgs << "-maxrate" << QString::number(bitrate) + "k";
-                                    commonArgs << "-bufsize" << QString::number(2 * bitrate) + "k";
-                                }
-                            } else if (mode == "CBR") {
-                                int bitrate = x265Tab->x265CBRBitrateSlider->value();
-                                commonArgs << "-b:v" << QString::number(bitrate) + "k";
-                                commonArgs << "-maxrate" << QString::number(bitrate) + "k";
-                                commonArgs << "-bufsize" << QString::number(bitrate) + "k";
-                            }
-                        } else {
-                            commonArgs << "-crf" << "23";
-                        }
-                    } else if (codecIndex == 2) {
-                        commonArgs << "-c:v" << "libvpx-vp9";
-                        commonArgs << "-cpu-used" << vp9Tab->vp9CpuUsedBox->currentText();
-                        QString deadline = vp9Tab->vp9DeadlineBox->currentText();
-                        commonArgs << "-deadline" << deadline.toLower();
-                        if (vp9Tab->vp9LookaheadCheck->isChecked()) {
-                            commonArgs << "-lag-in-frames" << QString::number(vp9Tab->vp9LookaheadSlider->value());
-                        }
-                        QString aqModeStr = vp9Tab->vp9AQModeBox->currentText();
-                        if (aqModeStr != "Automatic") {
-                            int aqMode = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Complexity") ? 2 : 0;
-                            commonArgs << "-aq-mode" << QString::number(aqMode);
-                        }
-                        if (vp9Tab->vp9ArnrCheck->isChecked()) {
-                            commonArgs << "-arnr-strength" << QString::number(vp9Tab->vp9ArnrStrengthSlider->value());
-                            commonArgs << "-arnr-maxframes" << QString::number(vp9Tab->vp9ArnrMaxFramesSlider->value());
-                        } else {
-                            commonArgs << "-arnr-strength" << QString::number(vp9Tab->vp9AQStrengthSlider->value());
-                        }
-                        if (vp9Tab->vp9TplCheck->isChecked()) {
-                            commonArgs << "-auto-alt-ref" << "1";
-                        }
-                        if (vp9Tab->enableRowMtCheck->isChecked()) {
-                            commonArgs << "-row-mt" << "1";
-                        }
-                        if (vp9Tab->screenContentCheck->isChecked()) {
-                            commonArgs << "-tune-content" << "screen";
-                        }
-                        commonArgs << "-g" << vp9Tab->vp9KeyIntBox->currentText();
-                        QString threads = vp9Tab->vp9ThreadsBox->currentText();
-                        if (threads != "Automatic") {
-                            commonArgs << "-threads" << threads;
-                        }
-                        QString tileColumns = vp9Tab->vp9TileColumnsBox->currentText();
-                        int log2Cols = (tileColumns == "0") ? 0 : (tileColumns == "1") ? 0 : (tileColumns == "2") ? 1 : (tileColumns == "4") ? 2 : (tileColumns == "8") ? 3 : 0;
-                        commonArgs << "-tile-columns" << QString::number(log2Cols);
-                        QString tileRows = vp9Tab->vp9TileRowsBox->currentText();
-                        if (tileRows != "Automatic") {
-                            int log2Rows = (tileRows == "1") ? 0 : (tileRows == "2") ? 1 : (tileRows == "4") ? 2 : (tileRows == "8") ? 3 : 0;
-                            commonArgs << "-row-mt" << "1";
-                            commonArgs << "-tile-rows" << QString::number(log2Rows);
-                        }
-                        commonArgs << "-qmax" << QString::number(vp9Tab->vp9QMaxSlider->value());
-                        if (vp9Tab->vp9EnableRCModeCheck->isChecked()) {
-                            QString mode = vp9Tab->vp9RCModeBox->currentText();
-                            if (mode == "CRF") {
-                                commonArgs << "-crf" << QString::number(vp9Tab->vp9CRFSlider->value());
-                                commonArgs << "-b:v" << "0";
-                            } else if (mode == "ABR" || mode == "CBR") {
-                                int bitrate = vp9Tab->vp9BitrateSlider->value();
-                                commonArgs << "-b:v" << QString::number(bitrate) + "k";
-                                if (mode == "CBR") {
-                                    commonArgs << "-maxrate" << QString::number(bitrate) + "k";
-                                    commonArgs << "-bufsize" << QString::number(bitrate) + "k";
-                                }
-                            }
-                        } else {
-                            commonArgs << "-crf" << "31";
-                            commonArgs << "-b:v" << "0";
-                        }
-                    }
-                } // end of if !lossless for video
-                if (!lossless) {
-                    if (codecIndex == 0) {
-                        if (av1Tab->av1AudioCheck->isChecked()) {
-                            QString audioCodecStr = av1Tab->av1AudioCodecBox->currentText();
-                            QString encoder;
-                            if (audioCodecStr == "opus") encoder = "libopus";
-                            else if (audioCodecStr == "vorbis") encoder = "libvorbis";
-                            else if (audioCodecStr == "mp3") encoder = "libmp3lame";
-                            else if (audioCodecStr == "aac") encoder = "aac";
-                            else if (audioCodecStr == "flac") encoder = "flac";
-                            else encoder = audioCodecStr;
-                            commonArgs << "-c:a" << encoder;
-                            commonArgs << "-ar" << getSampleRateInHz(av1Tab->av1AudioSampleRateBox->currentText());
-                            commonArgs << "-b:a" << getBitrateValue(av1Tab->av1AudioBitrateBox->currentText()) + "k";
-                            if (audioCodecStr == "opus") {
-                                QString vbr = av1Tab->av1VbrModeBox->currentText();
-                                if (vbr == "Constrained") commonArgs << "-vbr" << "constrained";
-                                else if (vbr == "Off") commonArgs << "-vbr" << "off";
-                            } else if (audioCodecStr == "aac") {
-                                QString quality = av1Tab->av1AacQualityBox->currentText();
-                                if (quality != "Disabled") commonArgs << "-q:a" << quality;
-                            } else if (audioCodecStr == "mp3") {
-                                QString vbr = av1Tab->av1Mp3VbrBox->currentText();
-                                if (vbr != "Disabled") commonArgs << "-qscale:a" << vbr;
-                            } else if (audioCodecStr == "flac") {
-                                commonArgs << "-compression_level" << av1Tab->av1FlacCompressionBox->currentText();
-                            } else if (audioCodecStr == "vorbis") {
-                                QString quality = av1Tab->av1VorbisQualityBox->currentText();
-                                if (quality != "Disabled") commonArgs << "-q:a" << quality;
-                            }
-                        } else {
-                            commonArgs << "-an";
-                        }
-                    } else if (codecIndex == 1) {
-                        if (x265Tab->x265AudioCheck->isChecked()) {
-                            QString audioCodecStr = x265Tab->x265AudioCodecBox->currentText();
-                            QString encoder;
-                            if (audioCodecStr == "opus") encoder = "libopus";
-                            else if (audioCodecStr == "vorbis") encoder = "libvorbis";
-                            else if (audioCodecStr == "mp3") encoder = "libmp3lame";
-                            else if (audioCodecStr == "aac") encoder = "aac";
-                            else if (audioCodecStr == "flac") encoder = "flac";
-                            else encoder = audioCodecStr;
-                            commonArgs << "-c:a" << encoder;
-                            commonArgs << "-ar" << getSampleRateInHz(x265Tab->x265AudioSampleRateBox->currentText());
-                            commonArgs << "-b:a" << getBitrateValue(x265Tab->x265AudioBitrateBox->currentText()) + "k";
-                            if (audioCodecStr == "opus") {
-                                QString vbr = x265Tab->x265VbrModeBox->currentText();
-                                if (vbr == "Constrained") commonArgs << "-vbr" << "constrained";
-                                else if (vbr == "Off") commonArgs << "-vbr" << "off";
-                            } else if (audioCodecStr == "aac") {
-                                QString quality = x265Tab->x265AacQualityBox->currentText();
-                                if (quality != "Disabled") commonArgs << "-q:a" << quality;
-                            } else if (audioCodecStr == "mp3") {
-                                QString vbr = x265Tab->x265Mp3VbrBox->currentText();
-                                if (vbr != "Disabled") commonArgs << "-qscale:a" << vbr;
-                            } else if (audioCodecStr == "flac") {
-                                commonArgs << "-compression_level" << x265Tab->x265FlacCompressionBox->currentText();
-                            } else if (audioCodecStr == "vorbis") {
-                                QString quality = x265Tab->x265VorbisQualityBox->currentText();
-                                if (quality != "Disabled") commonArgs << "-q:a" << quality;
-                            }
-                        } else {
-                            commonArgs << "-an";
-                        }
-                    } else if (codecIndex == 2) {
-                        if (vp9Tab->vp9AudioCheck->isChecked()) {
-                            QString audioCodecStr = vp9Tab->vp9AudioCodecBox->currentText();
-                            QString encoder;
-                            if (audioCodecStr == "opus") encoder = "libopus";
-                            else if (audioCodecStr == "vorbis") encoder = "libvorbis";
-                            else encoder = audioCodecStr;
-                            commonArgs << "-c:a" << encoder;
-                            commonArgs << "-ar" << getSampleRateInHz(vp9Tab->vp9AudioSampleRateBox->currentText());
-                            commonArgs << "-b:a" << getBitrateValue(vp9Tab->vp9AudioBitrateBox->currentText()) + "k";
-                            if (audioCodecStr == "vorbis") {
-                                QString quality = vp9Tab->vp9VorbisQualityBox->currentText();
-                                if (quality != "Disabled") commonArgs << "-q:a" << quality;
-                            }
-                        } else {
-                            commonArgs << "-an";
-                        }
-                    }
-                } // end of if !lossless for audio options
+
                     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation) +
                     "/ffmpeg_converter_trim_" + QUuid::createUuid().toString(QUuid::WithoutBraces);
                     QDir().mkpath(tempDir);
@@ -2396,6 +1838,7 @@ int main(int argc, char *argv[]) {
                     for (int i = 0; i < segList.size(); ++i) {
                         tempFiles << tempDir + QString("/seg_%1%2").arg(i + 1, 3, 10, QChar('0')).arg(containerExt);
                     }
+
                     QVector<double> segDurations;
                     double totalDur = 0.0;
                     for (const auto& seg : segList) {
@@ -2403,25 +1846,28 @@ int main(int argc, char *argv[]) {
                         segDurations << d;
                         totalDur += d;
                     }
+
                     auto formatTimeLocal = [](qint64 ms) -> QString {
-                        if (ms <= 0) return "00:00:00.000";
+                        if (ms <= 0) return "00:00:00.00";
                         qint64 secs = ms / 1000;
                         int h = secs / 3600;
                         int m = (secs % 3600) / 60;
                         int s = secs % 60;
-                        int mss = ms % 1000;
+                        int cs = (ms % 1000) / 10;
                         return QString("%1:%2:%3.%4")
                         .arg(h, 2, 10, QChar('0'))
                         .arg(m, 2, 10, QChar('0'))
                         .arg(s, 2, 10, QChar('0'))
-                        .arg(mss, 3, 10, QChar('0'));
+                        .arg(cs, 2, 10, QChar('0'));
                     };
+
                     QObject::disconnect(converter, &Converter::conversionFinished, nullptr, nullptr);
                     struct TrimState {
                         int currentSeg = 0;
                         double completedDur = 0.0;
                     };
                     auto state = std::make_shared<TrimState>();
+
                     std::function<void()> encodeNextSegment;
                     encodeNextSegment = [=,&encodeNextSegment]() mutable {
                         if (state->currentSeg >= segList.size()) {
@@ -2432,24 +1878,24 @@ int main(int argc, char *argv[]) {
                                     QString src = tempFiles[i];
                                     QString partName = baseName + "_part" + QString("%1").arg(i + 1, 3, 10, QChar('0')) + containerExt;
                                     QString dest = QDir::cleanPath(outputDir + "/" + partName);
-
-                                    // Handle overwrite / unique snowflake name
                                     if (QFile::exists(dest)) {
                                         if (overwriteCheck->isChecked()) {
                                             QFile::remove(dest);
+                                            logBox->append("Overwrite enabled: Removing existing " + QFileInfo(dest).fileName());
                                         } else {
                                             int num = 1;
+                                            QString newPartName;
                                             QString newDest;
                                             do {
-                                                newDest = QDir::cleanPath(outputDir + "/" + baseName + "_part" +
-                                                QString("%1").arg(i + 1, 3, 10, QChar('0')) +
-                                                "_" + QString::number(num) + containerExt);
+                                                newPartName = baseName + "_part" + QString("%1").arg(i + 1, 3, 10, QChar('0')) +
+                                                " (" + QString::number(num) + ")";
+                                                newDest = QDir::cleanPath(outputDir + "/" + newPartName + containerExt);
                                                 num++;
                                             } while (QFile::exists(newDest));
                                             dest = newDest;
+                                            logBox->append("File exists: Using unique name " + QFileInfo(dest).fileName());
                                         }
                                     }
-
                                     QFile::copy(src, dest);
                                     QString savedName = QFileInfo(dest).fileName();
                                     logBox->append("Saved segment: " + savedName);
@@ -2459,7 +1905,6 @@ int main(int argc, char *argv[]) {
                                 if (!firstSavedFile.isEmpty()) {
                                     showConversionNotification(firstSavedFile, nullptr);
                                 }
-
                                 QDir(tempDir).removeRecursively();
                                 logBox->append("Cleaned up temporary files.");
                                 trimTab->restartPreviewPlayer();
@@ -2467,7 +1912,26 @@ int main(int argc, char *argv[]) {
                                 cancelButton->setEnabled(false);
                                 conversionProgress->setVisible(false);
                             } else {
-                                // Original concat path
+                                QString finalFile = QDir::cleanPath(outputDir + "/" + baseName + containerExt);
+                                QString resolvedFinal = finalFile;
+                                if (QFile::exists(resolvedFinal)) {
+                                    if (overwriteCheck->isChecked()) {
+                                        QFile::remove(resolvedFinal);
+                                        logBox->append("Overwrite enabled: Removing existing " + QFileInfo(resolvedFinal).fileName());
+                                    } else {
+                                        int counter = 1;
+                                        QFileInfo fi(resolvedFinal);
+                                        QString dir = fi.absolutePath();
+                                        QString base = fi.completeBaseName();
+                                        QString ext = fi.suffix().isEmpty() ? "" : "." + fi.suffix();
+                                        do {
+                                            resolvedFinal = QDir::cleanPath(dir + "/" + base + " (" + QString::number(counter) + ")" + ext);
+                                            counter++;
+                                        } while (QFile::exists(resolvedFinal));
+                                        logBox->append("Final file exists (overwrite off): Using unique name " + QFileInfo(resolvedFinal).fileName());
+                                    }
+                                }
+
                                 QString listFile = tempDir + "/concat_list.txt";
                                 QFile f(listFile);
                                 if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -2476,17 +1940,19 @@ int main(int argc, char *argv[]) {
                                         out << "file '" << QDir::toNativeSeparators(tf) << "'\n";
                                     }
                                 }
+
                                 QStringList concatArgs;
-                                concatArgs << "-f" << "concat" << "-safe" << "0" << "-i" << listFile << "-c" << "copy" << "-y" << finalFile;
+                                concatArgs << "-f" << "concat" << "-safe" << "0" << "-i" << listFile << "-c" << "copy" << resolvedFinal;
                                 logBox->append("Starting final lossless concatenation...");
                                 QProcess* concatProc = new QProcess();
                                 concatProc->setProcessEnvironment(env);
                                 concatProc->start(ffmpegPath, concatArgs);
+
                                 QObject::connect(concatProc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                                                 [concatProc, logBox, finalFile, tempDir, convertButton, cancelButton, conversionProgress, trimTab](int, QProcess::ExitStatus) {
+                                                 [concatProc, logBox, resolvedFinal, tempDir, convertButton, cancelButton, conversionProgress, trimTab](int, QProcess::ExitStatus) {
                                                      if (concatProc->exitCode() == 0) {
-                                                         logBox->append("✅ Trim conversion complete: " + finalFile);
-                                                         showConversionNotification(finalFile, nullptr);
+                                                         logBox->append("✅ Trim complete: " + QFileInfo(resolvedFinal).fileName());
+                                                         showConversionNotification(resolvedFinal, nullptr);
                                                      } else {
                                                          logBox->append("❌ Concatenation failed: " + concatProc->readAllStandardError());
                                                      }
@@ -2503,20 +1969,13 @@ int main(int argc, char *argv[]) {
                         }
                         const auto& seg = segList[state->currentSeg];
                         double thisDur = segDurations[state->currentSeg];
-                        QString segBaseName = QString("seg_%1").arg(state->currentSeg + 1, 3, 10, QChar('0'));
-                        QStringList segArgs = commonArgs;
-                        if (lossless) {
-                            segArgs.clear();
-                            segArgs << "-c" << "copy" << "-map" << "0" << "-avoid_negative_ts" << "make_zero";
-                            if (preserveMetadataCheck->isChecked()) {
-                                segArgs << "-map_metadata" << "0";
-                            }
-                            if (removeChaptersCheck->isChecked()) {
-                                segArgs << "-map_chapters" << "-1";
-                            }
-                            logBox->append("=== LOSSLESS TRIM MODE (STREAM COPY) ACTIVATED ===");
-                            logBox->append("Fast, zero quality loss. Cuts are keyframe-accurate only.");
-                            logBox->append("All filters, scaling, speed changes, and codec settings are ignored.");
+                        QStringList segArgs;
+                        segArgs << "-c" << "copy" << "-map" << "0" << "-avoid_negative_ts" << "make_zero";
+                        if (preserveMetadataCheck->isChecked()) {
+                            segArgs << "-map_metadata" << "0";
+                        }
+                        if (removeChaptersCheck->isChecked()) {
+                            segArgs << "-map_chapters" << "-1";
                         }
                         segArgs << "-ss" << QString::number(seg.first / 1000.0, 'f', 6);
                         segArgs << "-t" << QString::number(thisDur, 'f', 6);
@@ -2524,8 +1983,9 @@ int main(int argc, char *argv[]) {
                         .arg(state->currentSeg + 1).arg(segList.size())
                         .arg(formatTimeLocal(seg.first)).arg(formatTimeLocal(seg.second)));
                         state->currentSeg++;
-                        converter->startConversion(inputFile, tempDir, segBaseName, segArgs, false, containerExt, codecLower, ffmpegPath, env, true, "", "", 1.0);
+                        converter->startConversion(inputFile, tempDir, QString("seg_%1").arg(state->currentSeg, 3, 10, QChar('0')), segArgs, false, containerExt, "copy", ffmpegPath, env, true, "", "", 1.0);
                     };
+
                     QObject::connect(converter, &Converter::progressUpdated, [conversionProgress, state, totalDur, segDurations]() {
                         if (state->currentSeg <= 0 || segDurations.isEmpty()) {
                             conversionProgress->setValue(0);
@@ -2539,12 +1999,14 @@ int main(int argc, char *argv[]) {
                         if (state->currentSeg > 0) {
                             state->completedDur += segDurations[state->currentSeg - 1];
                         }
-                        QTimer::singleShot(10000, encodeNextSegment); // 10 second delay for full cleanup
+                        QTimer::singleShot(10000, encodeNextSegment);
                     });
+
                     state->currentSeg = 0;
                     state->completedDur = 0.0;
                     conversionProgress->setValue(0);
                     encodeNextSegment();
+
                     convertButton->setEnabled(false);
                     cancelButton->setEnabled(true);
                     conversionProgress->setVisible(true);
