@@ -10,7 +10,7 @@ My own pet project. FFmpeg-Converter a simple Qt6 frontend for FFmpeg. Currently
 - **Audio Options**: Normalize loudness, speed change  with pitch preserve, and Opus, AAC, MP3, Vorbis, and FLAC support
 - **Speed Controls**: Independent video/audio speed adjustment with proper resync
 - **Combine Videos Tab**: Add multiple files and concat them into one
-- **Trim Tab**: Built in player utilizing Qt6 multimedia for scrubbing, mark multiple in/out time stamps, reorder/remove segments, and output a single combined clip
+- **Trim Tab**: Built in player utilizing Qt6 multimedia for scrubbing, mark multiple in/out time stamps, reorder/remove segments, lossless support, and output a single combined clip
 - **Information Tab**: Detailed input/output file info (resolution, bitrate, codec, color depth, etc.)
 - **Console Tab**: Verbos output and bonus able to run FFmpeg commands directly for quick testing
 - **Presets**: One click quality presets for the AV1, x265, and VP9 tabs
