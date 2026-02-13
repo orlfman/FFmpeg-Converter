@@ -26,7 +26,7 @@ TrimTab::TrimTab(QWidget *parent) : QWidget(parent)
     mainLayout->addWidget(inputFileLabel);
     // Qt6 Video player
     videoWidget = new QVideoWidget();
-    videoWidget->setMinimumSize(640, 360);
+    videoWidget->setMinimumSize(1280, 720);
     videoWidget->setStyleSheet("background-color: black;");
     mainLayout->addWidget(videoWidget);
     player = new QMediaPlayer(this);

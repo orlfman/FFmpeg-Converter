@@ -64,7 +64,7 @@ public:
     explicit SettingsDialog(QWidget *parent = nullptr) : QDialog(parent) {
         setWindowTitle("⚙️ Settings");
         setMinimumWidth(500);
-        resize(550, 350);
+        resize(1280, 720);
         QVBoxLayout *mainLayout = new QVBoxLayout(this);
         QFormLayout *formLayout = new QFormLayout();
         defaultCodecComboBox = new QComboBox();
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
     QMainWindow window;
     window.setWindowTitle("FFmpeg Converter");
     window.setWindowIcon(QIcon::fromTheme("ffmpeg-converter-qt"));
-    window.resize(800, 600);
+    window.resize(1280, 720);
     QWidget *centralWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget);
     window.setCentralWidget(centralWidget);
