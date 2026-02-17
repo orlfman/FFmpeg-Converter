@@ -842,7 +842,6 @@ int main(int argc, char *argv[]) {
                         QAction *act = recentMenu->addAction(QString("%1. %2").arg(++count).arg(displayName));
                         QObject::connect(act, &QAction::triggered, [file, selectedFilesBox, outputNameBox, &updateInfo]() {
                             selectedFilesBox->setText(file);
-                            outputNameBox->setText(QFileInfo(file).baseName());
                             updateInfo(file);
                         });
                     }
@@ -893,7 +892,6 @@ int main(int argc, char *argv[]) {
                     QString file = dialog.selectedFiles().first();
                     selectedFilesBox->setText(file);
                     QFileInfo fileInfo(file);
-                    outputNameBox->setText(fileInfo.baseName());
                     QStringList recent = settings.value("recentFiles").toStringList();
                     recent.removeAll(file);
                     recent.prepend(file);
@@ -951,7 +949,6 @@ int main(int argc, char *argv[]) {
                     QString file = dialog.selectedFiles().first();
                     selectedFilesBox->setText(file);
                     QFileInfo fileInfo(file);
-                    outputNameBox->setText(fileInfo.baseName());
                     QStringList recent = settings.value("recentFiles").toStringList();
                     recent.removeAll(file);
                     recent.prepend(file);
