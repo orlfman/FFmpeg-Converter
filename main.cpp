@@ -776,19 +776,27 @@ int main(int argc, char *argv[]) {
                         if (pixelFormat.contains("10")) pixFmt = "10-bit";
                         else if (pixelFormat.contains("12")) pixFmt = "12-bit";
                         else pixFmt = "8-bit";
-                        bool isTenBit = (pixFmt == "10-bit" || pixFmt == "12-bit");
+                        bool isTwelveBit = pixFmt.contains("12");
+                        bool isTenBit = pixFmt.contains("10") && !isTwelveBit;
 
-                        if (isTenBit) {
-                            QMetaObject::invokeMethod(tenBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, true));
-                            QMetaObject::invokeMethod(eightBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, false));
-                            QMetaObject::invokeMethod(colorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
-                            QMetaObject::invokeMethod(eightBitColorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, false));
-                            QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection,
-                                                      Q_ARG(QString, "🔍 Detected 10-bit (or higher) input → automatically switched to 10-bit mode to avoid downgrading"));
-                        } else {
-                            QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection,
-                                                      Q_ARG(QString, "🔍 Detected 8-bit input → keeping current bit-depth setting (user choice respected)"));
-                        }
+                if (isTwelveBit) {
+                    QMetaObject::invokeMethod(eightBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, false));
+                    QMetaObject::invokeMethod(tenBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, false));
+                    QMetaObject::invokeMethod(eightBitColorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
+                    QMetaObject::invokeMethod(colorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
+                    QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection,
+                                              Q_ARG(QString, "🔍 Detected 12-bit input."));
+                } else if (isTenBit) {
+                    QMetaObject::invokeMethod(tenBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, true));
+                    QMetaObject::invokeMethod(eightBitCheck, "setChecked", Qt::QueuedConnection, Q_ARG(bool, false));
+                    QMetaObject::invokeMethod(colorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, true));
+                    QMetaObject::invokeMethod(eightBitColorFormatBox, "setEnabled", Qt::QueuedConnection, Q_ARG(bool, false));
+                    QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection,
+                                              Q_ARG(QString, "🔍 Detected 10-bit input, auto-switched to 10-bit mode to avoid downgrading"));
+                } else {
+                    QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection,
+                                              Q_ARG(QString, "🔍 Detected 8-bit input, keeping current bit-depth setting"));
+                }
                         QMetaObject::invokeMethod(logBox, "append", Qt::QueuedConnection, Q_ARG(QString, "🔍 Auto-detected " + pixFmt + " input, setting UI accordingly."));
                         colorSpace = stream.value("color_space", "N/A");
                     }
