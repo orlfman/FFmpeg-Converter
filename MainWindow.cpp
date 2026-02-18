@@ -353,31 +353,25 @@ void MainWindow::createCodecTabs()
 
 void MainWindow::createInfoAndConsoleTabs()
 {
-    // Information tab
     QWidget *infoTab = new QWidget();
     QVBoxLayout *infoLayout = new QVBoxLayout(infoTab);
     infoBox = new QTextEdit(); infoBox->setReadOnly(true);
     infoLayout->addWidget(infoBox);
     codecTabs->addTab(infoTab, "Information");
 
-    // Console tab
     QWidget *consoleTab = new QWidget();
     QVBoxLayout *consoleLayout = new QVBoxLayout(consoleTab);
 
-    QHBoxLayout *consoleInputLayout = new QHBoxLayout();
-    QLabel *consoleLabel = new QLabel("Enter FFmpeg commands:");
-    customCommandBox = new QLineEdit(); customCommandBox->setPlaceholderText("ex: -i input.mp4 -c:v libx264 output.mkv");
-    runCommandButton = new QPushButton("Run Command");
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
     clearLogButton = new QPushButton("Clear Console");
-    consoleInputLayout->addWidget(consoleLabel);
-    consoleInputLayout->addWidget(customCommandBox);
-    consoleInputLayout->addWidget(runCommandButton);
-    consoleInputLayout->addWidget(clearLogButton);
-    consoleInputLayout->addStretch();
-    consoleLayout->addLayout(consoleInputLayout);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(clearLogButton);
+    consoleLayout->addLayout(buttonLayout);
 
-    logBox = new QTextEdit(); logBox->setReadOnly(true);
+    logBox = new QTextEdit();
+    logBox->setReadOnly(true);
     consoleLayout->addWidget(logBox);
+
     codecTabs->addTab(consoleTab, "Console");
 }
 
@@ -540,7 +534,6 @@ void MainWindow::wireAllSignals()
         connect(selectedFilesBox, &QLineEdit::textChanged, trimTab, &TrimTab::setInputFile);
 
         // Console
-        connect(runCommandButton, &QPushButton::clicked, this, &MainWindow::runCustomCommand);
         connect(clearLogButton, &QPushButton::clicked, logBox, &QTextEdit::clear);
 
         // Conversion
@@ -707,38 +700,6 @@ QString MainWindow::extractTitle(const QString &inputFile)
     if (title.isEmpty()) title = fmt["title"].toString();
     title.remove(QRegularExpression("[<>:\"|?*\\\\/]"));
     return title.trimmed();
-}
-
-void MainWindow::runCustomCommand()
-{
-    QString command = customCommandBox->text().trimmed();
-    if (command.isEmpty()) return;
-
-    runCommandButton->setEnabled(false);
-    QProcess *process = new QProcess(this);
-    QString ffmpegPath = settings->value("ffmpegPath", "/usr/bin/ffmpeg").toString();
-    if (ffmpegPath.isEmpty()) ffmpegPath = "/usr/bin/ffmpeg";
-
-    QStringList args = command.split(" ", Qt::SkipEmptyParts);
-    process->start(ffmpegPath, args);
-
-    logBox->append("Running custom command: " + ffmpegPath + " " + command);
-
-    connect(process, &QProcess::readyReadStandardOutput, this, [process, this]() {
-        logBox->append(process->readAllStandardOutput().trimmed());
-    });
-    connect(process, &QProcess::readyReadStandardError, this, [process, this]() {
-        logBox->append(process->readAllStandardError().trimmed());
-    });
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, [this, process](int exitCode, QProcess::ExitStatus) {
-        if (exitCode != 0) {
-            logBox->append("❌ Custom command failed.");
-        } else {
-            logBox->append("✅ Custom command completed successfully.");
-        }
-        process->deleteLater();
-        runCommandButton->setEnabled(true);
-    });
 }
 
 void MainWindow::browseOutputDirectory()

@@ -12,7 +12,7 @@ My own pet project. FFmpeg-Converter a simple Qt6 frontend for FFmpeg. Currently
 - **Combine Videos Tab**: Add multiple files and concat them into one
 - **Trim Tab**: Built in player utilizing Qt6 multimedia for scrubbing, mark multiple in/out time stamps, reorder/remove/edit segments, lossless copy, and output a single combined clip
 - **Information Tab**: Detailed input/output file info (resolution, bitrate, codec, color depth, etc.)
-- **Console Tab**: Verbos output and bonus able to run FFmpeg commands directly for quick testing
+- **Console Tab**: Verbos output
 - **Presets**: One click quality presets for the AV1, x265, and VP9 tabs
 - **Settings**: Custom FFmpeg path, custom SVT-AV1 library path (setting a custom path is broken atm), default output folder, notifications, and default codec tab
 

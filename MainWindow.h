@@ -63,7 +63,6 @@ private slots:
     void onFileSelected(const QString &file);
     void refreshOutputName();
     void detectCrop();
-    void runCustomCommand();
     void startConversion();
     void showInfo(const QString &inputFile);
     void onConversionFinished();
@@ -139,8 +138,6 @@ private:
 
     QTextEdit *infoBox = nullptr;
     QTextEdit *logBox = nullptr;
-    QLineEdit *customCommandBox = nullptr;
-    QPushButton *runCommandButton = nullptr;
     QPushButton *clearLogButton = nullptr;
     QPushButton *convertButton = nullptr;
     QPushButton *cancelButton = nullptr;
