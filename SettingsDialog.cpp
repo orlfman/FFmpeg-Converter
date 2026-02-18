@@ -11,9 +11,9 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent)
     QFormLayout *formLayout = new QFormLayout();
 
     defaultCodecComboBox = new QComboBox();
-    defaultCodecComboBox->addItems({"AV1", "x265", "VP9"});
+    defaultCodecComboBox->addItems({"AV1", "x265", "VP9", "Combine Videos", "Trim", "Information", "Console"});
     defaultCodecComboBox->setCurrentIndex(0);
-    formLayout->addRow("Default Codec Tab:", defaultCodecComboBox);
+    formLayout->addRow("Default Tab:", defaultCodecComboBox);
 
     ffmpegPathButton = new QPushButton("📁 Browse...");
     ffmpegPathLineEdit = new QLineEdit();

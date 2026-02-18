@@ -53,19 +53,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     resize(1280, 720);
 
     setupUi();
-    loadSettings();
-
-    debounceTimer = new QTimer(this);
-    debounceTimer->setSingleShot(true);
-
     wireAllSignals();
     updateRecentMenu();
     refreshOutputName();
-}
 
-MainWindow::~MainWindow()
-{
-    saveSettings();
+    QTimer::singleShot(0, this, [this]() {
+        loadSettings();
+    });
+
+    debounceTimer = new QTimer(this);
+    debounceTimer->setSingleShot(true);
 }
 
 void MainWindow::setupUi()
@@ -452,13 +449,15 @@ void MainWindow::createMenuBar()
 
 void MainWindow::loadSettings()
 {
-    int defaultTab = settings->value("defaultCodecTab", 0).toInt();
-    codecTabs->setCurrentIndex(defaultTab);
-}
+    if (!codecTabs) return;
 
-void MainWindow::saveSettings()
-{
-    settings->setValue("defaultCodecTab", codecTabs->currentIndex());
+    int defaultTab = settings->value("defaultCodecTab", 0).toInt();
+
+    if (defaultTab >= 0 && defaultTab < codecTabs->count()) {
+        codecTabs->setCurrentIndex(defaultTab);
+    } else {
+        codecTabs->setCurrentIndex(0);
+    }
 }
 
 void MainWindow::wireAllSignals()
@@ -748,12 +747,17 @@ void MainWindow::openSettings()
 {
     SettingsDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
+        int newDefaultTab = dialog.getDefaultCodecTab();
         settings->setValue("defaultOutputDir", dialog.getDefaultOutputDir());
-        settings->setValue("defaultCodecTab", dialog.getDefaultCodecTab());
+        settings->setValue("defaultCodecTab", newDefaultTab);
         settings->setValue("ffmpegPath", dialog.getFFmpegPath());
         settings->setValue("notifyOnFinish", dialog.getNotifyOnFinish());
         settings->setValue("svtAv1Path", dialog.getSvtAv1Path());
-        QMessageBox::information(this, "✅ Settings Saved", "✓ Default codec tab\n✓ FFmpeg path\n✓ SVT-AV1 library path\n✓ Output directory\n✓ Notifications");
+
+        settings->sync();
+
+        QMessageBox::information(this, "✅ Settings Saved",
+                                 "✓ Default codec tab\n✓ FFmpeg path\n✓ SVT-AV1 library path\n✓ Output directory\n✓ Notifications");
     }
 }
 
