@@ -480,6 +480,11 @@ void MainWindow::wireAllSignals()
         if (!checked) cropValueBox->clear();
     });
         connect(detectCropButton, &QPushButton::clicked, this, &MainWindow::detectCrop);
+        connect(rotationBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int) {
+            if (cropCheck->isChecked()) {
+                detectCropButton->click();
+            }
+        });
 
         connect(seekCheck, &QCheckBox::toggled, this, [this](bool checked) {
             seekHH->setEnabled(checked); seekMM->setEnabled(checked); seekSS->setEnabled(checked);
