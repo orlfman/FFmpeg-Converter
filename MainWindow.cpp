@@ -364,8 +364,8 @@ void MainWindow::createInfoAndConsoleTabs()
 
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     clearLogButton = new QPushButton("Clear Console");
-    buttonLayout->addStretch();
     buttonLayout->addWidget(clearLogButton);
+    buttonLayout->addStretch();
     consoleLayout->addLayout(buttonLayout);
 
     logBox = new QTextEdit();
