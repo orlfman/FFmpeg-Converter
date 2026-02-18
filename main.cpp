@@ -1,4 +1,6 @@
 #include "av1tab.h"
+#include <QJsonDocument>
+#include <QJsonObject>
 #include "converter.h"
 #include "vp9tab.h"
 #include "x265tab.h"
