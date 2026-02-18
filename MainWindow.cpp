@@ -449,7 +449,7 @@ void MainWindow::createMenuBar()
     QMenu *helpMenu = mBar->addMenu("&Help");
     QAction *aboutAction = new QAction("&About", this);
     connect(aboutAction, &QAction::triggered, this, [this]() {
-        QMessageBox::about(this, "About FFmpeg Converter", "FFmpeg Converter v3.0.0\nBuilt with Qt 6\nFor video weebs!");
+        QMessageBox::about(this, "About FFmpeg Converter", "FFmpeg Converter v3.1.0\nBuilt with Qt 6\nFor video weebs!");
     });
     helpMenu->addAction(aboutAction);
 }
