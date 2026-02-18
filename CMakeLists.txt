@@ -16,6 +16,7 @@ add_executable(ffmpeg_converter_qt
     av1tab.cpp
     x265tab.cpp
     vp9tab.cpp
+    x264tab.cpp
     combinetab.cpp
     presets.cpp
     trimtab.cpp

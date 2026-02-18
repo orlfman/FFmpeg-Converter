@@ -83,7 +83,13 @@ void MainWindow::startConversion()
             extension = "." + vp9Tab->vp9ContainerBox->currentText();
             twoPass = vp9Tab->vp9TwoPassCheck->isChecked();
             codecStr = "vp9";
-        }
+        } else if (currentTab == 3) { // x264
+        extension = "." + x264Tab->x264ContainerBox->currentText();
+        twoPass = x264Tab->x264TwoPassCheck->isChecked();
+        if (x264Tab->x264EnableRCModeCheck->isChecked() && x264Tab->x264RCModeBox->currentText() == "CRF") twoPass = false;
+        else if (!x264Tab->x264EnableRCModeCheck->isChecked()) twoPass = false;
+        codecStr = "x264";
+    }
     }
 
     QStringList args;
@@ -441,9 +447,71 @@ void MainWindow::startConversion()
             args << "-b:v" << "0";
         }
     }
+    else if (currentTab == 3) { // x264
+        args << "-c:v" << "libx264";
+        args << "-preset" << x264Tab->x264PresetBox->currentText();
+        if (x264Tab->x264TuneBox->currentText() != "Auto") args << "-tune" << x264Tab->x264TuneBox->currentText();
+        QString profile = x264Tab->x264ProfileBox->currentText();
+        if (tenBitCheck->isChecked() || profile == "auto") {
+            profile = "high10";
+        }
+        if (tenBitCheck->isChecked() && (profile == "baseline" || profile == "main")) {
+            profile = "high10";
+            logBox->append("⚠️ 10-bit enabled → forced high10 profile (baseline/main not supported)");
+        }
+        args << "-profile:v" << profile;
+
+        if (tenBitCheck->isChecked()) {
+            logBox->append("✅ Using high10 profile (10-bit color)");
+        }
+
+        if (x264Tab->x264LevelBox->currentText() != "auto") args << "-level" << x264Tab->x264LevelBox->currentText();
+
+        QStringList x264Params;
+        x264Params << "deblock=" + QString::number(x264Tab->deblockAlphaSlider->value()) + ":" + QString::number(x264Tab->deblockBetaSlider->value());
+        if (x264Tab->pmodeCheck->isChecked()) x264Params << "pmode=1";
+        x264Params << "ref=" + x264Tab->refFramesBox->currentText();
+        if (x264Tab->weightpCheck->isChecked()) x264Params << "weightp=1";
+        if (x264Tab->strongIntraCheck->isChecked()) x264Params << "strong-intra-smoothing=1";
+        if (x264Tab->rdoqLevelBox->currentIndex() > 1) x264Params << "rdoq-level=" + QString::number(x264Tab->rdoqLevelBox->currentIndex());
+        if (x264Tab->saoCheck->isChecked()) x264Params << "sao=1";
+        if (x264Tab->limitRefsBox->currentIndex() > 0) x264Params << "limit-refs=" + QString::number(x264Tab->limitRefsBox->currentIndex());
+        if (x264Tab->x264LookaheadCheck->isChecked()) x264Params << "rc-lookahead=" + QString::number(x264Tab->x264LookaheadSlider->value());
+        QString aqModeStr = x264Tab->x264AQModeBox->currentText();
+        if (aqModeStr != "Automatic") {
+            int aq = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Auto-Variance") ? 2 : 3;
+            args << "-aq-mode" << QString::number(aq);
+        }
+        x264Params << "aq-strength=" + QString::number(x264Tab->x264AQStrengthSlider->value() / 10.0);
+        if (x264Tab->enablePsyRdCheck->isChecked()) x264Params << "psy-rd=1.0";
+        if (x264Tab->enableCutreeCheck->isChecked()) x264Params << "cutree=1";
+        if (!x264Params.isEmpty()) args << "-x264-params" << x264Params.join(":");
+        args << "-g" << x264Tab->x264KeyIntBox->currentText();
+        if (x264Tab->x264ThreadsBox->currentText() != "Automatic") args << "-threads" << x264Tab->x264ThreadsBox->currentText();
+        if (x264Tab->x264EnableRCModeCheck->isChecked()) {
+            QString mode = x264Tab->x264RCModeBox->currentText();
+            if (mode == "QP") args << "-qp" << QString::number(x264Tab->x264QPSlider->value());
+            else if (mode == "CRF") args << "-crf" << QString::number(x264Tab->x264CRFSlider->value());
+            else if (mode == "ABR") {
+                int br = x264Tab->x264ABRBitrateSlider->value();
+                args << "-b:v" << QString::number(br) + "k";
+                if (x264Tab->x264ABRVBVCheck->isChecked()) {
+                    args << "-maxrate" << QString::number(br) + "k";
+                    args << "-bufsize" << QString::number(2 * br) + "k";
+                }
+            } else if (mode == "CBR") {
+                int br = x264Tab->x264CBRBitrateSlider->value();
+                args << "-b:v" << QString::number(br) + "k";
+                args << "-maxrate" << QString::number(br) + "k";
+                args << "-bufsize" << QString::number(br) + "k";
+            }
+        } else {
+            args << "-crf" << "23";
+        }
+    }
 
     // Audio
-    if (!isCombine && !isTrim && currentTab <= 2) {
+    if (!isCombine && !isTrim && currentTab <= 3) {
         QCheckBox *audioCheck = nullptr;
         QComboBox *audioCodecBox = nullptr;
         QComboBox *audioSampleRateBox = nullptr;
@@ -481,7 +549,17 @@ void MainWindow::startConversion()
             audioBitrateBox = vp9Tab->vp9AudioBitrateBox;
             vbrModeBox = vp9Tab->vp9VbrModeBox;
             vorbisQualityBox = vp9Tab->vp9VorbisQualityBox;
-        }
+        } else if (currentTab == 3) {
+            audioCheck = x264Tab->x264AudioCheck;
+            audioCodecBox = x264Tab->x264AudioCodecBox;
+            audioSampleRateBox = x264Tab->x264AudioSampleRateBox;
+            audioBitrateBox = x264Tab->x264AudioBitrateBox;
+            vbrModeBox = x264Tab->x264VbrModeBox;
+            aacQualityBox = x264Tab->x264AacQualityBox;
+            mp3VbrBox = x264Tab->x264Mp3VbrBox;
+            flacCompressionBox = x264Tab->x264FlacCompressionBox;
+            vorbisQualityBox = x264Tab->x264VorbisQualityBox;
+    }
 
         if (audioCheck && audioCheck->isChecked()) {
             QString audioCodecStr = audioCodecBox->currentText();

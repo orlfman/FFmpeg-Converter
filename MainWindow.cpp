@@ -3,6 +3,7 @@
 #include "av1tab.h"
 #include "vp9tab.h"
 #include "x265tab.h"
+#include "x264tab.h"
 #include "combinetab.h"
 #include "trimtab.h"
 #include "presets.h"
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     resize(1280, 720);
 
     setupUi();
+    setAcceptDrops(true);
     wireAllSignals();
     updateRecentMenu();
     refreshOutputName();
@@ -333,6 +335,11 @@ void MainWindow::createCodecTabs()
     QScrollArea *vp9Scroll = new QScrollArea(); vp9Scroll->setWidgetResizable(true); vp9Scroll->setWidget(vp9Tab);
     codecTabs->addTab(vp9Scroll, "VP9");
 
+    // x264
+    x264Tab = new X264Tab();
+    QScrollArea *x264Scroll = new QScrollArea(); x264Scroll->setWidgetResizable(true); x264Scroll->setWidget(x264Tab);
+    codecTabs->addTab(x264Scroll, "x264");
+
     // Combine
     combineTab = new CombineTab();
     combineScroll = new QScrollArea();
@@ -524,7 +531,7 @@ void MainWindow::wireAllSignals()
         });
 
         // Presets
-        Presets::connectPresets(presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox);
+        Presets::connectPresets(presetCombo, codecTabs, av1Tab, x265Tab, x264Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox);
 
         // Force custom preset
         connect(codecTabs, &QTabWidget::currentChanged, this, [this](int) { presetCombo->setCurrentIndex(0); });
@@ -565,6 +572,7 @@ void MainWindow::wireAllSignals()
 
             for (QWidget* tab : { static_cast<QWidget*>(av1Tab),
                 static_cast<QWidget*>(x265Tab),
+                 static_cast<QWidget*>(x264Tab),
                  static_cast<QWidget*>(vp9Tab) }) {
                 for (QPushButton* btn : tab->findChildren<QPushButton*>()) {
                     if (btn && btn->text() == "Reset to Defaults") {
@@ -980,4 +988,30 @@ void MainWindow::showConversionNotification(const QString &outputFile)
     if (notifyProcess.exitCode() != 0) {
         QMessageBox::information(this, title, message);
     }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls()) {
+        event->acceptProposedAction();
+    } else {
+        event->ignore();
+    }
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    const QMimeData *mimeData = event->mimeData();
+    if (mimeData->hasUrls()) {
+        QList<QUrl> urlList = mimeData->urls();
+        if (!urlList.isEmpty()) {
+            QString filePath = urlList.first().toLocalFile();
+            if (!filePath.isEmpty() && QFile::exists(filePath)) {
+                selectedFilesBox->setText(filePath);
+                onFileSelected(filePath);
+                logBox->append("📥 File dropped: " + QFileInfo(filePath).fileName());
+            }
+        }
+    }
+    event->acceptProposedAction();
 }

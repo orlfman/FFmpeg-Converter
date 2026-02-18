@@ -32,6 +32,10 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QScrollArea>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include <QUrl>
 #include <QList>
 #include <QMap>
 #include <QPointer>
@@ -39,6 +43,7 @@
 #include <functional>
 #include "av1tab.h"
 #include "x265tab.h"
+#include "x264tab.h"
 #include "vp9tab.h"
 #include "combinetab.h"
 #include "trimtab.h"
@@ -67,6 +72,10 @@ private slots:
     void onConversionFinished();
     void showConversionNotification(const QString &outputFile);
     void forceCustomPreset();
+
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 
 private:
     void setupUi();
@@ -128,6 +137,7 @@ private:
     QTabWidget *codecTabs = nullptr;
     Av1Tab *av1Tab = nullptr;
     X265Tab *x265Tab = nullptr;
+    X264Tab *x264Tab = nullptr;
     Vp9Tab *vp9Tab = nullptr;
     CombineTab *combineTab = nullptr;
     TrimTab *trimTab = nullptr;

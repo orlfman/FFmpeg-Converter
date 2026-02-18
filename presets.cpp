@@ -5,6 +5,7 @@ void Presets::connectPresets(
     QTabWidget* codecTabs,
     Av1Tab* av1Tab,
     X265Tab* x265Tab,
+    X264Tab* x264Tab,
     Vp9Tab* vp9Tab,
     QCheckBox* eightBitCheck,
     QComboBox* eightBitColorFormatBox,
@@ -13,7 +14,7 @@ void Presets::connectPresets(
 {
     QList<QWidget*> av1Widgets = {
         av1Tab->av1ContainerBox,
-        // av1Tab->av1AudioCheck,  // Removed: Allow toggling audio in presets
+        av1Tab->av1AudioCheck,
         av1Tab->av1AudioCodecBox,
         av1Tab->av1AudioSampleRateBox,
         av1Tab->av1AudioBitrateBox,
@@ -94,9 +95,21 @@ void Presets::connectPresets(
         x265Tab->x265NoiseReductionSlider,
         x265Tab->x265GrainSynthCheck,
         x265Tab->x265GrainSynthLevel
-        // Note: x265AudioCheck removed here too (it's set below in the lists but commented for clarity)
     };
-    x265Widgets.removeOne(x265Tab->x265AudioCheck);  // Explicitly remove if it sneaks in
+    QList<QWidget*> x264Widgets = {
+        x264Tab->x264ContainerBox, x264Tab->x264PresetBox, x264Tab->x264TuneBox,
+        x264Tab->x264CRFSlider, x264Tab->x264QPSlider, x264Tab->x264ABRBitrateSlider,
+        x264Tab->x264CBRBitrateSlider, x264Tab->x264ABRVBVCheck, x264Tab->x264EnableRCModeCheck,
+        x264Tab->x264RCModeBox, x264Tab->x264KeyIntBox, x264Tab->x264ThreadsBox,
+        x264Tab->x264FrameThreadsBox, x264Tab->x264TwoPassCheck, x264Tab->strongIntraCheck,
+        x264Tab->saoCheck, x264Tab->limitRefsBox, x264Tab->rdoqLevelBox,
+        x264Tab->x264LookaheadCheck, x264Tab->x264LookaheadSlider, x264Tab->x264AQModeBox,
+        x264Tab->x264AQStrengthSlider, x264Tab->enablePsyRdCheck, x264Tab->enableCutreeCheck,
+        x264Tab->x264LevelBox, x264Tab->x264ProfileBox, x264Tab->x264UnsharpenCheck, x264Tab->x264UnsharpenStrengthSlider,
+        x264Tab->x264SharpenCheck, x264Tab->x264SharpenStrengthSlider, x264Tab->x264BlurCheck,
+        x264Tab->x264BlurStrengthSlider, x264Tab->x264NoiseReductionCheck, x264Tab->x264NoiseReductionSlider,
+        x264Tab->x264GrainSynthCheck, x264Tab->x264GrainSynthLevel
+    };
     QList<QWidget*> vp9Widgets = {
         vp9Tab->vp9ContainerBox,
         vp9Tab->vp9CpuUsedBox,
@@ -126,20 +139,23 @@ void Presets::connectPresets(
         vp9Tab->vp9NoiseReductionSlider,
         vp9Tab->vp9GrainSynthCheck,
         vp9Tab->vp9GrainSynthLevel
-        // Note: vp9AudioCheck removed here too
     };
-    vp9Widgets.removeOne(vp9Tab->vp9AudioCheck);  // Explicitly remove if it sneaks in
+    x265Widgets.removeOne(x265Tab->x265AudioCheck);
+    vp9Widgets.removeOne(vp9Tab->vp9AudioCheck);
+    x264Widgets.removeOne(x264Tab->x264AudioCheck);
+    av1Widgets.removeOne(av1Tab->av1AudioCheck);
     QList<QWidget*> globalWidgets = { eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox };
-    auto updateLockState = [presetCombo, codecTabs, av1Widgets, x265Widgets, vp9Widgets, globalWidgets]() {
+    auto updateLockState = [presetCombo, codecTabs, av1Widgets, x265Widgets, x264Widgets, vp9Widgets, globalWidgets]() {
         bool isPresetActive = (presetCombo->currentIndex() != 0);
         for (QWidget* w : globalWidgets) w->setEnabled(true);
         int tab = codecTabs->currentIndex();
         for (QWidget* w : av1Widgets) w->setEnabled(!isPresetActive || tab != 0);
         for (QWidget* w : x265Widgets) w->setEnabled(!isPresetActive || tab != 1);
+        for (QWidget* w : x264Widgets) w->setEnabled(!isPresetActive || tab != 3);
         for (QWidget* w : vp9Widgets) w->setEnabled(!isPresetActive || tab != 2);
     };
         updateLockState();
-        auto applyPreset = [presetCombo, codecTabs, av1Tab, x265Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, updateLockState]() {
+        auto applyPreset = [presetCombo, codecTabs, av1Tab, x265Tab, x264Tab, vp9Tab, eightBitCheck, eightBitColorFormatBox, tenBitCheck, colorFormatBox, updateLockState]() {
             int p = presetCombo->currentIndex();
             if (p == 0) {
                 updateLockState();
@@ -461,6 +477,150 @@ void Presets::connectPresets(
                 x265Tab->x265LevelBox->setCurrentText("auto");
                 x265Tab->x265ThreadsBox->setCurrentText("Automatic");
                 x265Tab->x265FrameThreadsBox->setCurrentText("Automatic");
+            }
+            else if (currentTab == 3) { // x264
+                x264Tab->x264ContainerBox->setCurrentText("mp4");
+                x264Tab->x264AudioCheck->setChecked(true);
+                x264Tab->x264AudioCodecBox->setCurrentText("opus");
+                x264Tab->x264AudioSampleRateBox->setCurrentText("48 kHz");
+                x264Tab->x264EnableRCModeCheck->setChecked(true);
+                x264Tab->x264RCModeBox->setCurrentText("CRF");
+                x264Tab->x264TuneBox->setCurrentText("film");
+                x264Tab->x264KeyIntBox->setCurrentText("240");
+                x264Tab->saoCheck->setChecked(true);
+                x264Tab->deblockAlphaSlider->setValue(-2);
+                x264Tab->deblockBetaSlider->setValue(-2);
+                x264Tab->pmodeCheck->setChecked(false);
+                x264Tab->refFramesBox->setCurrentIndex(3);
+                x264Tab->weightpCheck->setChecked(true);
+                x264Tab->x264AQModeBox->setCurrentText("Variance");
+                x264Tab->x264VbrModeBox->setCurrentText("Default");
+
+                switch (p) {
+                    case 1: // Streaming
+                        x264Tab->x264PresetBox->setCurrentText("veryfast");
+                        x264Tab->x264CRFSlider->setValue(30);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("128 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("main");
+                        eightBitCheck->setChecked(true);
+                        tenBitCheck->setChecked(false);           // ← added
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(10);
+                        x264Tab->x264AQStrengthSlider->setValue(0.6);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(0);
+                        x264Tab->limitRefsBox->setCurrentIndex(0);
+                        x264Tab->enablePsyRdCheck->setChecked(false);
+                        x264Tab->enableCutreeCheck->setChecked(false);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(false);
+                        x264Tab->x264KeyIntBox->setCurrentText("120");
+                        break;
+
+                    case 2: // Medium
+                        x264Tab->x264PresetBox->setCurrentText("fast");
+                        x264Tab->x264CRFSlider->setValue(25);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("192 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("main");
+                        eightBitCheck->setChecked(true);
+                        tenBitCheck->setChecked(false);           // ← added
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(20);
+                        x264Tab->x264AQStrengthSlider->setValue(0.8);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(0);
+                        x264Tab->limitRefsBox->setCurrentIndex(1);
+                        x264Tab->enablePsyRdCheck->setChecked(false);
+                        x264Tab->enableCutreeCheck->setChecked(false);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(false);
+                        break;
+
+                    case 3: // High
+                        x264Tab->x264PresetBox->setCurrentText("medium");
+                        x264Tab->x264CRFSlider->setValue(22);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("256 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("high10");
+                        eightBitCheck->setChecked(false);         // ← added
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(40);
+                        x264Tab->x264AQStrengthSlider->setValue(1.0);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(1);
+                        x264Tab->limitRefsBox->setCurrentIndex(2);
+                        x264Tab->enablePsyRdCheck->setChecked(true);
+                        x264Tab->enableCutreeCheck->setChecked(false);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(false);
+                        x264Tab->strongIntraCheck->setChecked(false);
+                        break;
+
+                    case 4: // Quality
+                        x264Tab->x264PresetBox->setCurrentText("slow");
+                        x264Tab->x264CRFSlider->setValue(19);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("320 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("high10");
+                        eightBitCheck->setChecked(false);         // ← added
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(60);
+                        x264Tab->x264AQStrengthSlider->setValue(1.0);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(1);
+                        x264Tab->limitRefsBox->setCurrentIndex(3);
+                        x264Tab->enablePsyRdCheck->setChecked(true);
+                        x264Tab->enableCutreeCheck->setChecked(true);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(false);
+                        x264Tab->strongIntraCheck->setChecked(true);
+                        break;
+
+                    case 5: // High Quality
+                        x264Tab->x264PresetBox->setCurrentText("slower");
+                        x264Tab->x264CRFSlider->setValue(16);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("384 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("high10");
+                        eightBitCheck->setChecked(false);         // ← added
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(80);
+                        x264Tab->x264AQStrengthSlider->setValue(1.2);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x264Tab->limitRefsBox->setCurrentIndex(3);
+                        x264Tab->enablePsyRdCheck->setChecked(true);
+                        x264Tab->enableCutreeCheck->setChecked(true);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(true);
+                        x264Tab->x264SharpenStrengthSlider->setValue(5);
+                        x264Tab->strongIntraCheck->setChecked(true);
+                        break;
+
+                    case 6: // Ultra
+                        x264Tab->x264PresetBox->setCurrentText("veryslow");
+                        x264Tab->x264CRFSlider->setValue(14);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("512 kbps");
+                        x264Tab->x264ProfileBox->setCurrentText("high10");
+                        eightBitCheck->setChecked(false);         // ← added
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(120);
+                        x264Tab->x264AQStrengthSlider->setValue(1.4);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x264Tab->limitRefsBox->setCurrentIndex(3);
+                        x264Tab->enablePsyRdCheck->setChecked(true);
+                        x264Tab->enableCutreeCheck->setChecked(true);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(true);
+                        x264Tab->x264SharpenStrengthSlider->setValue(8);
+                        x264Tab->strongIntraCheck->setChecked(true);
+                        break;
+                }
+                x264Tab->x264LevelBox->setCurrentText("auto");
+                x264Tab->x264ThreadsBox->setCurrentText("Automatic");
+                x264Tab->x264FrameThreadsBox->setCurrentText("Automatic");
             }
             else if (currentTab == 2) { // VP9
                 vp9Tab->vp9ContainerBox->setCurrentText("webm");
