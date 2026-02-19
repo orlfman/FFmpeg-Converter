@@ -121,7 +121,18 @@ void MainWindow::startConversion()
     if (denoiseCheck->isChecked()) videoFilters << "hqdn3d=4:3:6:4.5";
     if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
     if (toneMapCheck->isChecked()) {
-        videoFilters << "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv";
+        QString desatValue;
+
+        if (toneMapModeBox->currentText() == "Custom") {
+            desatValue = toneMapDesatBox->currentText();
+        } else if (toneMapModeBox->currentText() == "Anime Optimized") {
+            desatValue = "0.35";
+        } else {
+            desatValue = "0.00";
+        }
+
+        videoFilters << QString("zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=%1,zscale=t=bt709:m=bt709:r=tv")
+        .arg(desatValue);
     }
 
     // Tab-specific filters

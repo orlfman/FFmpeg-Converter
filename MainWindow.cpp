@@ -253,8 +253,24 @@ void MainWindow::createOptionsSection()
     optionsLayout->addWidget(denoiseCheck);
 
     toneMapCheck = new QCheckBox("HDR to SDR");
-    toneMapCheck->setToolTip("Fixes washed out look on HDR videos when playing in SDR mode");
+    toneMapCheck->setToolTip("Convert HDR video to SDR for normal displays");
     optionsLayout->addWidget(toneMapCheck);
+
+    toneMapModeBox = new QComboBox();
+    toneMapModeBox->addItems({"Standard", "Less Saturation", "Custom"});
+    toneMapModeBox->setCurrentIndex(0);
+    toneMapModeBox->setEnabled(false);
+    toneMapModeBox->setToolTip("Standard = balanced\nLess Saturation = more washed out\nCustom = manual desat control");
+    optionsLayout->addWidget(toneMapModeBox);
+
+    toneMapDesatBox = new QComboBox();
+    for (double d = 1.00; d >= 0.00; d -= 0.05) {
+        toneMapDesatBox->addItem(QString::number(d, 'f', 2));
+    }
+    toneMapDesatBox->setCurrentText("0.35");
+    toneMapDesatBox->setEnabled(false);
+    toneMapDesatBox->setToolTip("Higher = less saturation in bright areas");
+    optionsLayout->addWidget(toneMapDesatBox);
 
     superSharpCheck = new QCheckBox("Super Sharp");
     superSharpCheck->setToolTip("Light sharpen plus detail pop, quick sharp preset");
@@ -511,6 +527,15 @@ void MainWindow::wireAllSignals()
                 eightBitCheck->setChecked(false);
                 eightBitColorFormatBox->setEnabled(false);
             }
+        });
+
+        connect(toneMapCheck, &QCheckBox::toggled, this, [this](bool checked) {
+            toneMapModeBox->setEnabled(checked);
+            toneMapDesatBox->setEnabled(checked && toneMapModeBox->currentText() == "Custom");
+        });
+
+        connect(toneMapModeBox, &QComboBox::currentTextChanged, this, [this](const QString &text) {
+            toneMapDesatBox->setEnabled(text == "Custom");
         });
 
         // Output name

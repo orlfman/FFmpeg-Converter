@@ -127,6 +127,8 @@ private:
     QCheckBox *normalizeAudioCheck = nullptr;
     QCheckBox *denoiseCheck = nullptr;
     QCheckBox *toneMapCheck = nullptr;
+    QComboBox *toneMapModeBox = nullptr;
+    QComboBox *toneMapDesatBox = nullptr;
     QCheckBox *superSharpCheck = nullptr;
     QComboBox *presetCombo = nullptr;
     QCheckBox *videoSpeedCheck = nullptr;
