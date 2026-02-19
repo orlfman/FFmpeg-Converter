@@ -464,10 +464,12 @@ X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
         QLabel *lbl = new QLabel("Custom Keyframe Mode:");
         x264CustomKeyframeModeBox = new QComboBox();
         x264CustomKeyframeModeBox->addItems({
-            "Every 5 seconds (fixed time)",
-                                            "Every 5 seconds × framerate (recommended)"
+            "Every 2 seconds - fixed time",
+            "Every 2 seconds * framerate",
+            "Every 5 seconds - fixed time",
+            "Every 5 seconds * framerate"
         });
-        x264CustomKeyframeModeBox->setCurrentIndex(1);
+        x264CustomKeyframeModeBox->setCurrentIndex(3);
         l->addWidget(lbl);
         l->addWidget(x264CustomKeyframeModeBox);
         l->addStretch();
@@ -688,6 +690,7 @@ void X264Tab::resetDefaults() {
     x264AQStrengthSlider->setValue(10);
     x264KeyIntBox->setCurrentIndex(0);
     x264KeyIntBox->setCurrentText("Custom");
+    x264CustomKeyframeModeBox->setCurrentIndex(3);
     x264ThreadsBox->setCurrentIndex(0);
     x264FrameThreadsBox->setCurrentIndex(0);
     x264AudioCheck->setChecked(true);

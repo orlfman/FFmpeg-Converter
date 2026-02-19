@@ -404,10 +404,12 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
         QLabel *lbl = new QLabel("Custom Keyframe Mode:");
         vp9CustomKeyframeModeBox = new QComboBox();
         vp9CustomKeyframeModeBox->addItems({
-            "Every 5 seconds (fixed time)",
-                                           "Every 5 seconds × framerate (recommended)"
+            "Every 2 seconds - fixed time",
+            "Every 2 seconds * framerate",
+            "Every 5 seconds - fixed time",
+            "Every 5 seconds * framerate"
         });
-        vp9CustomKeyframeModeBox->setCurrentIndex(1);
+        vp9CustomKeyframeModeBox->setCurrentIndex(3);
         l->addWidget(lbl);
         l->addWidget(vp9CustomKeyframeModeBox);
         l->addStretch();
@@ -674,6 +676,7 @@ void Vp9Tab::resetDefaults() {
     vp9TplCheck->setChecked(false);
     vp9KeyIntBox->setCurrentIndex(0);
     vp9KeyIntBox->setCurrentText("Custom");
+    vp9CustomKeyframeModeBox->setCurrentIndex(3);
     vp9CpuUsedBox->setCurrentIndex(4);
     vp9ThreadsBox->setCurrentIndex(0);
     vp9TileColumnsBox->setCurrentIndex(0);

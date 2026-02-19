@@ -165,6 +165,7 @@ void Presets::connectPresets(
             };
             if (currentTab == 0) { // AV1
                 setCustomRecommended(av1Tab->av1KeyIntBox, av1Tab->av1CustomKeyframeModeBox);
+
                 av1Tab->av1NlmeansCheck->setChecked(false);
                 av1Tab->av1NlmeansSigmaSSlider->setValue(20);
                 av1Tab->av1NlmeansSigmaPSlider->setValue(10);
@@ -175,13 +176,12 @@ void Presets::connectPresets(
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(30);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -207,19 +207,20 @@ void Presets::connectPresets(
                         av1Tab->av1NoiseReductionCheck->setChecked(false);
                         av1Tab->av1GrainSynthCheck->setChecked(false);
                         av1Tab->av1AQModeBox->setCurrentText("Automatic");
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
 
                     case 2: // Streaming
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(30);
                         av1Tab->av1TuneBox->setCurrentText("PSNR");
-                        //av1Tab->av1KeyIntBox->setCurrentText("120");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         eightBitCheck->setChecked(true);
@@ -231,19 +232,20 @@ void Presets::connectPresets(
                         av1Tab->av1LookaheadSlider->setValue(60);
                         av1Tab->fastDecodeBox->setCurrentIndex(2);
                         av1Tab->av1SharpenCheck->setChecked(false);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
 
                     case 3: // Medium
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("10");
                         av1Tab->av1CRFSlider->setValue(37);
                         av1Tab->av1TuneBox->setCurrentText("PSNR");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("128 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -254,19 +256,20 @@ void Presets::connectPresets(
                         av1Tab->av1LookaheadCheck->setChecked(false);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
 
                     case 4: // High
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(31);
                         av1Tab->av1TuneBox->setCurrentText("SSIM");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -277,19 +280,20 @@ void Presets::connectPresets(
                         av1Tab->av1LookaheadCheck->setChecked(false);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
 
                     case 5: // Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(27);
                         av1Tab->av1TuneBox->setCurrentText("SSIM");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -301,19 +305,20 @@ void Presets::connectPresets(
                         av1Tab->av1LookaheadSlider->setValue(40);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
 
                     case 6: // High Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(21);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         tenBitCheck->setChecked(true);
@@ -326,19 +331,20 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(true);
                         av1Tab->av1SharpenStrengthSlider->setValue(5);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
 
                     case 7: // Ultra
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("6");
                         av1Tab->av1CRFSlider->setValue(18);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("512 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Off");
                         tenBitCheck->setChecked(true);
@@ -351,18 +357,20 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(true);
                         av1Tab->av1SharpenStrengthSlider->setValue(10);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
+
                     case 8: // Anime - Best possible quality for anime
                         av1Tab->av1ContainerBox->setCurrentText("mkv");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
-                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 kHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("5");
                         av1Tab->av1CRFSlider->setValue(16);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         tenBitCheck->setChecked(true);
@@ -391,6 +399,8 @@ void Presets::connectPresets(
                         av1Tab->av1NoiseReductionCheck->setChecked(false);
                         av1Tab->av1AQModeBox->setCurrentText("Variance");
                         av1Tab->av1AQStrengthSlider->setValue(8);
+                        av1Tab->av1KeyIntBox->setCurrentText("Custom");
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                 }
             }
@@ -402,7 +412,6 @@ void Presets::connectPresets(
                 x265Tab->x265AudioSampleRateBox->setCurrentText("48 kHz");
                 x265Tab->x265EnableRCModeCheck->setChecked(true);
                 x265Tab->x265RCModeBox->setCurrentText("CRF");
-                //x265Tab->x265KeyIntBox->setCurrentText("240");
                 x265Tab->saoCheck->setChecked(true);
                 x265Tab->deblockAlphaSlider->setValue(-2);
                 x265Tab->deblockBetaSlider->setValue(-2);
@@ -411,7 +420,6 @@ void Presets::connectPresets(
                 x265Tab->weightpCheck->setChecked(true);
                 x265Tab->x265AQModeBox->setCurrentText("Variance");
                 x265Tab->x265VbrModeBox->setCurrentText("Default");
-
                 switch (p) {
                     case 1: // DVD
                         x265Tab->x265PresetBox->setCurrentText("veryfast");
@@ -429,9 +437,9 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(3);
-                        //x265Tab->x265KeyIntBox->setCurrentText("120");
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 2: // Streaming
                         x265Tab->x265PresetBox->setCurrentText("veryfast");
                         x265Tab->x265CRFSlider->setValue(30);
@@ -448,9 +456,9 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(2);
-                        //x265Tab->x265KeyIntBox->setCurrentText("120");
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 3: // Medium
                         x265Tab->x265PresetBox->setCurrentText("fast");
                         x265Tab->x265CRFSlider->setValue(25);
@@ -467,8 +475,9 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(2);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 4: // High
                         x265Tab->x265PresetBox->setCurrentText("medium");
                         x265Tab->x265CRFSlider->setValue(22);
@@ -485,8 +494,9 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(3);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 5: // Quality
                         x265Tab->x265PresetBox->setCurrentText("slow");
                         x265Tab->x265CRFSlider->setValue(19);
@@ -503,8 +513,9 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(3);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 6: // High Quality
                         x265Tab->x265PresetBox->setCurrentText("slower");
                         x265Tab->x265CRFSlider->setValue(16);
@@ -522,8 +533,9 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(5);
                         x265Tab->refFramesBox->setCurrentIndex(4);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 7: // Ultra
                         x265Tab->x265PresetBox->setCurrentText("veryslow");
                         x265Tab->x265CRFSlider->setValue(14);
@@ -541,6 +553,8 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
                         x265Tab->refFramesBox->setCurrentIndex(4);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                     case 8: // Anime
                         x265Tab->x265PresetBox->setCurrentText("veryslow");
@@ -559,9 +573,10 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
                         x265Tab->refFramesBox->setCurrentIndex(4);
+                        x265Tab->x265KeyIntBox->setCurrentText("Custom");
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                 }
-
                 x265Tab->x265LevelBox->setCurrentText("auto");
                 x265Tab->x265ThreadsBox->setCurrentText("Automatic");
                 x265Tab->x265FrameThreadsBox->setCurrentText("Automatic");
@@ -574,15 +589,13 @@ void Presets::connectPresets(
                 x264Tab->x264AudioSampleRateBox->setCurrentText("48 kHz");
                 x264Tab->x264EnableRCModeCheck->setChecked(true);
                 x264Tab->x264RCModeBox->setCurrentText("CRF");
-                //x264Tab->x264KeyIntBox->setCurrentText("240");
                 x264Tab->deblockAlphaSlider->setValue(-2);
                 x264Tab->deblockBetaSlider->setValue(-2);
                 x264Tab->weightpCheck->setChecked(true);
                 x264Tab->x264AQModeBox->setCurrentText("Variance");
                 x264Tab->x264VbrModeBox->setCurrentText("Default");
-
                 switch (p) {
-                    case 1: // DVD - dedicated DVD quality settings
+                    case 1: // DVD
                         x264Tab->x264PresetBox->setCurrentText("medium");
                         x264Tab->x264TuneBox->setCurrentText("film");
                         x264Tab->x264CRFSlider->setValue(23);
@@ -602,9 +615,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(true);
-                        //x264Tab->x264KeyIntBox->setCurrentText("15");
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 2: // Streaming
                         x264Tab->x264PresetBox->setCurrentText("veryfast");
                         x264Tab->x264TuneBox->setCurrentText("psnr");
@@ -625,8 +638,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(2);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 3: // Medium
                         x264Tab->x264PresetBox->setCurrentText("fast");
                         x264Tab->x264TuneBox->setCurrentText("ssim");
@@ -647,8 +661,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(2);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
                     case 4: // High
                         x264Tab->x264PresetBox->setCurrentText("medium");
                         x264Tab->x264TuneBox->setCurrentText("ssim");
@@ -669,8 +684,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(false);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 5: // Quality
                         x264Tab->x264PresetBox->setCurrentText("slow");
                         x264Tab->x264TuneBox->setCurrentText("ssim");
@@ -691,8 +707,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 6: // High Quality
                         x264Tab->x264PresetBox->setCurrentText("slower");
                         x264Tab->x264TuneBox->setCurrentText("film");
@@ -714,8 +731,9 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenStrengthSlider->setValue(5);
                         x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 7: // Ultra
                         x264Tab->x264PresetBox->setCurrentText("veryslow");
                         x264Tab->x264TuneBox->setCurrentText("film");
@@ -737,6 +755,8 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenStrengthSlider->setValue(8);
                         x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                     case 8: // Anime
                         x264Tab->x264PresetBox->setCurrentText("veryslow");
@@ -759,22 +779,19 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenStrengthSlider->setValue(8);
                         x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
+                        x264Tab->x264KeyIntBox->setCurrentText("Custom");
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                 }
-
-                // Final common cleanup
                 x264Tab->x264LevelBox->setCurrentText("auto");
                 x264Tab->x264ThreadsBox->setCurrentText("Automatic");
                 x264Tab->x264FrameThreadsBox->setCurrentText("Automatic");
-
-                // Refresh RC visibility
                 QString rcMode = x264Tab->x264RCModeBox->currentText();
                 x264Tab->x264QPConfigWidget->setVisible(rcMode == "QP");
                 x264Tab->x264CRFConfigWidget->setVisible(rcMode == "CRF");
                 x264Tab->x264ABRConfigWidget->setVisible(rcMode == "ABR");
                 x264Tab->x264CBRConfigWidget->setVisible(rcMode == "CBR");
                 x264Tab->x264TwoPassCheck->setEnabled(rcMode == "ABR" || rcMode == "CBR");
-
                 if (tenBitCheck->isChecked()) {
                     x264Tab->x264ProfileBox->setCurrentText("high10");
                 }
@@ -792,7 +809,6 @@ void Presets::connectPresets(
                 vp9Tab->enableRowMtCheck->setChecked(true);
                 vp9Tab->vp9TileColumnsBox->setCurrentText("4");
                 vp9Tab->vp9TileRowsBox->setCurrentText("Automatic");
-                //vp9Tab->vp9KeyIntBox->setCurrentText("240");
                 vp9Tab->vp9ThreadsBox->setCurrentText("Automatic");
                 vp9Tab->screenContentCheck->setChecked(false);
                 vp9Tab->vp9LookaheadCheck->setChecked(true);
@@ -801,7 +817,6 @@ void Presets::connectPresets(
                 vp9Tab->vp9NlmeansSigmaSSlider->setValue(20);
                 vp9Tab->vp9NlmeansSigmaPSlider->setValue(10);
                 vp9Tab->vp9NlmeansPatchSlider->setValue(7);
-
                 switch (p) {
                     case 1: // DVD
                         vp9Tab->vp9CpuUsedBox->setCurrentText("5");
@@ -817,9 +832,10 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrStrengthSlider->setValue(4);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(9);
                         vp9Tab->vp9TplCheck->setChecked(true);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
-                    case 2: // Streaming - optimize for 4chan
+                    case 2: // Streaming
                         vp9Tab->vp9CpuUsedBox->setCurrentText("6");
                         vp9Tab->vp9CRFSlider->setValue(52);
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("96 kbps");
@@ -833,9 +849,10 @@ void Presets::connectPresets(
                         vp9Tab->vp9QMaxSlider->setValue(63);
                         vp9Tab->vp9ArnrCheck->setChecked(false);
                         vp9Tab->vp9TplCheck->setChecked(false);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
-                    case 3: // Medium - Balanced everyday web quality
+                    case 3: // Medium
                         vp9Tab->vp9CpuUsedBox->setCurrentText("4");
                         vp9Tab->vp9CRFSlider->setValue(40);
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("160 kbps");
@@ -848,9 +865,10 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrCheck->setChecked(true);
                         vp9Tab->vp9ArnrStrengthSlider->setValue(4);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(9);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(1);
                         break;
-
-                    case 4: // High - Better quality for web
+                    case 4: // High
                         vp9Tab->vp9CpuUsedBox->setCurrentText("3");
                         vp9Tab->vp9CRFSlider->setValue(34);
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("192 kbps");
@@ -863,8 +881,9 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrCheck->setChecked(true);
                         vp9Tab->vp9ArnrStrengthSlider->setValue(5);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(12);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 5: // Quality
                         vp9Tab->vp9CpuUsedBox->setCurrentText("2");
                         vp9Tab->vp9CRFSlider->setValue(28);
@@ -879,8 +898,9 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrStrengthSlider->setValue(6);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
                         vp9Tab->vp9TplCheck->setChecked(true);
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 6: // High Quality
                         vp9Tab->vp9CpuUsedBox->setCurrentText("1");
                         vp9Tab->vp9CRFSlider->setValue(22);
@@ -898,8 +918,9 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
                         vp9Tab->vp9TplCheck->setChecked(true);
                         vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
-
                     case 7: // Ultra
                         vp9Tab->vp9CpuUsedBox->setCurrentText("0");
                         vp9Tab->vp9CRFSlider->setValue(18);
@@ -918,6 +939,8 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
                         vp9Tab->vp9TplCheck->setChecked(true);
                         vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                     case 8: // Anime
                         vp9Tab->vp9CpuUsedBox->setCurrentText("0");
@@ -937,6 +960,8 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
                         vp9Tab->vp9TplCheck->setChecked(true);
                         vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(3);
                         break;
                 }
             }

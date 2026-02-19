@@ -557,10 +557,12 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QLabel *lbl = new QLabel("Custom Mode:");
         av1CustomKeyframeModeBox = new QComboBox();
         av1CustomKeyframeModeBox->addItems({
-            "Every 5 seconds (fixed time)",
-            "Every 5 seconds × framerate (best)"
+            "Every 2 seconds - fixed time",
+            "Every 2 seconds * framerate",
+            "Every 5 seconds - fixed time",
+            "Every 5 seconds * framerate"
         });
-        av1CustomKeyframeModeBox->setCurrentIndex(1);
+        av1CustomKeyframeModeBox->setCurrentIndex(3);
         l->addWidget(lbl);
         l->addWidget(av1CustomKeyframeModeBox);
         l->addStretch();
@@ -840,6 +842,7 @@ void Av1Tab::resetDefaults() {
     av1TwoPassCheck->setChecked(false);
     av1KeyIntBox->setCurrentIndex(0);
     av1KeyIntBox->setCurrentText("Custom");
+    av1CustomKeyframeModeBox->setCurrentIndex(3);
     av1ThreadsBox->setCurrentIndex(0);
     av1TileRowsBox->setCurrentIndex(0);
     av1TileColumnsBox->setCurrentIndex(0);

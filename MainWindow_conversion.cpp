@@ -354,9 +354,12 @@ void MainWindow::startConversion()
         QString keyText = av1Tab->av1KeyIntBox->currentText();
         if (keyText == "Custom") {
             int mode = av1Tab->av1CustomKeyframeModeBox->currentIndex();
-            if (mode == 0) {
-                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
-                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            int seconds = (mode == 0 || mode == 1) ? 2 : 5;
+            bool useFixedTime = (mode == 0 || mode == 2);
+
+            if (useFixedTime) {
+                args << "-force_key_frames" << QString("expr:gte(t,n_forced*%1)").arg(seconds);
+                logBox->append(QString("🔑 Keyframes: Every %1 seconds (fixed time)").arg(seconds));
             } else {
                 double fps = 0.0;
                 QString fpsSetting = frameRateBox->currentText();
@@ -394,11 +397,11 @@ void MainWindow::startConversion()
                     logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
                     args << "-g" << "240";
                 } else {
-                    int gop = qRound(5.0 * fps);
+                    int gop = qRound(seconds * fps);
                     if (gop < 10) gop = 240;
                     args << "-g" << QString::number(gop);
-                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
-                    .arg(fps, 0, 'f', 3).arg(gop));
+                    logBox->append(QString("🔑 Keyframes: Every %1 seconds × framerate (%2 fps → -g %3)")
+                    .arg(seconds).arg(fps, 0, 'f', 3).arg(gop));
                 }
             }
         } else {
@@ -437,9 +440,12 @@ void MainWindow::startConversion()
         QString keyText = x265Tab->x265KeyIntBox->currentText();
         if (keyText == "Custom") {
             int mode = x265Tab->x265CustomKeyframeModeBox->currentIndex();
-            if (mode == 0) {
-                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
-                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            int seconds = (mode == 0 || mode == 1) ? 2 : 5;
+            bool useFixedTime = (mode == 0 || mode == 2);
+
+            if (useFixedTime) {
+                args << "-force_key_frames" << QString("expr:gte(t,n_forced*%1)").arg(seconds);
+                logBox->append(QString("🔑 Keyframes: Every %1 seconds (fixed time)").arg(seconds));
             } else {
                 double fps = 0.0;
                 QString fpsSetting = frameRateBox->currentText();
@@ -477,11 +483,11 @@ void MainWindow::startConversion()
                     logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
                     args << "-g" << "240";
                 } else {
-                    int gop = qRound(5.0 * fps);
+                    int gop = qRound(seconds * fps);
                     if (gop < 10) gop = 240;
                     args << "-g" << QString::number(gop);
-                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
-                    .arg(fps, 0, 'f', 3).arg(gop));
+                    logBox->append(QString("🔑 Keyframes: Every %1 seconds × framerate (%2 fps → -g %3)")
+                    .arg(seconds).arg(fps, 0, 'f', 3).arg(gop));
                 }
             }
         } else {
@@ -535,9 +541,12 @@ void MainWindow::startConversion()
         QString keyText = vp9Tab->vp9KeyIntBox->currentText();
         if (keyText == "Custom") {
             int mode = vp9Tab->vp9CustomKeyframeModeBox->currentIndex();
-            if (mode == 0) {
-                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
-                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            int seconds = (mode == 0 || mode == 1) ? 2 : 5;
+            bool useFixedTime = (mode == 0 || mode == 2);
+
+            if (useFixedTime) {
+                args << "-force_key_frames" << QString("expr:gte(t,n_forced*%1)").arg(seconds);
+                logBox->append(QString("🔑 Keyframes: Every %1 seconds (fixed time)").arg(seconds));
             } else {
                 double fps = 0.0;
                 QString fpsSetting = frameRateBox->currentText();
@@ -575,11 +584,11 @@ void MainWindow::startConversion()
                     logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
                     args << "-g" << "240";
                 } else {
-                    int gop = qRound(5.0 * fps);
+                    int gop = qRound(seconds * fps);
                     if (gop < 10) gop = 240;
                     args << "-g" << QString::number(gop);
-                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
-                    .arg(fps, 0, 'f', 3).arg(gop));
+                    logBox->append(QString("🔑 Keyframes: Every %1 seconds × framerate (%2 fps → -g %3)")
+                    .arg(seconds).arg(fps, 0, 'f', 3).arg(gop));
                 }
             }
         } else {
@@ -664,9 +673,12 @@ void MainWindow::startConversion()
         QString keyText = x264Tab->x264KeyIntBox->currentText();
         if (keyText == "Custom") {
             int mode = x264Tab->x264CustomKeyframeModeBox->currentIndex();
-            if (mode == 0) {
-                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
-                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            int seconds = (mode == 0 || mode == 1) ? 2 : 5;
+            bool useFixedTime = (mode == 0 || mode == 2);
+
+            if (useFixedTime) {
+                args << "-force_key_frames" << QString("expr:gte(t,n_forced*%1)").arg(seconds);
+                logBox->append(QString("🔑 Keyframes: Every %1 seconds (fixed time)").arg(seconds));
             } else {
                 double fps = 0.0;
                 QString fpsSetting = frameRateBox->currentText();
@@ -704,11 +716,11 @@ void MainWindow::startConversion()
                     logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
                     args << "-g" << "240";
                 } else {
-                    int gop = qRound(5.0 * fps);
+                    int gop = qRound(seconds * fps);
                     if (gop < 10) gop = 240;
                     args << "-g" << QString::number(gop);
-                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
-                    .arg(fps, 0, 'f', 3).arg(gop));
+                    logBox->append(QString("🔑 Keyframes: Every %1 seconds × framerate (%2 fps → -g %3)")
+                    .arg(seconds).arg(fps, 0, 'f', 3).arg(gop));
                 }
             }
         } else {

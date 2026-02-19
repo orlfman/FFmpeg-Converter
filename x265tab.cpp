@@ -457,10 +457,12 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QLabel *lbl = new QLabel("Custom Keyframe Mode:");
         x265CustomKeyframeModeBox = new QComboBox();
         x265CustomKeyframeModeBox->addItems({
-            "Every 5 seconds (fixed time)",
-                                            "Every 5 seconds × framerate (recommended)"
+            "Every 2 seconds - fixed time",
+            "Every 2 seconds * framerate",
+            "Every 5 seconds - fixed time",
+            "Every 5 seconds * framerate"
         });
-        x265CustomKeyframeModeBox->setCurrentIndex(1);
+        x265CustomKeyframeModeBox->setCurrentIndex(3);
         l->addWidget(lbl);
         l->addWidget(x265CustomKeyframeModeBox);
         l->addStretch();
@@ -690,6 +692,7 @@ void X265Tab::resetDefaults() {
     x265AQStrengthSlider->setValue(1);
     x265KeyIntBox->setCurrentIndex(0);
     x265KeyIntBox->setCurrentText("Custom");
+    x265CustomKeyframeModeBox->setCurrentIndex(3);
     x265ThreadsBox->setCurrentIndex(0);
     x265FrameThreadsBox->setCurrentIndex(0);
     x265AudioCheck->setChecked(true);
