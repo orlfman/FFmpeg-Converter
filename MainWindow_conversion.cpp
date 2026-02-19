@@ -300,8 +300,8 @@ void MainWindow::startConversion()
             svtParams << "irefresh-type=1";
             svtParams << "lookahead=0";
         }
-        //if (av1Tab->tplModelCheck->isChecked()) svtParams << "enable-tpl-la=1";
-        if (av1Tab->tplModelCheck->isChecked()) svtParams << "tpl-la=1";
+        if (av1Tab->tplModelCheck->isChecked()) svtParams << "enable-tpl-la=1";
+        //if (av1Tab->tplModelCheck->isChecked()) svtParams << "tpl-la=1";
         svtParams << "enable-cdef=" + QString(av1Tab->enableCdefCheck->isChecked() ? "1" : "0");
         if (av1Tab->av1LookaheadCheck->isChecked()) svtParams << "lookahead=" + QString::number(av1Tab->av1LookaheadSlider->value());
         QString aqModeStr = av1Tab->av1AQModeBox->currentText();
