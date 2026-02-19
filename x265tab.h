@@ -9,10 +9,12 @@
 #include <QSlider>
 #include <QGroupBox>
 #include <QPushButton>
+
 class X265Tab : public QWidget {
     Q_OBJECT
 public:
     explicit X265Tab(QWidget *parent = nullptr);
+
     QComboBox *x265ContainerBox;
     QComboBox *x265PresetBox;
     QCheckBox *x265EnableRCModeCheck;
@@ -51,33 +53,37 @@ public:
     QComboBox *x265Mp3VbrBox;
     QComboBox *x265FlacCompressionBox;
     QComboBox *x265VorbisQualityBox;
-    QCheckBox *strongIntraCheck;
-    QComboBox *rdoqLevelBox;
-    QCheckBox *saoCheck;
-    QComboBox *limitRefsBox;
+
     QCheckBox *enablePsyRdCheck;
     QCheckBox *enableCutreeCheck;
+
     QGroupBox *deblockGroup;
     QSlider *deblockAlphaSlider;
     QSlider *deblockBetaSlider;
     QLabel *deblockAlphaLabel;
     QLabel *deblockBetaLabel;
+
     QCheckBox *pmodeCheck;
+    QCheckBox *saoCheck;
     QComboBox *refFramesBox;
     QCheckBox *weightpCheck;
     QComboBox *x265CustomKeyframeModeBox;
+
 private:
     QWidget *x265CBRConfigWidget;
     QWidget *x265CRFConfigWidget;
     QWidget *x265QPConfigWidget;
     QWidget *x265ABRConfigWidget;
+
     QLabel *x265VbrModeLabel;
     QLabel *x265AacQualityLabel;
     QLabel *x265Mp3VbrLabel;
     QLabel *x265FlacCompressionLabel;
     QLabel *x265VorbisQualityLabel;
+
 private slots:
     void updateAudioCodecOptions();
     void resetDefaults();
 };
+
 #endif // X265TAB_H

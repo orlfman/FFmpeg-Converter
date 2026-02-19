@@ -158,29 +158,6 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
     QGroupBox *advancedGroup = new QGroupBox("Advanced Options");
     QVBoxLayout *advancedLayout = new QVBoxLayout(advancedGroup);
     x265Layout->addWidget(advancedGroup);
-    // Strong intra smoothing
-    {
-        QHBoxLayout *l = new QHBoxLayout();
-        strongIntraCheck = new QCheckBox("Strong Intra Smoothing");
-        strongIntraCheck->setChecked(true);
-        strongIntraCheck->setToolTip("Improves dark/complex scenes.");
-        l->addWidget(strongIntraCheck);
-        l->addStretch();
-        advancedLayout->addLayout(l);
-    }
-    // RDOQ level
-    {
-        QHBoxLayout *l = new QHBoxLayout();
-        QLabel *lbl = new QLabel("RDOQ Level:");
-        lbl->setToolTip("Rate-Distortion Quantization.");
-        rdoqLevelBox = new QComboBox();
-        rdoqLevelBox->addItems({"0 (Fastest)", "1 (Default)", "2 (Best)"});
-        rdoqLevelBox->setCurrentIndex(1);
-        l->addWidget(lbl);
-        l->addWidget(rdoqLevelBox);
-        l->addStretch();
-        advancedLayout->addLayout(l);
-    }
     // SAO filter
     {
         QHBoxLayout *l = new QHBoxLayout();
@@ -188,6 +165,30 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         saoCheck->setChecked(true);
         saoCheck->setToolTip("Reduces artifacts.");
         l->addWidget(saoCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+    }
+    // Ref Frames
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QLabel *lbl = new QLabel("Ref Frames:");
+        lbl->setToolTip("More refs = better compression (slower).");
+        refFramesBox = new QComboBox();
+        refFramesBox->addItems({"1", "2", "3", "4", "5"});
+        refFramesBox->setCurrentIndex(3);
+        l->addWidget(lbl);
+        l->addWidget(refFramesBox);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+    }
+
+    // WeightP
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        weightpCheck = new QCheckBox("Weighted Prediction (WeightP)");
+        weightpCheck->setToolTip("Improves P-frame efficiency ~10%.");
+        weightpCheck->setChecked(true);
+        l->addWidget(weightpCheck);
         l->addStretch();
         advancedLayout->addLayout(l);
     }
@@ -252,17 +253,6 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
     weightpLayout->addWidget(weightpCheck);
     weightpLayout->addStretch();
     advancedLayout->addLayout(weightpLayout);
-    // Limit references
-    QHBoxLayout *limitRefsLayout = new QHBoxLayout();
-    QLabel *limitRefsLabel = new QLabel("Limit Refs:");
-    limitRefsLabel->setToolTip("Limits reference frames for faster encoding.");
-    limitRefsBox = new QComboBox();
-    limitRefsBox->addItems({"0 (Full)", "1 (Medium)", "2 (Fast)", "3 (Fastest)"});
-    limitRefsBox->setCurrentIndex(0);
-    limitRefsLayout->addWidget(limitRefsLabel);
-    limitRefsLayout->addWidget(limitRefsBox);
-    limitRefsLayout->addStretch();
-    advancedLayout->addLayout(limitRefsLayout);
     // Psy-RD
     {
         QHBoxLayout *l = new QHBoxLayout();
@@ -679,10 +669,10 @@ void X265Tab::resetDefaults() {
     x265CBRBitrateSlider->setValue(1000);
     x265TuneBox->setCurrentIndex(0);
     x265LevelBox->setCurrentIndex(0);
-    strongIntraCheck->setChecked(true);
-    rdoqLevelBox->setCurrentIndex(1);
+    pmodeCheck->setChecked(false);
     saoCheck->setChecked(true);
-    limitRefsBox->setCurrentIndex(0);
+    refFramesBox->setCurrentIndex(3);
+    weightpCheck->setChecked(true);
     x265LookaheadCheck->setChecked(false);
     x265LookaheadSlider->setValue(40);
     x265UnsharpenCheck->setChecked(false);
@@ -718,6 +708,7 @@ void X265Tab::resetDefaults() {
     pmodeCheck->setChecked(false);
     refFramesBox->setCurrentIndex(3);
     weightpCheck->setChecked(true);
+    saoCheck->setChecked(true);
     // Refresh UI
     x265EnableRCModeCheck->toggled(false);
     x265AQModeBox->currentIndexChanged(0);

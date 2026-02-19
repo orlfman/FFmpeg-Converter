@@ -194,16 +194,6 @@ X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         advancedLayout->addLayout(l);
     }
-    // SAO filter
-    {
-        QHBoxLayout *l = new QHBoxLayout();
-        saoCheck = new QCheckBox("SAO Filtering");
-        saoCheck->setChecked(true);
-        saoCheck->setToolTip("Reduces artifacts.");
-        l->addWidget(saoCheck);
-        l->addStretch();
-        advancedLayout->addLayout(l);
-    }
     // Deblock sliders (exact same as x265)
     deblockGroup = new QGroupBox("Deblock Filter");
     QVBoxLayout *deblockLayout = new QVBoxLayout(deblockGroup);
@@ -234,14 +224,6 @@ X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
     QObject::connect(deblockBetaSlider, &QSlider::valueChanged, [betaVal](int v){ betaVal->setText(QString::number(v)); });
     deblockLayout->addLayout(betaLayout);
     advancedLayout->addWidget(deblockGroup);
-    // PMode
-    QHBoxLayout *pmodeLayout = new QHBoxLayout();
-    pmodeCheck = new QCheckBox("PMode (Parallel Motion Estimation)");
-    pmodeCheck->setToolTip("Speeds up high-core CPUs; minimal quality impact.");
-    pmodeCheck->setChecked(false);
-    pmodeLayout->addWidget(pmodeCheck);
-    pmodeLayout->addStretch();
-    advancedLayout->addLayout(pmodeLayout);
     // Ref Frames
     QHBoxLayout *refLayout = new QHBoxLayout();
     QLabel *refLabel = new QLabel("Ref Frames:");
@@ -688,7 +670,6 @@ void X264Tab::resetDefaults() {
     x264ProfileBox->setCurrentIndex(2);
     strongIntraCheck->setChecked(true);
     rdoqLevelBox->setCurrentIndex(1);
-    saoCheck->setChecked(true);
     limitRefsBox->setCurrentIndex(0);
     x264LookaheadCheck->setChecked(false);
     x264LookaheadSlider->setValue(40);
@@ -722,7 +703,6 @@ void X264Tab::resetDefaults() {
     enableCutreeCheck->setChecked(false);
     deblockAlphaSlider->setValue(-2);
     deblockBetaSlider->setValue(-2);
-    pmodeCheck->setChecked(false);
     refFramesBox->setCurrentIndex(3);
     weightpCheck->setChecked(true);
     x264EnableRCModeCheck->toggled(false);

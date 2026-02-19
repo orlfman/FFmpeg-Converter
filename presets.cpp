@@ -74,10 +74,7 @@ void Presets::connectPresets(
         x265Tab->x265ThreadsBox,
         x265Tab->x265FrameThreadsBox,
         x265Tab->x265TwoPassCheck,
-        x265Tab->strongIntraCheck,
         x265Tab->saoCheck,
-        x265Tab->limitRefsBox,
-        x265Tab->rdoqLevelBox,
         x265Tab->x265LookaheadCheck,
         x265Tab->x265LookaheadSlider,
         x265Tab->x265AQModeBox,
@@ -102,7 +99,7 @@ void Presets::connectPresets(
         x264Tab->x264CBRBitrateSlider, x264Tab->x264ABRVBVCheck, x264Tab->x264EnableRCModeCheck,
         x264Tab->x264RCModeBox, x264Tab->x264KeyIntBox, x264Tab->x264ThreadsBox,
         x264Tab->x264FrameThreadsBox, x264Tab->x264TwoPassCheck, x264Tab->strongIntraCheck,
-        x264Tab->saoCheck, x264Tab->limitRefsBox, x264Tab->rdoqLevelBox,
+        x264Tab->limitRefsBox, x264Tab->rdoqLevelBox,
         x264Tab->x264LookaheadCheck, x264Tab->x264LookaheadSlider, x264Tab->x264AQModeBox,
         x264Tab->x264AQStrengthSlider, x264Tab->enablePsyRdCheck, x264Tab->enableCutreeCheck,
         x264Tab->x264LevelBox, x264Tab->x264ProfileBox, x264Tab->x264UnsharpenCheck, x264Tab->x264UnsharpenStrengthSlider,
@@ -427,8 +424,6 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(10);
                         x265Tab->x265AQStrengthSlider->setValue(0.5);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(0);
-                        x265Tab->limitRefsBox->setCurrentIndex(0);
                         x265Tab->enablePsyRdCheck->setChecked(false);
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
@@ -448,8 +443,6 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(10);
                         x265Tab->x265AQStrengthSlider->setValue(0.6);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(0);
-                        x265Tab->limitRefsBox->setCurrentIndex(0);
                         x265Tab->enablePsyRdCheck->setChecked(false);
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
@@ -469,8 +462,6 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(20);
                         x265Tab->x265AQStrengthSlider->setValue(0.8);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(0);
-                        x265Tab->limitRefsBox->setCurrentIndex(1);
                         x265Tab->enablePsyRdCheck->setChecked(false);
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
@@ -489,13 +480,10 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(40);
                         x265Tab->x265AQStrengthSlider->setValue(1.0);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(1);
-                        x265Tab->limitRefsBox->setCurrentIndex(2);
                         x265Tab->enablePsyRdCheck->setChecked(true);
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
-                        x265Tab->strongIntraCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(3);
                         break;
 
@@ -510,13 +498,10 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(60);
                         x265Tab->x265AQStrengthSlider->setValue(1.0);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(1);
-                        x265Tab->limitRefsBox->setCurrentIndex(3);
                         x265Tab->enablePsyRdCheck->setChecked(true);
                         x265Tab->enableCutreeCheck->setChecked(true);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
-                        x265Tab->strongIntraCheck->setChecked(true);
                         x265Tab->refFramesBox->setCurrentIndex(3);
                         break;
 
@@ -531,14 +516,11 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(80);
                         x265Tab->x265AQStrengthSlider->setValue(1.2);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
-                        x265Tab->limitRefsBox->setCurrentIndex(3);
                         x265Tab->enablePsyRdCheck->setChecked(true);
                         x265Tab->enableCutreeCheck->setChecked(true);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(5);
-                        x265Tab->strongIntraCheck->setChecked(true);
                         x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
 
@@ -553,14 +535,11 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(120);
                         x265Tab->x265AQStrengthSlider->setValue(1.4);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
-                        x265Tab->limitRefsBox->setCurrentIndex(3);
                         x265Tab->enablePsyRdCheck->setChecked(true);
                         x265Tab->enableCutreeCheck->setChecked(true);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
-                        x265Tab->strongIntraCheck->setChecked(true);
                         x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
                     case 8: // Anime
@@ -574,14 +553,11 @@ void Presets::connectPresets(
                         x265Tab->x265LookaheadCheck->setChecked(true);
                         x265Tab->x265LookaheadSlider->setValue(120);
                         x265Tab->x265AQStrengthSlider->setValue(1.4);
-                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
-                        x265Tab->limitRefsBox->setCurrentIndex(3);
                         x265Tab->enablePsyRdCheck->setChecked(true);
                         x265Tab->enableCutreeCheck->setChecked(true);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
-                        x265Tab->strongIntraCheck->setChecked(true);
                         x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
                 }
@@ -601,11 +577,9 @@ void Presets::connectPresets(
                 //x264Tab->x264KeyIntBox->setCurrentText("240");
                 x264Tab->deblockAlphaSlider->setValue(-2);
                 x264Tab->deblockBetaSlider->setValue(-2);
-                x264Tab->pmodeCheck->setChecked(false);
                 x264Tab->weightpCheck->setChecked(true);
                 x264Tab->x264AQModeBox->setCurrentText("Variance");
                 x264Tab->x264VbrModeBox->setCurrentText("Default");
-                x264Tab->saoCheck->setChecked(true);
 
                 switch (p) {
                     case 1: // DVD - dedicated DVD quality settings

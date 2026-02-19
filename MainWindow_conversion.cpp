@@ -411,35 +411,28 @@ void MainWindow::startConversion()
         if (x265Tab->x265TuneBox->currentText() != "Auto") args << "-tune" << x265Tab->x265TuneBox->currentText();
         if (x265Tab->x265LevelBox->currentText() != "auto") args << "-level" << x265Tab->x265LevelBox->currentText();
 
-        QStringList x265Params;
-        x265Params << "deblock=" + QString::number(x265Tab->deblockAlphaSlider->value()) + ":" + QString::number(x265Tab->deblockBetaSlider->value());
+        QString ref = x265Tab->refFramesBox->currentText().trimmed();
+        if (ref.isEmpty()) ref = "4";
+        if (!ref.isEmpty()) args << "-x265-params" << "ref=" + ref;
 
-        if (x265Tab->pmodeCheck->isChecked()) x265Params << "pmode=1";
-
-        QString refValue = x265Tab->refFramesBox->currentText();
-        if (refValue.isEmpty()) refValue = "4";
-        x265Params << "ref=" + refValue;
-
-        if (x265Tab->weightpCheck->isChecked()) x265Params << "weightp=1";
-        if (x265Tab->strongIntraCheck->isChecked()) x265Params << "strong-intra-smoothing=1";
-        if (x265Tab->rdoqLevelBox->currentIndex() > 1) x265Params << "rdoq-level=" + QString::number(x265Tab->rdoqLevelBox->currentIndex());
-        if (x265Tab->saoCheck->isChecked()) x265Params << "sao=1";
-        if (x265Tab->limitRefsBox->currentIndex() > 0) x265Params << "limit-refs=" + QString::number(x265Tab->limitRefsBox->currentIndex());
-        if (x265Tab->x265LookaheadCheck->isChecked()) x265Params << "rc-lookahead=" + QString::number(x265Tab->x265LookaheadSlider->value());
+        if (x265Tab->pmodeCheck->isChecked()) args << "-x265-params" << "pmode=1";
+        if (x265Tab->weightpCheck->isChecked()) args << "-x265-params" << "weightp=1";
+        if (x265Tab->saoCheck->isChecked()) args << "-x265-params" << "sao=1";
+        if (x265Tab->x265LookaheadCheck->isChecked()) args << "-x265-params" << "rc-lookahead=" + QString::number(x265Tab->x265LookaheadSlider->value());
 
         QString aqModeStr = x265Tab->x265AQModeBox->currentText();
         if (aqModeStr != "Automatic") {
             int aq = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Auto-Variance") ? 2 : 3;
-            x265Params << "aq-mode=" + QString::number(aq);
+            args << "-x265-params" << "aq-mode=" + QString::number(aq);
         }
+        args << "-x265-params" << "aq-strength=" + QString::number(x265Tab->x265AQStrengthSlider->value() / 10.0);
 
-        x265Params << "aq-strength=" + QString::number(x265Tab->x265AQStrengthSlider->value() / 10.0);
+        if (x265Tab->enablePsyRdCheck->isChecked()) args << "-x265-params" << "psy-rd=1.0:psy-rdoq=0.0";
+        if (x265Tab->enableCutreeCheck->isChecked()) args << "-x265-params" << "cutree=1";
 
-        if (x265Tab->enablePsyRdCheck->isChecked()) x265Params << "psy-rd=1.0:0.0";
-
-        if (x265Tab->enableCutreeCheck->isChecked()) x265Params << "cutree=1";
-
-        if (!x265Params.isEmpty()) args << "-x265-params" << x265Params.join(":");
+        args << "-deblock" << QString("%1:%2")
+        .arg(x265Tab->deblockAlphaSlider->value())
+        .arg(x265Tab->deblockBetaSlider->value());
 
         QString keyText = x265Tab->x265KeyIntBox->currentText();
         if (keyText == "Custom") {
@@ -645,35 +638,29 @@ void MainWindow::startConversion()
 
         if (x264Tab->x264LevelBox->currentText() != "auto") args << "-level" << x264Tab->x264LevelBox->currentText();
 
-        QStringList x264Params;
-        x264Params << "deblock=" + QString::number(x264Tab->deblockAlphaSlider->value()) + ":" + QString::number(x264Tab->deblockBetaSlider->value());
+        QString ref = x264Tab->refFramesBox->currentText().trimmed();
+        if (ref.isEmpty()) ref = "4";
+        if (!ref.isEmpty()) args << "-x264-params" << "ref=" + ref;
 
-        if (x264Tab->pmodeCheck->isChecked()) x264Params << "pmode=1";
-
-        QString refValue = x264Tab->refFramesBox->currentText();
-        if (refValue.isEmpty()) refValue = "4";
-        x264Params << "ref=" + refValue;
-
-        if (x264Tab->weightpCheck->isChecked()) x264Params << "weightp=1";
-        if (x264Tab->strongIntraCheck->isChecked()) x264Params << "strong-intra-smoothing=1";
-        if (x264Tab->rdoqLevelBox->currentIndex() > 1) x264Params << "rdoq-level=" + QString::number(x264Tab->rdoqLevelBox->currentIndex());
-        if (x264Tab->saoCheck->isChecked()) x264Params << "sao=1";
-        if (x264Tab->limitRefsBox->currentIndex() > 0) x264Params << "limit-refs=" + QString::number(x264Tab->limitRefsBox->currentIndex());
-        if (x264Tab->x264LookaheadCheck->isChecked()) x264Params << "rc-lookahead=" + QString::number(x264Tab->x264LookaheadSlider->value());
+        if (x264Tab->weightpCheck->isChecked()) args << "-x264-params" << "weightp=1";
+        if (x264Tab->strongIntraCheck->isChecked()) args << "-x264-params" << "strong-intra-smoothing=1";
+        if (x264Tab->rdoqLevelBox->currentIndex() > 1) args << "-x264-params" << "rdoq-level=" + QString::number(x264Tab->rdoqLevelBox->currentIndex());
+        if (x264Tab->limitRefsBox->currentIndex() > 0) args << "-x264-params" << "limit-refs=" + QString::number(x264Tab->limitRefsBox->currentIndex());
+        if (x264Tab->x264LookaheadCheck->isChecked()) args << "-x264-params" << "rc-lookahead=" + QString::number(x264Tab->x264LookaheadSlider->value());
 
         QString aqModeStr = x264Tab->x264AQModeBox->currentText();
         if (aqModeStr != "Automatic") {
             int aq = (aqModeStr == "Disabled") ? 0 : (aqModeStr == "Variance") ? 1 : (aqModeStr == "Auto-Variance") ? 2 : 3;
-            x264Params << "aq-mode=" + QString::number(aq);
+            args << "-x264-params" << "aq-mode=" + QString::number(aq);
         }
+        args << "-x264-params" << "aq-strength=" + QString::number(x264Tab->x264AQStrengthSlider->value() / 10.0);
 
-        x264Params << "aq-strength=" + QString::number(x264Tab->x264AQStrengthSlider->value() / 10.0);
+        if (x264Tab->enablePsyRdCheck->isChecked()) args << "-x264-params" << "psy-rd=1.0:0.0";
+        if (x264Tab->enableCutreeCheck->isChecked()) args << "-x264-params" << "cutree=1";
 
-        if (x264Tab->enablePsyRdCheck->isChecked()) x264Params << "psy-rd=1.0:0.0";
-
-        if (x264Tab->enableCutreeCheck->isChecked()) x264Params << "cutree=1";
-
-        if (!x264Params.isEmpty()) args << "-x264-params" << x264Params.join(":");
+        args << "-deblock" << QString("%1:%2")
+        .arg(x264Tab->deblockAlphaSlider->value())
+        .arg(x264Tab->deblockBetaSlider->value());
         QString keyText = x264Tab->x264KeyIntBox->currentText();
         if (keyText == "Custom") {
             int mode = x264Tab->x264CustomKeyframeModeBox->currentIndex();

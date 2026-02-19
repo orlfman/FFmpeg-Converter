@@ -54,27 +54,27 @@ public:
     QComboBox *x264Mp3VbrBox;
     QComboBox *x264FlacCompressionBox;
     QComboBox *x264VorbisQualityBox;
-
     QCheckBox *strongIntraCheck;
     QComboBox *rdoqLevelBox;
-    QCheckBox *saoCheck;
     QComboBox *limitRefsBox;
+
     QCheckBox *enablePsyRdCheck;
     QCheckBox *enableCutreeCheck;
+
     QGroupBox *deblockGroup;
     QSlider *deblockAlphaSlider;
     QSlider *deblockBetaSlider;
     QLabel *deblockAlphaLabel;
     QLabel *deblockBetaLabel;
-    QCheckBox *pmodeCheck;
+
     QComboBox *refFramesBox;
     QCheckBox *weightpCheck;
 
+    QComboBox *x264CustomKeyframeModeBox;
     QWidget *x264CBRConfigWidget;
     QWidget *x264CRFConfigWidget;
     QWidget *x264QPConfigWidget;
     QWidget *x264ABRConfigWidget;
-    QComboBox *x264CustomKeyframeModeBox;
 
 private:
     QLabel *x264VbrModeLabel;
@@ -87,4 +87,5 @@ private slots:
     void updateAudioCodecOptions();
     void resetDefaults();
 };
+
 #endif // X264TAB_H
