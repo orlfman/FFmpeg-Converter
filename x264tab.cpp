@@ -424,19 +424,28 @@ X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
     {
         QHBoxLayout *l = new QHBoxLayout();
         QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+
         QLabel *lbl = new QLabel("AQ Strength:");
-        lbl->setToolTip("Higher = more adaptive. Range 0-3.");
+        lbl->setToolTip("Higher = more adaptive.\nRange 0.0–3.0 (0.1 steps)");
+
         x264AQStrengthSlider = new QSlider(Qt::Horizontal);
         x264AQStrengthSlider->setMaximumWidth(300);
-        x264AQStrengthSlider->setRange(0, 3);
-        x264AQStrengthSlider->setValue(1);
+        x264AQStrengthSlider->setRange(0, 30);
+        x264AQStrengthSlider->setValue(10);
+        x264AQStrengthSlider->setSingleStep(1);
         x264AQStrengthSlider->setEnabled(false);
-        QLabel *val = new QLabel("1");
+
+        QLabel *val = new QLabel("1.0");
+
         l->addWidget(lbl);
         l->addWidget(x264AQStrengthSlider);
         l->addWidget(val);
         l->addStretch();
-        QObject::connect(x264AQStrengthSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
+
+        QObject::connect(x264AQStrengthSlider, &QSlider::valueChanged, [val](int v) {
+            val->setText(QString::number(v / 10.0, 'f', 1));
+        });
+
         x264Layout->addWidget(w);
     }
     // Two-pass
@@ -670,7 +679,7 @@ void X264Tab::resetDefaults() {
     x264GrainSynthLevel->setValue(0);
     x264TwoPassCheck->setChecked(false);
     x264AQModeBox->setCurrentIndex(0);
-    x264AQStrengthSlider->setValue(1);
+    x264AQStrengthSlider->setValue(10);
     x264KeyIntBox->setCurrentIndex(4);
     x264ThreadsBox->setCurrentIndex(0);
     x264FrameThreadsBox->setCurrentIndex(0);

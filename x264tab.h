@@ -70,11 +70,12 @@ public:
     QComboBox *refFramesBox;
     QCheckBox *weightpCheck;
 
-private:
     QWidget *x264CBRConfigWidget;
     QWidget *x264CRFConfigWidget;
     QWidget *x264QPConfigWidget;
     QWidget *x264ABRConfigWidget;
+
+private:
     QLabel *x264VbrModeLabel;
     QLabel *x264AacQualityLabel;
     QLabel *x264Mp3VbrLabel;
