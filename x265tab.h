@@ -65,6 +65,7 @@ public:
     QCheckBox *pmodeCheck;
     QComboBox *refFramesBox;
     QCheckBox *weightpCheck;
+    QComboBox *x265CustomKeyframeModeBox;
 private:
     QWidget *x265CBRConfigWidget;
     QWidget *x265CRFConfigWidget;

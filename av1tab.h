@@ -67,6 +67,7 @@ public:
     QSlider *av1NlmeansSigmaPSlider;
     QCheckBox *av1NlmeansGpuCheck;
     QSlider *av1NlmeansPatchSlider;
+    QComboBox *av1CustomKeyframeModeBox;
 private:
     QWidget *av1CRFConfigWidget;
     QWidget *av1QPConfigWidget;

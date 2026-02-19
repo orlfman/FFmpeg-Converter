@@ -347,9 +347,62 @@ void MainWindow::startConversion()
         if (!svtParams.isEmpty()) {
             args << "-svtav1-params" << svtParams.join(":");
         }
+        if (av1Tab->av1LevelBox->currentText() != "Auto")
+            args << "-level" << av1Tab->av1LevelBox->currentText();
 
-        if (av1Tab->av1LevelBox->currentText() != "Auto") args << "-level" << av1Tab->av1LevelBox->currentText();
-        args << "-g" << av1Tab->av1KeyIntBox->currentText();
+        QString keyText = av1Tab->av1KeyIntBox->currentText();
+        if (keyText == "Custom") {
+            int mode = av1Tab->av1CustomKeyframeModeBox->currentIndex();
+            if (mode == 0) {
+                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
+                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            } else {
+                double fps = 0.0;
+                QString fpsSetting = frameRateBox->currentText();
+                if (fpsSetting == "Custom" && !customFrameRateBox->text().isEmpty()) {
+                    fps = customFrameRateBox->text().toDouble();
+                } else if (fpsSetting != "Original" && fpsSetting != "Auto") {
+                    fps = fpsSetting.toDouble();
+                } else {
+                    QProcess probe;
+                    probe.start("ffprobe", QStringList()
+                    << "-v" << "quiet"
+                    << "-select_streams" << "v:0"
+                    << "-show_entries" << "stream=r_frame_rate,stream=avg_frame_rate"
+                    << "-of" << "csv=p=0"
+                    << inputFile);
+                    probe.waitForFinished(3000);
+                    QString raw = probe.readAllStandardOutput().trimmed();
+                    logBox->append("🔍 ffprobe raw output: [" + raw + "]");
+                    QStringList lines = raw.split('\n', Qt::SkipEmptyParts);
+                    for (const QString &line : lines) {
+                        QString clean = line.trimmed().remove('[').remove(']').remove(',').remove(' ').simplified();
+                        if (clean.contains('/')) {
+                            QStringList parts = clean.split('/');
+                            if (parts.size() == 2 && parts[1].toDouble() > 0) {
+                                fps = parts[0].toDouble() / parts[1].toDouble();
+                                if (fps > 5.0) break;
+                            }
+                        } else if (!clean.isEmpty()) {
+                            fps = clean.toDouble();
+                            if (fps > 5.0) break;
+                        }
+                    }
+                }
+                if (fps < 5.0 || qIsInf(fps) || qIsNaN(fps)) {
+                    logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
+                    args << "-g" << "240";
+                } else {
+                    int gop = qRound(5.0 * fps);
+                    if (gop < 10) gop = 240;
+                    args << "-g" << QString::number(gop);
+                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
+                    .arg(fps, 0, 'f', 3).arg(gop));
+                }
+            }
+        } else {
+            args << "-g" << keyText;
+        }
     }
     else if (currentTab == 1) { // x265
         args << "-c:v" << "libx265";
@@ -378,7 +431,60 @@ void MainWindow::startConversion()
         if (x265Tab->enableCutreeCheck->isChecked()) x265Params << "cutree=1";
 
         if (!x265Params.isEmpty()) args << "-x265-params" << x265Params.join(":");
-        args << "-g" << x265Tab->x265KeyIntBox->currentText();
+
+        QString keyText = x265Tab->x265KeyIntBox->currentText();
+        if (keyText == "Custom") {
+            int mode = x265Tab->x265CustomKeyframeModeBox->currentIndex();
+            if (mode == 0) {
+                args << "-force_key_frames" << "expr:gte(t,n_forced*5)";
+                logBox->append("🔑 Keyframes: Every 5 seconds (fixed time)");
+            } else {
+                double fps = 0.0;
+                QString fpsSetting = frameRateBox->currentText();
+                if (fpsSetting == "Custom" && !customFrameRateBox->text().isEmpty()) {
+                    fps = customFrameRateBox->text().toDouble();
+                } else if (fpsSetting != "Original" && fpsSetting != "Auto") {
+                    fps = fpsSetting.toDouble();
+                } else {
+                    QProcess probe;
+                    probe.start("ffprobe", QStringList()
+                    << "-v" << "quiet"
+                    << "-select_streams" << "v:0"
+                    << "-show_entries" << "stream=r_frame_rate,stream=avg_frame_rate"
+                    << "-of" << "csv=p=0"
+                    << inputFile);
+                    probe.waitForFinished(3000);
+                    QString raw = probe.readAllStandardOutput().trimmed();
+                    logBox->append("🔍 ffprobe raw output: [" + raw + "]");
+                    QStringList lines = raw.split('\n', Qt::SkipEmptyParts);
+                    for (const QString &line : lines) {
+                        QString clean = line.trimmed().remove('[').remove(']').remove(',').remove(' ').simplified();
+                        if (clean.contains('/')) {
+                            QStringList parts = clean.split('/');
+                            if (parts.size() == 2 && parts[1].toDouble() > 0) {
+                                fps = parts[0].toDouble() / parts[1].toDouble();
+                                if (fps > 5.0) break;
+                            }
+                        } else if (!clean.isEmpty()) {
+                            fps = clean.toDouble();
+                            if (fps > 5.0) break;
+                        }
+                    }
+                }
+                if (fps < 5.0 || qIsInf(fps) || qIsNaN(fps)) {
+                    logBox->append("⚠️ Could not detect framerate. Using safe default -g 240");
+                    args << "-g" << "240";
+                } else {
+                    int gop = qRound(5.0 * fps);
+                    if (gop < 10) gop = 240;
+                    args << "-g" << QString::number(gop);
+                    logBox->append(QString("🔑 Keyframes: Every 5 seconds × framerate (%1 fps → -g %2)")
+                    .arg(fps, 0, 'f', 3).arg(gop));
+                }
+            }
+        } else {
+            args << "-g" << keyText;
+        }
         if (x265Tab->x265ThreadsBox->currentText() != "Automatic") args << "-threads" << x265Tab->x265ThreadsBox->currentText();
         if (x265Tab->x265FrameThreadsBox->currentText() != "Automatic") args << "-frame-threads" << x265Tab->x265FrameThreadsBox->currentText();
 

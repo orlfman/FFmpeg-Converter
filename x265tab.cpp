@@ -442,18 +442,39 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         l->addStretch();
         x265Layout->addLayout(l);
     }
-    // Keyframe interval
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
-        lbl->setToolTip("Higher = smaller file.");
+        lbl->setToolTip("How often to insert keyframes (for seeking). Higher = smaller file.");
         x265KeyIntBox = new QComboBox();
-        x265KeyIntBox->addItems({"15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
-        x265KeyIntBox->setCurrentIndex(4);
+        x265KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
+        x265KeyIntBox->setCurrentIndex(5);
         l->addWidget(lbl);
         l->addWidget(x265KeyIntBox);
         l->addStretch();
         x265Layout->addLayout(l);
+    }
+
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget();
+        w->setMaximumWidth(450);
+        w->setLayout(l);
+        w->setVisible(false);
+        QLabel *lbl = new QLabel("Custom Keyframe Mode:");
+        x265CustomKeyframeModeBox = new QComboBox();
+        x265CustomKeyframeModeBox->addItems({
+            "Every 5 seconds (fixed time)",
+                                            "Every 5 seconds × framerate (recommended)"
+        });
+        x265CustomKeyframeModeBox->setCurrentIndex(1);
+        l->addWidget(lbl);
+        l->addWidget(x265CustomKeyframeModeBox);
+        l->addStretch();
+        x265Layout->addWidget(w);
+        QObject::connect(x265KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
+            w->setVisible(text == "Custom");
+        });
     }
     // Threads
     {

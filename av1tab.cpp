@@ -523,7 +523,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     {
         QHBoxLayout *l = new QHBoxLayout();
         av1TwoPassCheck = new QCheckBox("Enable Two-Pass Encoding");
-        av1TwoPassCheck->setToolTip("Runs twice for optimal quality (slower). Good for VBR.");
+        av1TwoPassCheck->setToolTip("Runs twice for optimal quality (slower). Good for VBR. Sometimes breaks with new svt updates, ymmv");
         l->addWidget(av1TwoPassCheck);
         l->addStretch();
         av1Layout->addLayout(l);
@@ -533,13 +533,38 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
         lbl->setToolTip("How often to insert keyframes (for seeking). Higher = smaller file.");
+
         av1KeyIntBox = new QComboBox();
-        av1KeyIntBox->addItems({"15","30","60","120","240","360","480","720","960","1440","1920"});
-        av1KeyIntBox->setCurrentIndex(4);
+        av1KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
+        av1KeyIntBox->setCurrentIndex(5);
+
         l->addWidget(lbl);
         l->addWidget(av1KeyIntBox);
         l->addStretch();
         av1Layout->addLayout(l);
+    }
+
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget();
+        w->setMaximumWidth(450);
+        w->setLayout(l);
+        w->setVisible(false);
+
+        QLabel *lbl = new QLabel("Custom Mode:");
+        av1CustomKeyframeModeBox = new QComboBox();
+        av1CustomKeyframeModeBox->addItems({
+            "Every 5 seconds (fixed time)",
+            "Every 5 seconds × framerate (best)"
+        });
+        av1CustomKeyframeModeBox->setCurrentIndex(1);
+        l->addWidget(lbl);
+        l->addWidget(av1CustomKeyframeModeBox);
+        l->addStretch();
+        av1Layout->addWidget(w);
+        QObject::connect(av1KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
+            w->setVisible(text == "Custom");
+        });
     }
     // Threads for encoding
     {
