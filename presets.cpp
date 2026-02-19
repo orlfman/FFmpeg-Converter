@@ -350,6 +350,46 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenStrengthSlider->setValue(10);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
+                    case 8: // Anime - Best possible quality for anime
+                        av1Tab->av1ContainerBox->setCurrentText("mkv");
+                        av1Tab->av1AudioCheck->setChecked(true);
+                        av1Tab->av1AudioCodecBox->setCurrentText("opus");
+                        av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
+                        av1Tab->av1EnableRCModeCheck->setChecked(true);
+                        av1Tab->av1RCModeBox->setCurrentText("CRF");
+                        av1Tab->av1PresetBox->setCurrentText("5");
+                        av1Tab->av1CRFSlider->setValue(16);
+                        av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
+                        av1Tab->av1VbrModeBox->setCurrentText("Constrained");
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        av1Tab->tplModelCheck->setChecked(true);
+                        av1Tab->enableTfCheck->setChecked(true);
+                        av1Tab->enableCdefCheck->setChecked(true);
+                        av1Tab->av1LookaheadCheck->setChecked(true);
+                        av1Tab->av1LookaheadSlider->setValue(100);
+                        av1Tab->fastDecodeBox->setCurrentIndex(0);
+                        av1Tab->av1SharpenCheck->setChecked(true);
+                        av1Tab->av1SharpenStrengthSlider->setValue(8);
+                        av1Tab->av1GrainSynthCheck->setChecked(true);
+                        av1Tab->av1GrainSynthLevel->setValue(12);
+                        av1Tab->av1TwoPassCheck->setChecked(false);
+                        av1Tab->lowLatencyCheck->setChecked(false);
+                        av1Tab->screenContentModeBox->setCurrentIndex(0);
+                        av1Tab->superResModeBox->setCurrentIndex(0);
+                        av1Tab->nativeGrainCheck->setChecked(true);
+                        av1Tab->av1ThreadsBox->setCurrentText("Automatic");
+                        av1Tab->av1TileRowsBox->setCurrentText("Automatic");
+                        av1Tab->av1TileColumnsBox->setCurrentText("Automatic");
+                        av1Tab->av1LevelBox->setCurrentText("Auto");
+                        av1Tab->av1UnsharpenCheck->setChecked(false);
+                        av1Tab->av1BlurCheck->setChecked(false);
+                        av1Tab->av1NoiseReductionCheck->setChecked(false);
+                        av1Tab->av1AQModeBox->setCurrentText("Variance");
+                        av1Tab->av1AQStrengthSlider->setValue(8);
+                        break;
                 }
             }
             else if (currentTab == 1) { // x265
@@ -496,6 +536,26 @@ void Presets::connectPresets(
                         x265Tab->x265CRFSlider->setValue(14);
                         x265Tab->x265TuneBox->setCurrentText("grain");
                         x265Tab->x265AudioBitrateBox->setCurrentText("512 kbps");
+                        eightBitCheck->setChecked(false);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x265Tab->x265LookaheadCheck->setChecked(true);
+                        x265Tab->x265LookaheadSlider->setValue(120);
+                        x265Tab->x265AQStrengthSlider->setValue(1.4);
+                        x265Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x265Tab->limitRefsBox->setCurrentIndex(3);
+                        x265Tab->enablePsyRdCheck->setChecked(true);
+                        x265Tab->enableCutreeCheck->setChecked(true);
+                        x265Tab->x265TwoPassCheck->setChecked(false);
+                        x265Tab->x265SharpenCheck->setChecked(true);
+                        x265Tab->x265SharpenStrengthSlider->setValue(8);
+                        x265Tab->strongIntraCheck->setChecked(true);
+                        break;
+                    case 8: // Anime
+                        x265Tab->x265PresetBox->setCurrentText("veryslow");
+                        x265Tab->x265CRFSlider->setValue(15);
+                        x265Tab->x265TuneBox->setCurrentText("grain");
+                        x265Tab->x265AudioBitrateBox->setCurrentText("320 kbps");
                         eightBitCheck->setChecked(false);
                         tenBitCheck->setChecked(true);
                         colorFormatBox->setCurrentText("10-bit 4:2:0");
@@ -691,6 +751,28 @@ void Presets::connectPresets(
                         x264Tab->refFramesBox->setCurrentIndex(5);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
+                    case 8: // Anime
+                        x264Tab->x264PresetBox->setCurrentText("veryslow");
+                        x264Tab->x264TuneBox->setCurrentText("animation");
+                        x264Tab->x264CRFSlider->setValue(15);
+                        x264Tab->x264AudioBitrateBox->setCurrentText("320 kbps");
+                        eightBitCheck->setChecked(false);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        x264Tab->x264ProfileBox->setCurrentText("high10");
+                        x264Tab->x264LookaheadCheck->setChecked(true);
+                        x264Tab->x264LookaheadSlider->setValue(120);
+                        x264Tab->x264AQStrengthSlider->setValue(1.4);
+                        x264Tab->rdoqLevelBox->setCurrentIndex(2);
+                        x264Tab->limitRefsBox->setCurrentIndex(3);
+                        x264Tab->enablePsyRdCheck->setChecked(true);
+                        x264Tab->enableCutreeCheck->setChecked(true);
+                        x264Tab->x264TwoPassCheck->setChecked(false);
+                        x264Tab->x264SharpenCheck->setChecked(true);
+                        x264Tab->x264SharpenStrengthSlider->setValue(8);
+                        x264Tab->refFramesBox->setCurrentIndex(5);
+                        x264Tab->strongIntraCheck->setChecked(true);
+                        break;
                 }
 
                 // Final common cleanup
@@ -841,6 +923,25 @@ void Presets::connectPresets(
                         colorFormatBox->setCurrentText("10-bit 4:2:0");
                         vp9Tab->vp9SharpenCheck->setChecked(true);
                         vp9Tab->vp9SharpenStrengthSlider->setValue(6);
+                        vp9Tab->vp9TileColumnsBox->setCurrentText("8");
+                        vp9Tab->vp9AQStrengthSlider->setValue(9);
+                        vp9Tab->vp9QMaxSlider->setValue(40);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(7);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
+                        vp9Tab->vp9TplCheck->setChecked(true);
+                        vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        break;
+                    case 8: // Anime
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("0");
+                        vp9Tab->vp9CRFSlider->setValue(18);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("320 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(40);
+                        vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        vp9Tab->vp9SharpenCheck->setChecked(true);
+                        vp9Tab->vp9SharpenStrengthSlider->setValue(7);
                         vp9Tab->vp9TileColumnsBox->setCurrentText("8");
                         vp9Tab->vp9AQStrengthSlider->setValue(9);
                         vp9Tab->vp9QMaxSlider->setValue(40);

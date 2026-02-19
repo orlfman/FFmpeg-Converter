@@ -269,7 +269,7 @@ void MainWindow::createPresetSection()
     QHBoxLayout *presetLayout = new QHBoxLayout();
     QLabel *presetLabel = new QLabel("Quality Preset:");
     presetCombo = new QComboBox();
-    presetCombo->addItems({"Custom", "DVD", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra"});
+    presetCombo->addItems({"Custom", "DVD", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra", "Anime"});
     presetCombo->setCurrentIndex(0);
     presetCombo->setToolTip("One click presets for current codec");
     presetLayout->addWidget(presetLabel);
