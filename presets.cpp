@@ -184,7 +184,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(30);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -222,7 +222,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(30);
                         av1Tab->av1TuneBox->setCurrentText("PSNR");
-                        av1Tab->av1KeyIntBox->setCurrentText("120");
+                        //av1Tab->av1KeyIntBox->setCurrentText("120");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         eightBitCheck->setChecked(true);
@@ -246,7 +246,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("10");
                         av1Tab->av1CRFSlider->setValue(37);
                         av1Tab->av1TuneBox->setCurrentText("PSNR");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("128 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -269,7 +269,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(31);
                         av1Tab->av1TuneBox->setCurrentText("SSIM");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -292,7 +292,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(27);
                         av1Tab->av1TuneBox->setCurrentText("SSIM");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
                         eightBitCheck->setChecked(true);
@@ -316,7 +316,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("8");
                         av1Tab->av1CRFSlider->setValue(21);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         tenBitCheck->setChecked(true);
@@ -341,7 +341,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("6");
                         av1Tab->av1CRFSlider->setValue(18);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("512 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Off");
                         tenBitCheck->setChecked(true);
@@ -365,7 +365,7 @@ void Presets::connectPresets(
                         av1Tab->av1PresetBox->setCurrentText("5");
                         av1Tab->av1CRFSlider->setValue(16);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
-                        av1Tab->av1KeyIntBox->setCurrentText("240");
+                        //av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("320 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
                         tenBitCheck->setChecked(true);
@@ -405,7 +405,7 @@ void Presets::connectPresets(
                 x265Tab->x265AudioSampleRateBox->setCurrentText("48 kHz");
                 x265Tab->x265EnableRCModeCheck->setChecked(true);
                 x265Tab->x265RCModeBox->setCurrentText("CRF");
-                x265Tab->x265KeyIntBox->setCurrentText("240");
+                //x265Tab->x265KeyIntBox->setCurrentText("240");
                 x265Tab->saoCheck->setChecked(true);
                 x265Tab->deblockAlphaSlider->setValue(-2);
                 x265Tab->deblockBetaSlider->setValue(-2);
@@ -433,7 +433,8 @@ void Presets::connectPresets(
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
-                        x265Tab->x265KeyIntBox->setCurrentText("120");
+                        x265Tab->refFramesBox->setCurrentIndex(3);
+                        //x265Tab->x265KeyIntBox->setCurrentText("120");
                         break;
 
                     case 2: // Streaming
@@ -453,7 +454,8 @@ void Presets::connectPresets(
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
-                        x265Tab->x265KeyIntBox->setCurrentText("120");
+                        x265Tab->refFramesBox->setCurrentIndex(2);
+                        //x265Tab->x265KeyIntBox->setCurrentText("120");
                         break;
 
                     case 3: // Medium
@@ -473,6 +475,7 @@ void Presets::connectPresets(
                         x265Tab->enableCutreeCheck->setChecked(false);
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
+                        x265Tab->refFramesBox->setCurrentIndex(2);
                         break;
 
                     case 4: // High
@@ -493,6 +496,7 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->strongIntraCheck->setChecked(false);
+                        x265Tab->refFramesBox->setCurrentIndex(3);
                         break;
 
                     case 5: // Quality
@@ -513,6 +517,7 @@ void Presets::connectPresets(
                         x265Tab->x265TwoPassCheck->setChecked(false);
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->refFramesBox->setCurrentIndex(3);
                         break;
 
                     case 6: // High Quality
@@ -534,6 +539,7 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(5);
                         x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
 
                     case 7: // Ultra
@@ -555,6 +561,7 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
                         x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
                     case 8: // Anime
                         x265Tab->x265PresetBox->setCurrentText("veryslow");
@@ -575,6 +582,7 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(true);
                         x265Tab->x265SharpenStrengthSlider->setValue(8);
                         x265Tab->strongIntraCheck->setChecked(true);
+                        x265Tab->refFramesBox->setCurrentIndex(4);
                         break;
                 }
 
@@ -590,7 +598,7 @@ void Presets::connectPresets(
                 x264Tab->x264AudioSampleRateBox->setCurrentText("48 kHz");
                 x264Tab->x264EnableRCModeCheck->setChecked(true);
                 x264Tab->x264RCModeBox->setCurrentText("CRF");
-                x264Tab->x264KeyIntBox->setCurrentText("240");
+                //x264Tab->x264KeyIntBox->setCurrentText("240");
                 x264Tab->deblockAlphaSlider->setValue(-2);
                 x264Tab->deblockBetaSlider->setValue(-2);
                 x264Tab->pmodeCheck->setChecked(false);
@@ -620,7 +628,7 @@ void Presets::connectPresets(
                         x264Tab->x264SharpenCheck->setChecked(false);
                         x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(true);
-                        x264Tab->x264KeyIntBox->setCurrentText("15");   // good for DVD navigation
+                        //x264Tab->x264KeyIntBox->setCurrentText("15");
                         break;
 
                     case 2: // Streaming
@@ -663,7 +671,7 @@ void Presets::connectPresets(
                         x264Tab->enableCutreeCheck->setChecked(false);
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(false);
-                        x264Tab->refFramesBox->setCurrentIndex(3);
+                        x264Tab->refFramesBox->setCurrentIndex(2);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
 
@@ -685,7 +693,7 @@ void Presets::connectPresets(
                         x264Tab->enableCutreeCheck->setChecked(false);
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(false);
-                        x264Tab->refFramesBox->setCurrentIndex(4);
+                        x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(false);
                         break;
 
@@ -707,7 +715,7 @@ void Presets::connectPresets(
                         x264Tab->enableCutreeCheck->setChecked(true);
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(false);
-                        x264Tab->refFramesBox->setCurrentIndex(5);
+                        x264Tab->refFramesBox->setCurrentIndex(3);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
 
@@ -730,7 +738,7 @@ void Presets::connectPresets(
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(true);
                         x264Tab->x264SharpenStrengthSlider->setValue(5);
-                        x264Tab->refFramesBox->setCurrentIndex(5);
+                        x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
 
@@ -753,7 +761,7 @@ void Presets::connectPresets(
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(true);
                         x264Tab->x264SharpenStrengthSlider->setValue(8);
-                        x264Tab->refFramesBox->setCurrentIndex(5);
+                        x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
                     case 8: // Anime
@@ -775,7 +783,7 @@ void Presets::connectPresets(
                         x264Tab->x264TwoPassCheck->setChecked(false);
                         x264Tab->x264SharpenCheck->setChecked(true);
                         x264Tab->x264SharpenStrengthSlider->setValue(8);
-                        x264Tab->refFramesBox->setCurrentIndex(5);
+                        x264Tab->refFramesBox->setCurrentIndex(4);
                         x264Tab->strongIntraCheck->setChecked(true);
                         break;
                 }
@@ -810,7 +818,7 @@ void Presets::connectPresets(
                 vp9Tab->enableRowMtCheck->setChecked(true);
                 vp9Tab->vp9TileColumnsBox->setCurrentText("4");
                 vp9Tab->vp9TileRowsBox->setCurrentText("Automatic");
-                vp9Tab->vp9KeyIntBox->setCurrentText("240");
+                //vp9Tab->vp9KeyIntBox->setCurrentText("240");
                 vp9Tab->vp9ThreadsBox->setCurrentText("Automatic");
                 vp9Tab->screenContentCheck->setChecked(false);
                 vp9Tab->vp9LookaheadCheck->setChecked(true);
