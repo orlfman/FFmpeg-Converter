@@ -264,8 +264,9 @@ void MainWindow::createOptionsSection()
     optionsLayout->addWidget(toneMapModeBox);
 
     toneMapDesatBox = new QComboBox();
-    for (double d = 1.00; d >= 0.00; d -= 0.05) {
-        toneMapDesatBox->addItem(QString::number(d, 'f', 2));
+    for (int i = 100; i >= 0; i -= 1) {
+        double value = i / 100.0;
+        toneMapDesatBox->addItem(QString::number(value, 'f', 2));
     }
     toneMapDesatBox->setCurrentText("0.35");
     toneMapDesatBox->setEnabled(false);
