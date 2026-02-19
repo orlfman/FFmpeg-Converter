@@ -1,5 +1,6 @@
 #include "x264tab.h"
 #include <QToolTip>
+#include <QTimer>
 
 X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *x264Layout = new QVBoxLayout(this);
@@ -461,14 +462,38 @@ X264Tab::X264Tab(QWidget *parent) : QWidget(parent) {
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
-        lbl->setToolTip("Higher = smaller file.");
+        lbl->setToolTip("How often to insert keyframes (for seeking). Higher = smaller file.");
         x264KeyIntBox = new QComboBox();
-        x264KeyIntBox->addItems({"15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
-        x264KeyIntBox->setCurrentIndex(4);
+        x264KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
+        x264KeyIntBox->setCurrentIndex(0);
+        x264KeyIntBox->setCurrentText("Custom");
         l->addWidget(lbl);
         l->addWidget(x264KeyIntBox);
         l->addStretch();
         x264Layout->addLayout(l);
+    }
+
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget();
+        w->setMaximumWidth(450);
+        w->setLayout(l);
+        w->setVisible(false);
+        QLabel *lbl = new QLabel("Custom Keyframe Mode:");
+        x264CustomKeyframeModeBox = new QComboBox();
+        x264CustomKeyframeModeBox->addItems({
+            "Every 5 seconds (fixed time)",
+                                            "Every 5 seconds × framerate (recommended)"
+        });
+        x264CustomKeyframeModeBox->setCurrentIndex(1);
+        l->addWidget(lbl);
+        l->addWidget(x264CustomKeyframeModeBox);
+        l->addStretch();
+        x264Layout->addWidget(w);
+        QObject::connect(x264KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
+            w->setVisible(text == "Custom");
+        });
+        QTimer::singleShot(0, [w](){ w->setVisible(true); });
     }
     // Threads
     {
@@ -680,7 +705,8 @@ void X264Tab::resetDefaults() {
     x264TwoPassCheck->setChecked(false);
     x264AQModeBox->setCurrentIndex(0);
     x264AQStrengthSlider->setValue(10);
-    x264KeyIntBox->setCurrentIndex(4);
+    x264KeyIntBox->setCurrentIndex(0);
+    x264KeyIntBox->setCurrentText("Custom");
     x264ThreadsBox->setCurrentIndex(0);
     x264FrameThreadsBox->setCurrentIndex(0);
     x264AudioCheck->setChecked(true);

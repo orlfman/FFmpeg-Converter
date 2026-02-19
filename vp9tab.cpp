@@ -1,5 +1,7 @@
 #include "vp9tab.h"
 #include <QToolTip>
+#include <QTimer>
+
 Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *vp9Layout = new QVBoxLayout(this);
     // Container
@@ -382,14 +384,38 @@ Vp9Tab::Vp9Tab(QWidget *parent) : QWidget(parent) {
     {
         QHBoxLayout *l = new QHBoxLayout();
         QLabel *lbl = new QLabel("Key Frame Interval:");
-        lbl->setToolTip("Higher = smaller file, slower seeking.");
+        lbl->setToolTip("How often to insert keyframes (for seeking). Higher = smaller file.");
         vp9KeyIntBox = new QComboBox();
-        vp9KeyIntBox->addItems({"15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
-        vp9KeyIntBox->setCurrentIndex(4);
+        vp9KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
+        vp9KeyIntBox->setCurrentIndex(0);
+        vp9KeyIntBox->setCurrentText("Custom");
         l->addWidget(lbl);
         l->addWidget(vp9KeyIntBox);
         l->addStretch();
         advancedLayout->addLayout(l);
+    }
+
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        QWidget *w = new QWidget();
+        w->setMaximumWidth(450);
+        w->setLayout(l);
+        w->setVisible(false);
+        QLabel *lbl = new QLabel("Custom Keyframe Mode:");
+        vp9CustomKeyframeModeBox = new QComboBox();
+        vp9CustomKeyframeModeBox->addItems({
+            "Every 5 seconds (fixed time)",
+                                           "Every 5 seconds × framerate (recommended)"
+        });
+        vp9CustomKeyframeModeBox->setCurrentIndex(1);
+        l->addWidget(lbl);
+        l->addWidget(vp9CustomKeyframeModeBox);
+        l->addStretch();
+        advancedLayout->addWidget(w);
+        QObject::connect(vp9KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
+            w->setVisible(text == "Custom");
+        });
+        QTimer::singleShot(0, [w](){ w->setVisible(true); });
     }
     // CPU usage preset
     {
@@ -646,7 +672,8 @@ void Vp9Tab::resetDefaults() {
     vp9ArnrStrengthSlider->setValue(3);
     vp9ArnrMaxFramesSlider->setValue(7);
     vp9TplCheck->setChecked(false);
-    vp9KeyIntBox->setCurrentIndex(4);
+    vp9KeyIntBox->setCurrentIndex(0);
+    vp9KeyIntBox->setCurrentText("Custom");
     vp9CpuUsedBox->setCurrentIndex(4);
     vp9ThreadsBox->setCurrentIndex(0);
     vp9TileColumnsBox->setCurrentIndex(0);

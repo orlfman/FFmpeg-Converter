@@ -162,7 +162,12 @@ void Presets::connectPresets(
                 return;
             }
             int currentTab = codecTabs->currentIndex();
+            auto setCustomRecommended = [](QComboBox* keyBox, QComboBox* modeBox) {
+                keyBox->setCurrentText("Custom");
+                modeBox->setCurrentIndex(1);
+            };
             if (currentTab == 0) { // AV1
+                setCustomRecommended(av1Tab->av1KeyIntBox, av1Tab->av1CustomKeyframeModeBox);
                 av1Tab->av1NlmeansCheck->setChecked(false);
                 av1Tab->av1NlmeansSigmaSSlider->setValue(20);
                 av1Tab->av1NlmeansSigmaPSlider->setValue(10);
@@ -393,7 +398,7 @@ void Presets::connectPresets(
                 }
             }
             else if (currentTab == 1) { // x265
-                // Common settings for ALL x265 presets
+                setCustomRecommended(x265Tab->x265KeyIntBox, x265Tab->x265CustomKeyframeModeBox);
                 x265Tab->x265ContainerBox->setCurrentText("mp4");
                 x265Tab->x265AudioCheck->setChecked(true);
                 x265Tab->x265AudioCodecBox->setCurrentText("opus");
@@ -578,7 +583,7 @@ void Presets::connectPresets(
                 x265Tab->x265FrameThreadsBox->setCurrentText("Automatic");
             }
             else if (currentTab == 3) { // x264
-                // Common settings for ALL x264 presets
+                setCustomRecommended(x264Tab->x264KeyIntBox, x264Tab->x264CustomKeyframeModeBox);
                 x264Tab->x264ContainerBox->setCurrentText("mp4");
                 x264Tab->x264AudioCheck->setChecked(true);
                 x264Tab->x264AudioCodecBox->setCurrentText("opus");
@@ -792,8 +797,8 @@ void Presets::connectPresets(
                     x264Tab->x264ProfileBox->setCurrentText("high10");
                 }
             }
-            else if (currentTab == 2) { // VP9 - All presets now web-optimized
-                // Common web-friendly settings
+            else if (currentTab == 2) {
+                setCustomRecommended(vp9Tab->vp9KeyIntBox, vp9Tab->vp9CustomKeyframeModeBox);
                 vp9Tab->vp9ContainerBox->setCurrentText("webm");
                 vp9Tab->vp9AudioCheck->setChecked(true);
                 vp9Tab->vp9AudioCodecBox->setCurrentText("opus");

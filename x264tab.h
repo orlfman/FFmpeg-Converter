@@ -74,6 +74,7 @@ public:
     QWidget *x264CRFConfigWidget;
     QWidget *x264QPConfigWidget;
     QWidget *x264ABRConfigWidget;
+    QComboBox *x264CustomKeyframeModeBox;
 
 private:
     QLabel *x264VbrModeLabel;

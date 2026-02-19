@@ -57,6 +57,7 @@ public:
     QSlider *vp9ArnrStrengthSlider;
     QSlider *vp9ArnrMaxFramesSlider;
     QCheckBox *vp9TplCheck;
+    QComboBox *vp9CustomKeyframeModeBox;
 private:
     QWidget *vp9CRFConfigWidget;
     QWidget *vp9BitrateConfigWidget;

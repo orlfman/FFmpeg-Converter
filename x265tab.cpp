@@ -1,5 +1,7 @@
 #include "x265tab.h"
 #include <QToolTip>
+#include <QTimer>
+
 X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
     QVBoxLayout *x265Layout = new QVBoxLayout(this);
     // Container selection
@@ -448,7 +450,8 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         lbl->setToolTip("How often to insert keyframes (for seeking). Higher = smaller file.");
         x265KeyIntBox = new QComboBox();
         x265KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
-        x265KeyIntBox->setCurrentIndex(5);
+        x265KeyIntBox->setCurrentIndex(0);
+        x265KeyIntBox->setCurrentText("Custom");
         l->addWidget(lbl);
         l->addWidget(x265KeyIntBox);
         l->addStretch();
@@ -475,6 +478,7 @@ X265Tab::X265Tab(QWidget *parent) : QWidget(parent) {
         QObject::connect(x265KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
             w->setVisible(text == "Custom");
         });
+        QTimer::singleShot(0, [w](){ w->setVisible(true); });
     }
     // Threads
     {
@@ -694,7 +698,8 @@ void X265Tab::resetDefaults() {
     x265TwoPassCheck->setChecked(false);
     x265AQModeBox->setCurrentIndex(0);
     x265AQStrengthSlider->setValue(1);
-    x265KeyIntBox->setCurrentIndex(4);
+    x265KeyIntBox->setCurrentIndex(0);
+    x265KeyIntBox->setCurrentText("Custom");
     x265ThreadsBox->setCurrentIndex(0);
     x265FrameThreadsBox->setCurrentIndex(0);
     x265AudioCheck->setChecked(true);

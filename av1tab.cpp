@@ -1,5 +1,7 @@
 #include "av1tab.h"
 #include <QToolTip>
+#include <QTimer>
+
 Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
 {
     QVBoxLayout *av1Layout = new QVBoxLayout(this);
@@ -390,7 +392,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     {
         QHBoxLayout *l = new QHBoxLayout();
         enableCdefCheck = new QCheckBox("Enable CDEF");
-        enableCdefCheck->setChecked(true);
+        enableCdefCheck->setChecked(false);
         enableCdefCheck->setToolTip("Constrained Directional Enhancement Filter for deringing. Disable for faster encoding.");
         l->addWidget(enableCdefCheck);
         l->addStretch();
@@ -536,7 +538,8 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
 
         av1KeyIntBox = new QComboBox();
         av1KeyIntBox->addItems({"Custom", "15", "30", "60", "120", "240", "360", "480", "720", "960", "1440", "1920"});
-        av1KeyIntBox->setCurrentIndex(5);
+        av1KeyIntBox->setCurrentIndex(0);
+        av1KeyIntBox->setCurrentText("Custom");
 
         l->addWidget(lbl);
         l->addWidget(av1KeyIntBox);
@@ -565,6 +568,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         QObject::connect(av1KeyIntBox, &QComboBox::currentTextChanged, [w](const QString &text){
             w->setVisible(text == "Custom");
         });
+        QTimer::singleShot(0, [w](){ w->setVisible(true); });
     }
     // Threads for encoding
     {
@@ -827,14 +831,15 @@ void Av1Tab::resetDefaults() {
     screenContentModeBox->setCurrentIndex(0);
     lowLatencyCheck->setChecked(false);
     tplModelCheck->setChecked(false);
-    enableCdefCheck->setChecked(true);
+    enableCdefCheck->setChecked(false);
     screenContentModeBox->setCurrentIndex(0);
     fastDecodeBox->setCurrentIndex(0);
     enableTfCheck->setChecked(false);
     av1AQModeBox->setCurrentIndex(0);
     av1AQStrengthSlider->setValue(2);
     av1TwoPassCheck->setChecked(false);
-    av1KeyIntBox->setCurrentIndex(4);
+    av1KeyIntBox->setCurrentIndex(0);
+    av1KeyIntBox->setCurrentText("Custom");
     av1ThreadsBox->setCurrentIndex(0);
     av1TileRowsBox->setCurrentIndex(0);
     av1TileColumnsBox->setCurrentIndex(0);
