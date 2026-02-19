@@ -167,16 +167,17 @@ void Presets::connectPresets(
                 av1Tab->av1NlmeansSigmaSSlider->setValue(20);
                 av1Tab->av1NlmeansSigmaPSlider->setValue(10);
                 av1Tab->av1NlmeansPatchSlider->setValue(7);
+
                 switch (p) {
                     case 1: // DVD
-                        av1Tab->av1ContainerBox->setCurrentText("mkv");
+                        av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
                         av1Tab->av1AudioCodecBox->setCurrentText("opus");
                         av1Tab->av1AudioSampleRateBox->setCurrentText("48 KHz");
                         av1Tab->av1EnableRCModeCheck->setChecked(true);
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("8");
-                        av1Tab->av1CRFSlider->setValue(28);
+                        av1Tab->av1CRFSlider->setValue(30);
                         av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
                         av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
@@ -203,9 +204,9 @@ void Presets::connectPresets(
                         av1Tab->av1BlurCheck->setChecked(false);
                         av1Tab->av1NoiseReductionCheck->setChecked(false);
                         av1Tab->av1GrainSynthCheck->setChecked(false);
-                        av1Tab->av1NlmeansCheck->setChecked(false);
                         av1Tab->av1AQModeBox->setCurrentText("Automatic");
                         break;
+
                     case 2: // Streaming
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -215,7 +216,7 @@ void Presets::connectPresets(
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(30);
-                        av1Tab->av1TuneBox->setCurrentText("Subjective SSIM (VQ)");
+                        av1Tab->av1TuneBox->setCurrentText("PSNR");
                         av1Tab->av1KeyIntBox->setCurrentText("120");
                         av1Tab->av1AudioBitrateBox->setCurrentText("192 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Constrained");
@@ -229,6 +230,7 @@ void Presets::connectPresets(
                         av1Tab->fastDecodeBox->setCurrentIndex(2);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         break;
+
                     case 3: // Medium
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -251,6 +253,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
+
                     case 4: // High
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -260,7 +263,7 @@ void Presets::connectPresets(
                         av1Tab->av1RCModeBox->setCurrentText("CRF");
                         av1Tab->av1PresetBox->setCurrentText("9");
                         av1Tab->av1CRFSlider->setValue(31);
-                        av1Tab->av1TuneBox->setCurrentText("PSNR");
+                        av1Tab->av1TuneBox->setCurrentText("SSIM");
                         av1Tab->av1KeyIntBox->setCurrentText("240");
                         av1Tab->av1AudioBitrateBox->setCurrentText("256 kbps");
                         av1Tab->av1VbrModeBox->setCurrentText("Default");
@@ -273,6 +276,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
+
                     case 5: // Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -296,6 +300,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
+
                     case 6: // High Quality
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -320,6 +325,7 @@ void Presets::connectPresets(
                         av1Tab->av1SharpenStrengthSlider->setValue(5);
                         av1Tab->fastDecodeBox->setCurrentIndex(0);
                         break;
+
                     case 7: // Ultra
                         av1Tab->av1ContainerBox->setCurrentText("webm");
                         av1Tab->av1AudioCheck->setChecked(true);
@@ -704,8 +710,8 @@ void Presets::connectPresets(
                     x264Tab->x264ProfileBox->setCurrentText("high10");
                 }
             }
-            else if (currentTab == 2) { // VP9
-                // Common settings
+            else if (currentTab == 2) { // VP9 - All presets now web-optimized
+                // Common web-friendly settings
                 vp9Tab->vp9ContainerBox->setCurrentText("webm");
                 vp9Tab->vp9AudioCheck->setChecked(true);
                 vp9Tab->vp9AudioCodecBox->setCurrentText("opus");
@@ -721,14 +727,7 @@ void Presets::connectPresets(
                 vp9Tab->vp9ThreadsBox->setCurrentText("Automatic");
                 vp9Tab->screenContentCheck->setChecked(false);
                 vp9Tab->vp9LookaheadCheck->setChecked(true);
-                vp9Tab->vp9DeadlineBox->setCurrentText("good");
                 vp9Tab->vp9SharpenCheck->setChecked(false);
-                vp9Tab->vp9AQStrengthSlider->setValue(4);
-                vp9Tab->vp9QMaxSlider->setValue(52);
-                vp9Tab->vp9ArnrCheck->setChecked(false);
-                vp9Tab->vp9ArnrStrengthSlider->setValue(3);
-                vp9Tab->vp9ArnrMaxFramesSlider->setValue(7);
-                vp9Tab->vp9TplCheck->setChecked(false);
                 vp9Tab->vp9NlmeansCheck->setChecked(false);
                 vp9Tab->vp9NlmeansSigmaSSlider->setValue(20);
                 vp9Tab->vp9NlmeansSigmaPSlider->setValue(10);
@@ -736,107 +735,107 @@ void Presets::connectPresets(
 
                 switch (p) {
                     case 1: // DVD
-                        vp9Tab->vp9CpuUsedBox->setCurrentText("6");
-                        vp9Tab->vp9CRFSlider->setValue(55);
-                        vp9Tab->vp9AudioBitrateBox->setCurrentText("96 kbps");
-                        vp9Tab->vp9RCModeBox->setCurrentText("ABR");
-                        vp9Tab->vp9BitrateSlider->setValue(800);
-                        vp9Tab->vp9LookaheadSlider->setValue(10);
-                        vp9Tab->vp9TwoPassCheck->setChecked(false);
-                        vp9Tab->vp9KeyIntBox->setCurrentText("120");
-                        eightBitCheck->setChecked(true);
-                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-                        vp9Tab->vp9DeadlineBox->setCurrentText("realtime");
-                        vp9Tab->vp9QMaxSlider->setValue(63);
-                        vp9Tab->vp9ArnrCheck->setChecked(false);
-                        break;
-
-                    case 2: // Streaming
                         vp9Tab->vp9CpuUsedBox->setCurrentText("5");
-                        vp9Tab->vp9CRFSlider->setValue(50);
-                        vp9Tab->vp9AudioBitrateBox->setCurrentText("128 kbps");
-                        vp9Tab->vp9RCModeBox->setCurrentText("ABR");
-                        vp9Tab->vp9BitrateSlider->setValue(1500);
-                        vp9Tab->vp9LookaheadSlider->setValue(10);
-                        vp9Tab->vp9TwoPassCheck->setChecked(false);
-                        vp9Tab->vp9KeyIntBox->setCurrentText("120");
-                        eightBitCheck->setChecked(true);
-                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-                        vp9Tab->vp9DeadlineBox->setCurrentText("realtime");
-                        vp9Tab->vp9QMaxSlider->setValue(63);
-                        vp9Tab->vp9ArnrCheck->setChecked(false);
-                        break;
-
-                    case 3: // Medium
-                        vp9Tab->vp9CpuUsedBox->setCurrentText("4");
-                        vp9Tab->vp9CRFSlider->setValue(42);
+                        vp9Tab->vp9CRFSlider->setValue(45);
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("160 kbps");
-                        vp9Tab->vp9LookaheadSlider->setValue(15);
+                        vp9Tab->vp9LookaheadSlider->setValue(25);
                         vp9Tab->vp9TwoPassCheck->setChecked(false);
                         eightBitCheck->setChecked(true);
                         eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-                        vp9Tab->vp9AQStrengthSlider->setValue(5);
+                        vp9Tab->vp9DeadlineBox->setCurrentText("good");
                         vp9Tab->vp9QMaxSlider->setValue(55);
                         vp9Tab->vp9ArnrCheck->setChecked(true);
-                        vp9Tab->vp9ArnrStrengthSlider->setValue(3);
-                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(7);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(4);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(9);
+                        vp9Tab->vp9TplCheck->setChecked(true);
                         break;
 
-                    case 4: // High
-                        vp9Tab->vp9CpuUsedBox->setCurrentText("3");
-                        vp9Tab->vp9CRFSlider->setValue(34);
-                        vp9Tab->vp9AudioBitrateBox->setCurrentText("192 kbps");
+                    case 2: // Streaming - optimize for 4chan
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("6");
+                        vp9Tab->vp9CRFSlider->setValue(52);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("96 kbps");
+                        vp9Tab->vp9RCModeBox->setCurrentText("ABR");
+                        vp9Tab->vp9BitrateSlider->setValue(1200);
+                        vp9Tab->vp9LookaheadSlider->setValue(10);
+                        vp9Tab->vp9TwoPassCheck->setChecked(false);
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        vp9Tab->vp9DeadlineBox->setCurrentText("realtime");
+                        vp9Tab->vp9QMaxSlider->setValue(63);
+                        vp9Tab->vp9ArnrCheck->setChecked(false);
+                        vp9Tab->vp9TplCheck->setChecked(false);
+                        break;
+
+                    case 3: // Medium - Balanced everyday web quality
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("4");
+                        vp9Tab->vp9CRFSlider->setValue(40);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("160 kbps");
                         vp9Tab->vp9LookaheadSlider->setValue(20);
                         vp9Tab->vp9TwoPassCheck->setChecked(false);
                         eightBitCheck->setChecked(true);
                         eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
-                        vp9Tab->vp9AQStrengthSlider->setValue(6);
-                        vp9Tab->vp9QMaxSlider->setValue(52);
+                        vp9Tab->vp9DeadlineBox->setCurrentText("good");
+                        vp9Tab->vp9QMaxSlider->setValue(55);
                         vp9Tab->vp9ArnrCheck->setChecked(true);
                         vp9Tab->vp9ArnrStrengthSlider->setValue(4);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(9);
                         break;
 
-                    case 5: // Quality
-                        vp9Tab->vp9CpuUsedBox->setCurrentText("2");
-                        vp9Tab->vp9CRFSlider->setValue(26);
-                        vp9Tab->vp9AudioBitrateBox->setCurrentText("224 kbps");
+                    case 4: // High - Better quality for web
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("3");
+                        vp9Tab->vp9CRFSlider->setValue(34);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("192 kbps");
                         vp9Tab->vp9LookaheadSlider->setValue(25);
-                        vp9Tab->vp9TwoPassCheck->setChecked(true);
-                        vp9Tab->vp9QMaxSlider->setValue(48);
+                        vp9Tab->vp9TwoPassCheck->setChecked(false);
+                        eightBitCheck->setChecked(true);
+                        eightBitColorFormatBox->setCurrentText("8-bit 4:2:0");
+                        vp9Tab->vp9DeadlineBox->setCurrentText("good");
+                        vp9Tab->vp9QMaxSlider->setValue(52);
                         vp9Tab->vp9ArnrCheck->setChecked(true);
                         vp9Tab->vp9ArnrStrengthSlider->setValue(5);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(12);
-                        vp9Tab->vp9TplCheck->setChecked(true);
-                        tenBitCheck->setChecked(true);
-                        colorFormatBox->setCurrentText("10-bit 4:2:0");
-                        vp9Tab->vp9DeadlineBox->setCurrentText("best");
-                        vp9Tab->vp9AQStrengthSlider->setValue(7);
                         break;
 
-                    case 6: // High Quality
-                        vp9Tab->vp9CpuUsedBox->setCurrentText("1");
-                        vp9Tab->vp9CRFSlider->setValue(20);
-                        vp9Tab->vp9AudioBitrateBox->setCurrentText("256 kbps");
-                        vp9Tab->vp9LookaheadSlider->setValue(25);
+                    case 5: // Quality
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("2");
+                        vp9Tab->vp9CRFSlider->setValue(28);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("224 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(30);
                         vp9Tab->vp9TwoPassCheck->setChecked(true);
                         tenBitCheck->setChecked(true);
                         colorFormatBox->setCurrentText("10-bit 4:2:0");
-                        vp9Tab->vp9SharpenCheck->setChecked(true);
-                        vp9Tab->vp9SharpenStrengthSlider->setValue(3);
-                        vp9Tab->vp9AQStrengthSlider->setValue(8);
-                        vp9Tab->vp9QMaxSlider->setValue(45);
+                        vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        vp9Tab->vp9QMaxSlider->setValue(48);
                         vp9Tab->vp9ArnrCheck->setChecked(true);
                         vp9Tab->vp9ArnrStrengthSlider->setValue(6);
                         vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
                         vp9Tab->vp9TplCheck->setChecked(true);
                         break;
 
+                    case 6: // High Quality
+                        vp9Tab->vp9CpuUsedBox->setCurrentText("1");
+                        vp9Tab->vp9CRFSlider->setValue(22);
+                        vp9Tab->vp9AudioBitrateBox->setCurrentText("256 kbps");
+                        vp9Tab->vp9LookaheadSlider->setValue(35);
+                        vp9Tab->vp9TwoPassCheck->setChecked(true);
+                        tenBitCheck->setChecked(true);
+                        colorFormatBox->setCurrentText("10-bit 4:2:0");
+                        vp9Tab->vp9SharpenCheck->setChecked(true);
+                        vp9Tab->vp9SharpenStrengthSlider->setValue(4);
+                        vp9Tab->vp9AQStrengthSlider->setValue(8);
+                        vp9Tab->vp9QMaxSlider->setValue(45);
+                        vp9Tab->vp9ArnrCheck->setChecked(true);
+                        vp9Tab->vp9ArnrStrengthSlider->setValue(6);
+                        vp9Tab->vp9ArnrMaxFramesSlider->setValue(15);
+                        vp9Tab->vp9TplCheck->setChecked(true);
+                        vp9Tab->vp9DeadlineBox->setCurrentText("best");
+                        break;
+
                     case 7: // Ultra
                         vp9Tab->vp9CpuUsedBox->setCurrentText("0");
-                        vp9Tab->vp9CRFSlider->setValue(15);
+                        vp9Tab->vp9CRFSlider->setValue(18);
                         vp9Tab->vp9AudioBitrateBox->setCurrentText("320 kbps");
-                        vp9Tab->vp9LookaheadSlider->setValue(35);
+                        vp9Tab->vp9LookaheadSlider->setValue(40);
                         vp9Tab->vp9TwoPassCheck->setChecked(true);
                         tenBitCheck->setChecked(true);
                         colorFormatBox->setCurrentText("10-bit 4:2:0");
