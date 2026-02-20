@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QSlider>
 #include <QDoubleSpinBox>
+#include <QComboBox>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -36,6 +37,14 @@ private:
 
     QSlider *hueSlider = nullptr;
     QDoubleSpinBox *hueSpin = nullptr;
+
+    QSlider *vibranceSlider = nullptr;
+    QDoubleSpinBox *vibranceSpin = nullptr;
+
+    QSlider *temperatureSlider = nullptr;
+    QDoubleSpinBox *temperatureSpin = nullptr;
+
+    QComboBox *curvesBox = nullptr;
 
     QPushButton *resetButton = nullptr;
     QPushButton *okButton = nullptr;
