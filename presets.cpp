@@ -233,7 +233,7 @@ void Presets::connectPresets(
                         av1Tab->fastDecodeBox->setCurrentIndex(2);
                         av1Tab->av1SharpenCheck->setChecked(false);
                         av1Tab->av1KeyIntBox->setCurrentText("Custom");
-                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(1);
+                        av1Tab->av1CustomKeyframeModeBox->setCurrentIndex(0);
                         break;
 
                     case 3: // Medium
@@ -457,7 +457,7 @@ void Presets::connectPresets(
                         x265Tab->x265SharpenCheck->setChecked(false);
                         x265Tab->refFramesBox->setCurrentIndex(2);
                         x265Tab->x265KeyIntBox->setCurrentText("Custom");
-                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(1);
+                        x265Tab->x265CustomKeyframeModeBox->setCurrentIndex(0);
                         break;
                     case 3: // Medium
                         x265Tab->x265PresetBox->setCurrentText("fast");
@@ -639,7 +639,7 @@ void Presets::connectPresets(
                         x264Tab->refFramesBox->setCurrentIndex(2);
                         x264Tab->strongIntraCheck->setChecked(true);
                         x264Tab->x264KeyIntBox->setCurrentText("Custom");
-                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(1);
+                        x264Tab->x264CustomKeyframeModeBox->setCurrentIndex(0);
                         break;
                     case 3: // Medium
                         x264Tab->x264PresetBox->setCurrentText("fast");
@@ -850,7 +850,7 @@ void Presets::connectPresets(
                         vp9Tab->vp9ArnrCheck->setChecked(false);
                         vp9Tab->vp9TplCheck->setChecked(false);
                         vp9Tab->vp9KeyIntBox->setCurrentText("Custom");
-                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(1);
+                        vp9Tab->vp9CustomKeyframeModeBox->setCurrentIndex(0);
                         break;
                     case 3: // Medium
                         vp9Tab->vp9CpuUsedBox->setCurrentText("4");
