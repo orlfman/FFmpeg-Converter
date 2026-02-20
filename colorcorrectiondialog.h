@@ -53,6 +53,9 @@ private:
     QPushButton *cancelButton     = nullptr;
 
     void updateWidgetEnabledStates();
+    void updateTitle();
+    void saveSettings();
+    void loadSettings();
 };
 
 #endif // COLORCORRECTIONDIALOG_H

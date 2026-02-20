@@ -1,4 +1,5 @@
 #include "colorcorrectiondialog.h"
+#include <QSettings>
 
 ColorCorrectionDialog::ColorCorrectionDialog(QWidget *parent) : QDialog(parent)
 {
@@ -41,7 +42,6 @@ ColorCorrectionDialog::ColorCorrectionDialog(QWidget *parent) : QDialog(parent)
 
         basicLay->addLayout(rowLayout);
 
-        // Sync slider spinbox
         connect(slider, &QSlider::valueChanged, spinBox, [spinBox](int val) {
             spinBox->setValue(val / 100.0);
         });
@@ -49,7 +49,6 @@ ColorCorrectionDialog::ColorCorrectionDialog(QWidget *parent) : QDialog(parent)
             slider->setValue(static_cast<int>(val * 100));
         });
 
-        // Enable/disable
         connect(enableBox, &QCheckBox::toggled, this, [slider, spinBox](bool enabled) {
             slider->setEnabled(enabled);
             spinBox->setEnabled(enabled);
@@ -158,12 +157,16 @@ ColorCorrectionDialog::ColorCorrectionDialog(QWidget *parent) : QDialog(parent)
     btnLay->addWidget(cancelButton);
     mainLayout->addLayout(btnLay);
 
-    connect(resetButton, &QPushButton::clicked, this, &ColorCorrectionDialog::resetToDefaults);
-    connect(okButton, &QPushButton::clicked, this, &QDialog::accept);
+    connect(okButton, &QPushButton::clicked, this, [this]() {
+        saveSettings();
+        accept();
+    });
     connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
+    connect(resetButton, &QPushButton::clicked, this, &ColorCorrectionDialog::resetToDefaults);
 
-    resetToDefaults();
+    loadSettings();
     updateWidgetEnabledStates();
+    updateTitle();
 }
 
 void ColorCorrectionDialog::resetToDefaults()
@@ -268,4 +271,72 @@ void ColorCorrectionDialog::updateWidgetEnabledStates()
     temperatureSpin->setEnabled(temperatureEnable->isChecked());
 
     curvesBox->setEnabled(curvesEnable->isChecked());
+}
+
+void ColorCorrectionDialog::updateTitle()
+{
+    int active = 0;
+    if (brightnessEnable->isChecked()) active++;
+    if (contrastEnable->isChecked()) active++;
+    if (saturationEnable->isChecked()) active++;
+    if (gammaEnable->isChecked()) active++;
+    if (hueEnable->isChecked()) active++;
+    if (vibranceEnable->isChecked()) active++;
+    if (temperatureEnable->isChecked()) active++;
+    if (curvesEnable->isChecked()) active++;
+
+    setWindowTitle(QString("Color Correction (%1 active)").arg(active));
+}
+
+void ColorCorrectionDialog::saveSettings()
+{
+    QSettings s("FFmpegConverter", "ColorCorrection");
+    s.setValue("brightness", brightnessEnable->isChecked());
+    s.setValue("contrast",   contrastEnable->isChecked());
+    s.setValue("saturation", saturationEnable->isChecked());
+    s.setValue("gamma",      gammaEnable->isChecked());
+    s.setValue("hue",        hueEnable->isChecked());
+    s.setValue("vibrance",   vibranceEnable->isChecked());
+    s.setValue("temperature",temperatureEnable->isChecked());
+    s.setValue("curves",     curvesEnable->isChecked());
+
+    s.setValue("brightnessVal", brightnessSpin->value());
+    s.setValue("contrastVal",   contrastSpin->value());
+    s.setValue("saturationVal", saturationSpin->value());
+    s.setValue("gammaVal",      gammaSpin->value());
+    s.setValue("hueVal",        hueSpin->value());
+    s.setValue("vibranceVal",   vibranceSpin->value());
+    s.setValue("temperatureVal",temperatureSpin->value());
+    s.setValue("curvesIndex",   curvesBox->currentIndex());
+}
+
+void ColorCorrectionDialog::loadSettings()
+{
+    QSettings s("FFmpegConverter", "ColorCorrection");
+
+    brightnessEnable->setChecked(s.value("brightness", false).toBool());
+    contrastEnable->setChecked(s.value("contrast", false).toBool());
+    saturationEnable->setChecked(s.value("saturation", false).toBool());
+    gammaEnable->setChecked(s.value("gamma", false).toBool());
+    hueEnable->setChecked(s.value("hue", false).toBool());
+    vibranceEnable->setChecked(s.value("vibrance", false).toBool());
+    temperatureEnable->setChecked(s.value("temperature", false).toBool());
+    curvesEnable->setChecked(s.value("curves", false).toBool());
+
+    brightnessSpin->setValue(s.value("brightnessVal", 0.0).toDouble());
+    contrastSpin->setValue(s.value("contrastVal", 1.0).toDouble());
+    saturationSpin->setValue(s.value("saturationVal", 1.0).toDouble());
+    gammaSpin->setValue(s.value("gammaVal", 1.0).toDouble());
+    hueSpin->setValue(s.value("hueVal", 0.0).toDouble());
+    vibranceSpin->setValue(s.value("vibranceVal", 1.0).toDouble());
+    temperatureSpin->setValue(s.value("temperatureVal", 5500).toInt());
+    curvesBox->setCurrentIndex(s.value("curvesIndex", 0).toInt());
+
+    brightnessSlider->setValue(static_cast<int>(brightnessSpin->value() * 100));
+    contrastSlider->setValue(static_cast<int>(contrastSpin->value() * 100));
+    saturationSlider->setValue(static_cast<int>(saturationSpin->value() * 100));
+    gammaSlider->setValue(static_cast<int>(gammaSpin->value() * 100));
+    hueSlider->setValue(static_cast<int>(hueSpin->value()));
+    vibranceSlider->setValue(static_cast<int>(vibranceSpin->value() * 100));
+    temperatureSlider->setValue(temperatureSpin->value());
 }
