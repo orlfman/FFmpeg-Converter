@@ -333,22 +333,30 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
     // FFmpeg grain synthesis
     {
         QHBoxLayout *l = new QHBoxLayout();
-        QWidget *w = new QWidget(); w->setMaximumWidth(400); w->setLayout(l);
+        QWidget *w = new QWidget();
+        w->setMaximumWidth(720);
+        w->setLayout(l);
+
         av1GrainSynthCheck = new QCheckBox("FFmpeg Grain Synthesis");
         av1GrainSynthCheck->setToolTip("Adds synthetic grain using FFmpeg filter (for film-like look). Range 0-50.");
+
         av1GrainSynthLevel = new QSlider(Qt::Horizontal);
-        av1GrainSynthLevel->setMaximumWidth(200);
+        av1GrainSynthLevel->setMaximumWidth(520);
         av1GrainSynthLevel->setRange(0, 50);
         av1GrainSynthLevel->setValue(0);
         av1GrainSynthLevel->setEnabled(false);
+
         QLabel *val = new QLabel("0");
+
         l->addWidget(av1GrainSynthCheck);
-        l->addWidget(av1GrainSynthLevel);
+        l->addWidget(av1GrainSynthLevel, 1);
         l->addWidget(val);
         l->addStretch();
+
+        grainLayout->addWidget(w);
+
         QObject::connect(av1GrainSynthLevel, &QSlider::valueChanged,
                          [val](int v){ val->setText(QString::number(v)); });
-        grainLayout->addWidget(w);
     }
     // Native AV1 film grain
     {
@@ -356,7 +364,7 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         nativeGrainCheck = new QCheckBox("Native Film Grain Synthesis");
         nativeGrainCheck->setToolTip("Adds film-like grain directly in AV1 (better for compression). Strength 0-50.");
         grainStrengthSlider = new QSlider(Qt::Horizontal);
-        grainStrengthSlider->setMaximumWidth(300);
+        grainStrengthSlider->setMaximumWidth(350);
         grainStrengthSlider->setRange(0, 50);
         grainStrengthSlider->setValue(0);
         grainStrengthSlider->setEnabled(false);
@@ -482,6 +490,93 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         l->addWidget(screenContentModeBox);
         l->addStretch();
         advancedLayout->addLayout(l);
+    }
+    // SVT Sharpness
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        sharpnessEnable = new QCheckBox("SVT Sharpness");
+        sharpnessEnable->setChecked(false);
+        sharpnessEnable->setToolTip("SVT-AV1 built-in sharpness (0-7).\nHigher = more detail preservation, cleaner image.\nVery natural compared to FFmpeg unsharp.");
+        sharpnessSlider = new QSlider(Qt::Horizontal);
+        sharpnessSlider->setMaximumWidth(450);
+        sharpnessSlider->setRange(0, 7);
+        sharpnessSlider->setValue(1);
+        QLabel *val = new QLabel("1");
+        l->addWidget(sharpnessEnable);
+        l->addWidget(sharpnessSlider);
+        l->addWidget(val);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+
+        connect(sharpnessEnable, &QCheckBox::toggled, sharpnessSlider, &QSlider::setEnabled);
+        connect(sharpnessSlider, &QSlider::valueChanged, [val](int v){ val->setText(QString::number(v)); });
+    }
+
+    // Loop Restoration
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        enableRestorationCheck = new QCheckBox("Enable Loop Restoration");
+        enableRestorationCheck->setChecked(false);
+        l->addWidget(enableRestorationCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+        enableRestorationCheck->setToolTip("One of the strongest quality features in SVT-AV1.\nHighly recommended for almost all content.");
+    }
+
+    // Quantization Matrices
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        enableQMCheck = new QCheckBox("Quantization Matrices");
+        enableQMCheck->setChecked(false);
+        l->addWidget(enableQMCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        l->setContentsMargins(20, 0, 0, 0);
+
+        QWidget *sliderContainer = new QWidget();
+        sliderContainer->setMaximumWidth(650);
+
+        QHBoxLayout *sliderLay = new QHBoxLayout(sliderContainer);
+        sliderLay->setContentsMargins(0, 0, 0, 0);
+
+        QLabel *minLbl = new QLabel("QM Min:");
+        qmMinSlider = new QSlider(Qt::Horizontal);
+        qmMinSlider->setRange(0, 15);
+        qmMinSlider->setValue(8);
+        qmMinSlider->setEnabled(false);
+        QLabel *minVal = new QLabel("8");
+
+        QLabel *maxLbl = new QLabel("   QM Max:");
+        qmMaxSlider = new QSlider(Qt::Horizontal);
+        qmMaxSlider->setRange(0, 15);
+        qmMaxSlider->setValue(11);
+        qmMaxSlider->setEnabled(false);
+        QLabel *maxVal = new QLabel("11");
+
+        sliderLay->addWidget(minLbl);
+        sliderLay->addWidget(qmMinSlider, 1);
+        sliderLay->addWidget(minVal);
+
+        sliderLay->addSpacing(40);
+
+        sliderLay->addWidget(maxLbl);
+        sliderLay->addWidget(qmMaxSlider, 1);
+        sliderLay->addWidget(maxVal);
+
+        l->addWidget(sliderContainer);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+
+        connect(qmMinSlider, &QSlider::valueChanged, [minVal](int v){ minVal->setText(QString::number(v)); });
+        connect(qmMaxSlider, &QSlider::valueChanged, [maxVal](int v){ maxVal->setText(QString::number(v)); });
+        connect(enableQMCheck, &QCheckBox::toggled, [this, sliderContainer](bool on){
+            qmMinSlider->setEnabled(on);
+            qmMaxSlider->setEnabled(on);
+            sliderContainer->setEnabled(on);
+        });
     }
     // AQ mode
     {
@@ -855,6 +950,12 @@ void Av1Tab::resetDefaults() {
     av1Mp3VbrBox->setCurrentIndex(0);
     av1FlacCompressionBox->setCurrentIndex(5);
     av1VorbisQualityBox->setCurrentIndex(0);
+    sharpnessSlider->setValue(1);
+    enableRestorationCheck->setChecked(false);
+    enableQMCheck->setChecked(false);
+    qmMinSlider->setValue(8);
+    qmMaxSlider->setValue(11);
+    sharpnessEnable->setChecked(false);
     // Update the UI after reset
     av1EnableRCModeCheck->toggled(false);
     av1AQModeBox->currentIndexChanged(0);

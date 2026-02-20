@@ -348,6 +348,18 @@ void MainWindow::startConversion()
             svtParams << "tile-columns=" + QString::number(log2Cols);
         }
 
+        if (av1Tab->sharpnessEnable->isChecked())
+            svtParams << "sharpness=" + QString::number(av1Tab->sharpnessSlider->value());
+
+        if (av1Tab->enableRestorationCheck->isChecked())
+            svtParams << "enable-restoration=1";
+
+        if (av1Tab->enableQMCheck->isChecked()) {
+            svtParams << "enable-qm=1";
+            svtParams << "qm-min=" + QString::number(av1Tab->qmMinSlider->value());
+            svtParams << "qm-max=" + QString::number(av1Tab->qmMaxSlider->value());
+        }
+
         if (!svtParams.isEmpty()) {
             args << "-svtav1-params" << svtParams.join(":");
         }

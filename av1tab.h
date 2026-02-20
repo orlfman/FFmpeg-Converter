@@ -68,6 +68,12 @@ public:
     QCheckBox *av1NlmeansGpuCheck;
     QSlider *av1NlmeansPatchSlider;
     QComboBox *av1CustomKeyframeModeBox;
+    QSlider *sharpnessSlider = nullptr;
+    QCheckBox *enableRestorationCheck = nullptr;
+    QCheckBox *enableQMCheck = nullptr;
+    QSlider *qmMinSlider = nullptr;
+    QSlider *qmMaxSlider = nullptr;
+    QCheckBox *sharpnessEnable = nullptr;
 private:
     QWidget *av1CRFConfigWidget;
     QWidget *av1QPConfigWidget;
@@ -77,6 +83,7 @@ private:
     QLabel *av1Mp3VbrLabel;
     QLabel *av1FlacCompressionLabel;
     QLabel *av1VorbisQualityLabel;
+
 private slots:
     void updateAudioCodecOptions();
     void resetDefaults();

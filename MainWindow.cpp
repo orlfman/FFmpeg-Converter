@@ -587,7 +587,12 @@ void MainWindow::wireAllSignals()
         });
 
         // Converter signals
-        connect(converter, &Converter::logMessage, logBox, &QTextEdit::append);
+        connect(converter, &Converter::logMessage, this, [this](const QString &msg) {
+            if (msg.contains("Error parsing option") && msg.contains("tpl-la")) {
+                return; // tpl is heavily svt build dependent. its changed three times on arch with its ffmpeg build.
+            }
+            logBox->append(msg);
+        });
         connect(converter, &Converter::progressUpdated, conversionProgress, &QProgressBar::setValue);
         connect(converter, &Converter::conversionFinished, this, &MainWindow::onConversionFinished);
 
