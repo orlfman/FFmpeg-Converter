@@ -360,6 +360,11 @@ void MainWindow::startConversion()
             svtParams << "qm-max=" + QString::number(av1Tab->qmMaxSlider->value());
         }
 
+        if (av1Tab->enableDLFCheck->isChecked()) {
+            int mode = av1Tab->dlfModeBox->currentIndex();
+            svtParams << "enable-dlf=" + QString::number(mode);
+        }
+
         if (!svtParams.isEmpty()) {
             args << "-svtav1-params" << svtParams.join(":");
         }

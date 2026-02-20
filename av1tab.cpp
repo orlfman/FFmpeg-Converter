@@ -523,6 +523,36 @@ Av1Tab::Av1Tab(QWidget *parent) : QWidget(parent)
         enableRestorationCheck->setToolTip("One of the strongest quality features in SVT-AV1.\nHighly recommended for almost all content.");
     }
 
+    // Deblocking Filter
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        enableDLFCheck = new QCheckBox("Deblocking Filter");
+        enableDLFCheck->setChecked(false);
+        l->addWidget(enableDLFCheck);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+    }
+    {
+        QHBoxLayout *l = new QHBoxLayout();
+        l->setContentsMargins(20, 0, 0, 0);
+
+        dlfModeBox = new QComboBox();
+        dlfModeBox->addItems({
+            "0 - Disabled",
+            "1 - Standard",
+            "2 - Strong"
+        });
+        dlfModeBox->setCurrentIndex(1);
+        dlfModeBox->setEnabled(false);
+
+        l->addWidget(new QLabel("Mode:"));
+        l->addWidget(dlfModeBox);
+        l->addStretch();
+        advancedLayout->addLayout(l);
+
+        connect(enableDLFCheck, &QCheckBox::toggled, dlfModeBox, &QComboBox::setEnabled);
+    }
+
     // Quantization Matrices
     {
         QHBoxLayout *l = new QHBoxLayout();
@@ -956,6 +986,8 @@ void Av1Tab::resetDefaults() {
     qmMinSlider->setValue(8);
     qmMaxSlider->setValue(11);
     sharpnessEnable->setChecked(false);
+    enableDLFCheck->setChecked(false);
+    dlfModeBox->setCurrentIndex(1);
     // Update the UI after reset
     av1EnableRCModeCheck->toggled(false);
     av1AQModeBox->currentIndexChanged(0);

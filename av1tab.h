@@ -74,6 +74,9 @@ public:
     QSlider *qmMinSlider = nullptr;
     QSlider *qmMaxSlider = nullptr;
     QCheckBox *sharpnessEnable = nullptr;
+    QComboBox *enableDLFBox = nullptr;
+    QCheckBox *enableDLFCheck = nullptr;
+    QComboBox *dlfModeBox = nullptr;
 private:
     QWidget *av1CRFConfigWidget;
     QWidget *av1QPConfigWidget;
