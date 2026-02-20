@@ -6,6 +6,7 @@
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -16,39 +17,42 @@ class ColorCorrectionDialog : public QDialog
     Q_OBJECT
 public:
     explicit ColorCorrectionDialog(QWidget *parent = nullptr);
-
     QString getFilterString() const;
 
 private slots:
     void resetToDefaults();
 
 private:
-    QSlider *brightnessSlider = nullptr;
+    QCheckBox *brightnessEnable   = nullptr;
+    QCheckBox *contrastEnable     = nullptr;
+    QCheckBox *saturationEnable   = nullptr;
+    QCheckBox *gammaEnable        = nullptr;
+    QCheckBox *hueEnable          = nullptr;
+    QCheckBox *vibranceEnable     = nullptr;
+    QCheckBox *temperatureEnable  = nullptr;
+    QCheckBox *curvesEnable       = nullptr;
+
+    QSlider *brightnessSlider     = nullptr;
     QDoubleSpinBox *brightnessSpin = nullptr;
-
-    QSlider *contrastSlider = nullptr;
-    QDoubleSpinBox *contrastSpin = nullptr;
-
-    QSlider *saturationSlider = nullptr;
+    QSlider *contrastSlider       = nullptr;
+    QDoubleSpinBox *contrastSpin  = nullptr;
+    QSlider *saturationSlider     = nullptr;
     QDoubleSpinBox *saturationSpin = nullptr;
-
-    QSlider *gammaSlider = nullptr;
-    QDoubleSpinBox *gammaSpin = nullptr;
-
-    QSlider *hueSlider = nullptr;
-    QDoubleSpinBox *hueSpin = nullptr;
-
-    QSlider *vibranceSlider = nullptr;
-    QDoubleSpinBox *vibranceSpin = nullptr;
-
-    QSlider *temperatureSlider = nullptr;
+    QSlider *gammaSlider          = nullptr;
+    QDoubleSpinBox *gammaSpin     = nullptr;
+    QSlider *hueSlider            = nullptr;
+    QDoubleSpinBox *hueSpin       = nullptr;
+    QSlider *vibranceSlider       = nullptr;
+    QDoubleSpinBox *vibranceSpin  = nullptr;
+    QSlider *temperatureSlider    = nullptr;
     QDoubleSpinBox *temperatureSpin = nullptr;
+    QComboBox *curvesBox          = nullptr;
 
-    QComboBox *curvesBox = nullptr;
+    QPushButton *resetButton      = nullptr;
+    QPushButton *okButton         = nullptr;
+    QPushButton *cancelButton     = nullptr;
 
-    QPushButton *resetButton = nullptr;
-    QPushButton *okButton = nullptr;
-    QPushButton *cancelButton = nullptr;
+    void updateWidgetEnabledStates();
 };
 
 #endif // COLORCORRECTIONDIALOG_H
