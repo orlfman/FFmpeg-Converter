@@ -13,6 +13,7 @@ add_executable(ffmpeg_converter_qt
     MainWindow.cpp
     SettingsDialog.cpp
     converter.cpp
+    colorcorrectiondialog.cpp
     av1tab.cpp
     x265tab.cpp
     vp9tab.cpp

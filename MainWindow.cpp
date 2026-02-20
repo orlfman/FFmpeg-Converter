@@ -284,6 +284,7 @@ void MainWindow::createOptionsSection()
 void MainWindow::createPresetSection()
 {
     QHBoxLayout *presetLayout = new QHBoxLayout();
+
     QLabel *presetLabel = new QLabel("Quality Preset:");
     presetCombo = new QComboBox();
     presetCombo->addItems({"Custom", "DVD", "Streaming", "Medium", "High", "Quality", "High Quality", "Ultra", "Anime"});
@@ -312,24 +313,30 @@ void MainWindow::createPresetSection()
     presetLayout->addWidget(audioSpeedLabel);
     presetLayout->addWidget(audioSpeedCombo);
 
+    presetLayout->addStretch();
+    mainLayout->addLayout(presetLayout);
+
+    QHBoxLayout *colorRow = new QHBoxLayout();
+    QPushButton *colorCorrectionButton = new QPushButton("Color Correction");
+    colorCorrectionButton->setToolTip("Adjust brightness, contrast, saturation, gamma and hue");
+    colorCorrectionButton->setMinimumWidth(180);
+
+    colorRow->addWidget(colorCorrectionButton);
+    colorRow->addStretch();
+
+    mainLayout->addLayout(colorRow);
+
+    connect(colorCorrectionButton, &QPushButton::clicked, this, &MainWindow::openColorCorrection);
+
     QStringList speedPercentages;
     for (int i = 100; i >= 5; i -= 5) speedPercentages << QString("%1%").arg(i);
     speedPercentages << "0%";
     for (int i = -5; i >= -100; i -= 5) speedPercentages << QString("%1%").arg(i);
+
     videoSpeedCombo->addItems(speedPercentages);
     audioSpeedCombo->addItems(speedPercentages);
     videoSpeedCombo->setCurrentText("0%");
     audioSpeedCombo->setCurrentText("0%");
-
-    presetLayout->addSpacing(30);
-    presetLayout->addWidget(videoSpeedCheck);
-    presetLayout->addWidget(videoSpeedLabel);
-    presetLayout->addWidget(videoSpeedCombo);
-    presetLayout->addWidget(audioSpeedCheck);
-    presetLayout->addWidget(audioSpeedLabel);
-    presetLayout->addWidget(audioSpeedCombo);
-    presetLayout->addStretch();
-    mainLayout->addLayout(presetLayout);
 }
 
 void MainWindow::createCodecTabs()
@@ -792,6 +799,15 @@ void MainWindow::openSettings()
 
         QMessageBox::information(this, "✅ Settings Saved",
                                  "✓ Default codec tab\n✓ FFmpeg path\n✓ SVT-AV1 library path\n✓ Output directory\n✓ Notifications");
+    }
+}
+
+void MainWindow::openColorCorrection()
+{
+    ColorCorrectionDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        colorCorrectionFilter = dialog.getFilterString();
+        logBox->append("Color correction updated: " + (colorCorrectionFilter.isEmpty() ? "None" : colorCorrectionFilter));
     }
 }
 

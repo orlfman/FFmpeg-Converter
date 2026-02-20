@@ -120,6 +120,9 @@ void MainWindow::startConversion()
     if (deblockCheck->isChecked()) videoFilters << "deblock";
     if (denoiseCheck->isChecked()) videoFilters << "hqdn3d=4:3:6:4.5";
     if (superSharpCheck->isChecked()) videoFilters << "unsharp=5:5:0.8:3:3:0.4";
+    if (!colorCorrectionFilter.isEmpty()) {
+        videoFilters << colorCorrectionFilter;
+    }
     if (toneMapCheck->isChecked()) {
         QString desatValue;
 

@@ -49,6 +49,7 @@
 #include "trimtab.h"
 #include "converter.h"
 #include "presets.h"
+#include "colorcorrectiondialog.h"
 
 class SettingsDialog;
 
@@ -58,6 +59,9 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+
+private slots:
+    void openColorCorrection();
 
 private slots:
     void selectFile();
@@ -135,6 +139,7 @@ private:
     QComboBox *videoSpeedCombo = nullptr;
     QCheckBox *audioSpeedCheck = nullptr;
     QComboBox *audioSpeedCombo = nullptr;
+    QString colorCorrectionFilter;
 
     QTabWidget *codecTabs = nullptr;
     Av1Tab *av1Tab = nullptr;
